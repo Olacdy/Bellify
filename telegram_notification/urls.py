@@ -18,6 +18,10 @@ from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
 
+admin.site.site_header = "Telegram Admin"
+admin.site.site_title = "Telegram Admin"
+admin.site.index_title = "Welcome to Telegram Admin Page"
+
 urlpatterns = [
     path('admin/', admin.site.urls),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
