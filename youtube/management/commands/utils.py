@@ -3,6 +3,7 @@ import re
 from bs4 import BeautifulSoup
 import requests
 from dateutil import parser
+import telegram_notification.tasks as tasks
 from youtube.models import Channel, ChannelUserItem
 from telegram_profile.models import Profile
 
@@ -62,9 +63,6 @@ def get_channel_id_by_url(channel_url):
     soup = BeautifulSoup(html.text, "lxml")
     columns = soup.find('script', text=re.compile(
         r'\"externalId\":\"([\w-]+)\"'))
-    # print(columns)
-    print(re.findall(
-        r'\"externalId\":\"([\w-]+)\"', str(columns)))
     try:
         channel_id = re.findall(
             r'\"externalId\":\"([\w-]+)\"', str(columns))[0]
@@ -90,3 +88,21 @@ def send_message(chat_id, bot_message, parse_mode='HTML'):
         '/sendMessage?chat_id=' + str(chat_id) + '&text=' + \
         bot_message + '&parse_mode=' + parse_mode
     requests.get(send_text)
+
+
+# Checks for new video and alerts every user if there is one
+def check_for_new_video(channel: Channel):
+    new_video_title, new_video_url, new_upload_time = get_last_video(
+        channel.channel_id)
+
+    if new_video_url != channel.video_url:
+        channel.video_title = new_video_title
+        channel.video_url = new_video_url
+        channel.video_publication_date = new_upload_time
+        channel.save()
+        users = [item.user for item in ChannelUserItem.objects.filter(
+            channel=channel)]
+        tasks.notify_users(users, channel)
+        return True
+    else:
+        return False

@@ -17,6 +17,10 @@ beautifulsoup4 = "*"
 requests = "*"
 python-dateutil = "*"
 lxml = "*"
+python-telegram-bot = "*"
+django-celery-beat = "*"
+celery = "*"
+sqlalchemy = "*"
 
 [requires]
 python_version = "3.9"
