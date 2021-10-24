@@ -12,9 +12,9 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         channel_id = get_channel_id_by_url(
             'https://www.youtube.com/channel/UCvUSZ6IdVB7Re-wniMH80HQ')
-        print(channel_id)
-        video_title, video_url, video_published_date = get_last_video(
-            channel_id)
-        print(video_title)
-        print(video_url)
-        print(video_published_date)
+        print(f'Channel id: {channel_id}')
+        # video_title, video_url, video_published_date = get_last_video(
+        #     channel_id)
+        # print(video_title)
+        # print(video_url)
+        # print(video_published_date)
