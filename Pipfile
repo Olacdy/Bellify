@@ -13,6 +13,10 @@ whitenoise = "*"
 django-environ = "*"
 waitress = "*"
 sqlparse = "*"
+beautifulsoup4 = "*"
+requests = "*"
+python-dateutil = "*"
+lxml = "*"
 
 [requires]
 python_version = "3.9"
