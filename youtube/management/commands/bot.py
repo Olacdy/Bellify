@@ -3,16 +3,18 @@ from django.conf import settings
 from bs4 import BeautifulSoup
 import requests
 from dateutil import parser
+from .utils import *
 
 
 class Command(BaseCommand):
     help = 'Test command'
 
     def handle(self, *args, **options):
-        html = requests.get(
-            f"https://www.youtube.com/feeds/videos.xml?channel_id=UCDxhdabUnR_cgTezoHRlZVg")
-        soup = BeautifulSoup(html.text, "lxml")
-        entry = soup.find("entry")
-        print(entry)
-        entry.find("title").text, entry.find("link")["href"], parser.parse(
-            entry.find("published").text).strftime("%m/%d/%Y, %H:%M:%S")
+        channel_id = get_channel_id_by_url(
+            'https://www.youtube.com/channel/UCvUSZ6IdVB7Re-wniMH80HQ')
+        print(channel_id)
+        video_title, video_url, video_published_date = get_last_video(
+            channel_id)
+        print(video_title)
+        print(video_url)
+        print(video_published_date)
