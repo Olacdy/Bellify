@@ -21,6 +21,7 @@ python-telegram-bot = "*"
 django-celery-beat = "*"
 celery = "*"
 sqlalchemy = "*"
+honcho = "*"
 
 [requires]
 python_version = "3.9"
