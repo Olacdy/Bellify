@@ -36,6 +36,9 @@ def get_channel_id_by_url(channel_url):
     soup = BeautifulSoup(html.text, "lxml")
     columns = soup.find('script', text=re.compile(
         r'\"externalId\":\"([\w-]+)\"'))
+    print(columns)
+    print(re.findall(
+        r'\"externalId\":\"([\w-]+)\"', str(columns)))
     try:
         channel_id = re.findall(
             r'\"externalId\":\"([\w-]+)\"', str(columns))[0]
