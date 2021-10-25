@@ -509,9 +509,11 @@ def run_pooling():
 
 @app.task(ignore_result=True)
 def process_telegram_event(update_json):
+    global bot
     update = Update.de_json(update_json, bot)
     dispatcher.process_update(update)
 
 
 n_workers = 0 if settings.DEBUG else 4
-dispatcher = setup_dispatcher(Dispatcher(bot, update_queue=None, workers=n_workers, use_context=True))
+dispatcher = setup_dispatcher(Dispatcher(
+    bot, update_queue=None, workers=n_workers, use_context=True))
