@@ -4,7 +4,7 @@ from django.views import View
 from django.http import JsonResponse
 
 from django.conf import settings
-from telegram_bot.bot import process_telegram_event
+from .bot import process_telegram_event
 
 logger = logging.getLogger(__name__)
 
