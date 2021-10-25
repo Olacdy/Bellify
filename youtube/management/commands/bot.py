@@ -398,8 +398,32 @@ def run_pooling():
     updater.idle()
 
 
+def run_webhook():
+    updater = Updater(settings.TOKEN)
+
+    dp = updater.dispatcher
+    dp = setup_dispatcher(dp)
+
+    updater.start_webhook(listen="0.0.0.0",
+                          port=settings.PORT,
+                          url_path=settings.TOKEN,
+                          webhook_url=f"https://{settings.ALLOWED_HOSTS[0]}/" + settings.TOKEN)
+    updater.idle()
+
+
 class Command(BaseCommand):
     help = 'Telegram Bot'
 
+    def add_arguments(self, parser):
+        parser.add_argument(
+            '--webhook',
+            action='store_true',
+            help='Start bot in webhook mode',
+        )
+
     def handle(self, *args, **options):
-        run_pooling()
+
+        if options['webhook']:
+            run_webhook()
+        else:
+            run_pooling()

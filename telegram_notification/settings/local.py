@@ -138,6 +138,7 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 TOKEN = env.str('TELEGRAM_TOKEN')
+PORT = env.int('PORT', '8443')
 
 CELERY_BROKER_URL = env.str('POSTGRESQL_URI')
 CELERY_ACCEPT_CONTENT = ['json']
