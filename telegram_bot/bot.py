@@ -462,13 +462,6 @@ def set_up_commands(bot_instance: Bot) -> None:
         )
 
 
-bot = Bot(settings.TOKEN)
-try:
-    TELEGRAM_BOT_USERNAME = bot.get_me()["username"]
-except Unauthorized:
-    sys.exit(1)
-
-
 def setup_dispatcher(dp):
     """
     Adding handlers for events from Telegram
@@ -485,6 +478,16 @@ def setup_dispatcher(dp):
     dp.add_handler(CallbackQueryHandler(language_button))
 
     return dp
+
+
+bot = Bot(settings.TOKEN)
+try:
+    TELEGRAM_BOT_USERNAME = bot.get_me()["username"]
+except Unauthorized:
+    sys.exit(1)
+n_workers = 0 if settings.DEBUG else 4
+dispatcher = setup_dispatcher(Dispatcher(
+    bot, update_queue=None, workers=n_workers, use_context=True))
 
 
 def run_pooling():
@@ -509,11 +512,6 @@ def run_pooling():
 
 @app.task(ignore_result=True)
 def process_telegram_event(update_json):
-    global bot
+    global bot, dispatcher
     update = Update.de_json(update_json, bot)
     dispatcher.process_update(update)
-
-
-n_workers = 0 if settings.DEBUG else 4
-dispatcher = setup_dispatcher(Dispatcher(
-    bot, update_queue=None, workers=n_workers, use_context=True))
