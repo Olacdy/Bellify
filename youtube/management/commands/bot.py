@@ -3,10 +3,11 @@ from celery import shared_task
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from telegram import Bot, BotCommand, Update
-from telegram.ext import CommandHandler, CallbackContext, CallbackQueryHandler, Updater
+from telegram.ext import CommandHandler, CallbackContext, CallbackQueryHandler, Updater, Dispatcher
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from youtube.models import Channel, ChannelUserItem
 from .utils import *
+from telegram_notification.celery import app
 
 
 def log_errors(f):
@@ -398,32 +399,20 @@ def run_pooling():
     updater.idle()
 
 
-def run_webhook():
-    updater = Updater(settings.TOKEN)
+@app.task(ignore_result=True)
+def process_telegram_event(update_json):
+    update = Update.de_json(update_json, bot)
+    dispatcher.process_update(update)
 
-    dp = updater.dispatcher
-    dp = setup_dispatcher(dp)
 
-    updater.start_webhook(listen="0.0.0.0",
-                          port=settings.PORT,
-                          url_path=settings.TOKEN,
-                          webhook_url=f"https://{settings.ALLOWED_HOSTS[0]}/" + settings.TOKEN)
-    updater.idle()
+bot = Bot(settings.TOKEN)
+n_workers = 0 if settings.DEBUG else 4
+dispatcher = setup_dispatcher(Dispatcher(
+    bot, update_queue=None, workers=n_workers, use_context=True))
 
 
 class Command(BaseCommand):
-    help = 'Telegram Bot'
-
-    def add_arguments(self, parser):
-        parser.add_argument(
-            '--webhook',
-            action='store_true',
-            help='Start bot in webhook mode',
-        )
+    help = 'Start Telegram Bot in pooling mode'
 
     def handle(self, *args, **options):
-
-        if options['webhook']:
-            run_webhook()
-        else:
-            run_pooling()
+        run_pooling()
