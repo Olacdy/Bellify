@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_celery_beat',
     'telegram_profile',
+    'telegram_bot',
     'youtube'
 ]
 

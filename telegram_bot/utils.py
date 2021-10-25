@@ -6,6 +6,7 @@ from dateutil import parser
 import telegram_notification.tasks as tasks
 from youtube.models import Channel, ChannelUserItem
 from telegram_profile.models import Profile
+from typing import Optional
 
 
 headers = {
@@ -72,14 +73,23 @@ def get_channel_id_by_url(channel_url):
 
 
 # Gets or create profile from chat_id and username
-def get_or_create_profile(chat_id, name):
-    return Profile.objects.get_or_create(
+def get_or_create_profile(chat_id, name, reset: Optional[bool] = True):
+    profile_data = Profile.objects.get_or_create(
         external_id=chat_id,
         defaults={
             'name': name,
             'language': 'eng',
         }
     )
+    if reset:
+        set_menu_field(profile_data[0])
+    return profile_data
+
+
+# Sets value for menu field in Profile model
+def set_menu_field(p: Profile, value: Optional[str] = '') -> None:
+    p.menu = value
+    p.save()
 
 
 # Sends message to user by chat_id
