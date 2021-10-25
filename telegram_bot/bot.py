@@ -1,12 +1,15 @@
 from datetime import datetime
 from django.conf import settings
 from telegram import Bot, BotCommand, Update
+from telegram.error import Unauthorized
 from telegram.ext import CommandHandler, CallbackContext, CallbackQueryHandler, Updater, Dispatcher, MessageHandler, Filters
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from youtube.models import Channel, ChannelUserItem
 from .utils import *
 from telegram_notification.celery import app
 from typing import Optional
+import sys
+import logging
 
 
 def log_errors(f):
@@ -460,6 +463,10 @@ def set_up_commands(bot_instance: Bot) -> None:
 
 
 bot = Bot(settings.TOKEN)
+try:
+    TELEGRAM_BOT_USERNAME = bot.get_me()["username"]
+except Unauthorized:
+    sys.exit(1)
 
 
 def setup_dispatcher(dp):
@@ -507,5 +514,4 @@ def process_telegram_event(update_json):
 
 
 n_workers = 0 if settings.DEBUG else 4
-dispatcher = setup_dispatcher(Dispatcher(
-    bot, update_queue=None, workers=n_workers, use_context=True))
+dispatcher = setup_dispatcher(Dispatcher(bot, update_queue=None, workers=n_workers, use_context=True))
