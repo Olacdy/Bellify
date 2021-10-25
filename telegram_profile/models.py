@@ -13,6 +13,11 @@ class Profile(models.Model):
         max_length=3,
         default='eng'
     )
+    menu = models.CharField(
+        max_length=20,
+        blank=True,
+        null=True
+    )
 
     def __str__(self):
         return f'#{self.external_id} {self.name}'
