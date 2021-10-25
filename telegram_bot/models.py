@@ -29,7 +29,7 @@ class Profile(models.Model):
 
 class Message(models.Model):
     profile = models.ForeignKey(
-        to='telegram_profile.Profile',
+        to='telegram_bot.Profile',
         verbose_name='User name',
         on_delete=models.PROTECT,
     )

@@ -5,7 +5,7 @@ import requests
 from dateutil import parser
 import telegram_notification.tasks as tasks
 from youtube.models import Channel, ChannelUserItem
-from telegram_profile.models import Profile
+from telegram_bot.models import Profile
 from typing import Optional
 
 
