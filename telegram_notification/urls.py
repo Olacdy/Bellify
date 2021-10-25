@@ -27,5 +27,5 @@ admin.site.site_header = 'View Bot'
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('youtube.urls')),
+    path('', include('telegram_bot.urls')),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
