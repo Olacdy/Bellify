@@ -502,6 +502,7 @@ def run_pooling():
 
 @app.task(ignore_result=True)
 def process_telegram_event(update_json):
+    print(update_json)
     update = Update.de_json(update_json, bot)
     dispatcher.process_update(update)
 
