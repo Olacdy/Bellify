@@ -459,6 +459,9 @@ def set_up_commands(bot_instance: Bot) -> None:
         )
 
 
+bot = Bot(settings.TOKEN)
+
+
 def setup_dispatcher(dp):
     """
     Adding handlers for events from Telegram
@@ -503,7 +506,6 @@ def process_telegram_event(update_json):
     dispatcher.process_update(update)
 
 
-bot = Bot(settings.TOKEN)
 n_workers = 0 if settings.DEBUG else 4
 dispatcher = setup_dispatcher(Dispatcher(
     bot, update_queue=None, workers=n_workers, use_context=True))
