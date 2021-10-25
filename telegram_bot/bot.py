@@ -1,6 +1,5 @@
 from datetime import datetime
 from django.conf import settings
-from django.core.management.base import BaseCommand
 from telegram import Bot, BotCommand, Update
 from telegram.ext import CommandHandler, CallbackContext, CallbackQueryHandler, Updater, Dispatcher, MessageHandler, Filters
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
@@ -508,10 +507,3 @@ bot = Bot(settings.TOKEN)
 n_workers = 0 if settings.DEBUG else 4
 dispatcher = setup_dispatcher(Dispatcher(
     bot, update_queue=None, workers=n_workers, use_context=True))
-
-
-class Command(BaseCommand):
-    help = 'Start Telegram Bot in pooling mode'
-
-    def handle(self, *args, **options):
-        run_pooling()
