@@ -1,6 +1,6 @@
 from django.core.management import BaseCommand
-from ...models import Channel
-from .utils import send_message, check_for_new_video
+from youtube.models import Channel
+from ...utils import send_message, check_for_new_video
 import telegram_notification.tasks as tasks
 
 

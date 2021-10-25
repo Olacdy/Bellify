@@ -1,5 +1,5 @@
 from django.db import models
-from telegram_profile.models import Profile
+from telegram_bot.models import Profile
 
 
 # Channel model
