@@ -27,14 +27,14 @@ def log_errors(f):
 @log_errors
 def add(url: str, update: Update, p: Profile, name: Optional[str] = None) -> None:
     lang_for_add = {
-        'eng':
+        'en':
             [
                 ['New channel added with name', '. \nLast video is'],
                 'Unable to add a new channel, because one with the same name already exists. \nTry to come up with a new name or leave the name parameter empty.',
                 'This channel is already added to Your profile! \nLast video is',
                 'Sorry, can`t recognize this format.'
             ],
-        'rus':
+        'ru':
             [
                 ['Новый канал под именем', 'был добавлен.\nПоследнее видео'],
                 'Невозможно добавить новый канал под этим именем.\nПопробуйте придумать новое имя или оставить параметр имени пустым.',
@@ -81,12 +81,12 @@ def add(url: str, update: Update, p: Profile, name: Optional[str] = None) -> Non
 @log_errors
 def remove(update: Update, p: Profile, name: str):
     lang_for_remove = {
-        'eng':
+        'en':
             [
                 'Sorry. There is no such channel added right now, maybe try using /add command.',
                 'Your record was deleted successfully.'
             ],
-        'rus':
+        'ru':
             [
                 'Извините, но данного канала не существует, попробуйте добавить новый с помощью /add.',
                 'Ваш канал успешно удален.'
@@ -110,15 +110,15 @@ def remove(update: Update, p: Profile, name: str):
 @log_errors
 def check(update: Update, p: Profile, name: str):
     lang_for_check = {
-        'eng':
+        'en':
         [
             'Sorry. There is no channels added right now, maybe try using /add command.',
             'No new video on this channel. \nLast video is'
         ],
-        'rus':
+        'ru':
         [
             'Извините, но данного канала не существует, попробуйте добавить новый с помощью /add.',
-            'Новых видео нету на этом канале, Последнее видео'
+            'На этом канале еще нет нового видео. \nПоследнее видео'
         ]
     }
     try:
@@ -139,15 +139,15 @@ def check(update: Update, p: Profile, name: str):
 @log_errors
 def do_echo(update: Update, context: CallbackContext) -> None:
     lang_for_echo = {
-        'eng':
+        'en':
             [
-                'Now send URL of a channel:',
+                'Now send URL of a channel',
                 'This doesn`t look like a URL 🤔. Try again.',
                 'Unknown command.'
             ],
-        'rus':
+        'ru':
             [
-                'Теперь можете прислать URL канала:',
+                'Теперь можете прислать URL канала',
                 'Что-то не похоже на URL 🤔. Попробуйте еще раз.',
                 'Нераспознанная команда.'
             ]
@@ -204,9 +204,9 @@ def do_start(update: Update, context: CallbackContext) -> None:
     keyboard = [
         [
             InlineKeyboardButton(
-                '🇬🇧', callback_data=f'eng_{chat_id}_{username}'),
+                '🇬🇧', callback_data=f'en_{chat_id}_{username}'),
             InlineKeyboardButton(
-                '🇷🇺', callback_data=f'rus_{chat_id}_{username}')
+                '🇷🇺', callback_data=f'ru_{chat_id}_{username}')
         ]
     ]
 
@@ -214,7 +214,7 @@ def do_start(update: Update, context: CallbackContext) -> None:
 
     update.message.reply_text(
         text='<b>Пожалуйста, выберите язык</b>\n'
-             '<b>Please, choose language:</b>',
+             '<b>Please, choose language</b>',
         parse_mode='HTML',
         reply_markup=reply_markup)
 
@@ -222,8 +222,8 @@ def do_start(update: Update, context: CallbackContext) -> None:
 @log_errors
 def language_button(update: Update, context: CallbackContext) -> None:
     lang_for_lang_button = {
-        'eng': 'Thanks, You`ll continue work on English',
-        'rus': 'Спасибо, теперь работа будет продолжена на русском'
+        'en': 'Thanks, You`ll continue work on English',
+        'ru': 'Спасибо, теперь работа будет продолжена на русском'
     }
 
     query = update.callback_query
@@ -245,11 +245,11 @@ def language_button(update: Update, context: CallbackContext) -> None:
 @log_errors
 def do_remove(update: Update, context: CallbackContext):
     lang_for_remove_command = {
-        'eng':
+        'en':
             [
                 'Now send the name of an added channel.'
             ],
-        'rus':
+        'ru':
             [
                 'Пришлите имя вашего канала.'
             ]
@@ -273,15 +273,15 @@ def do_remove(update: Update, context: CallbackContext):
 @log_errors
 def do_list(update: Update, context: CallbackContext):
     lang_for_list = {
-        'eng':
+        'en':
             [
                 'List of Your added channels',
                 'Sorry. There is no channels added right now, maybe try using /add command.'
             ],
-        'rus':
+        'ru':
             [
                 'Список добавленных вами каналов',
-                'Извините, но данного канала не существует, попробуйте добавить новый с помощью /add.',
+                'Извините, пока у вас нет никаких каналов, попробуйте добавить новый с помощью /add.',
             ]
     }
 
@@ -308,11 +308,11 @@ def do_list(update: Update, context: CallbackContext):
 @log_errors
 def do_check(update: Update, context: CallbackContext):
     lang_for_check_command = {
-        'eng':
+        'en':
             [
                 'Now send the name of an added channel.'
             ],
-        'rus':
+        'ru':
             [
                 'Пришлите имя вашего канала.'
             ]
@@ -341,9 +341,9 @@ def do_lang_change(update: Update, context: CallbackContext):
     keyboard = [
         [
             InlineKeyboardButton(
-                '🇬🇧', callback_data=f'eng_{chat_id}_{username}'),
+                '🇬🇧', callback_data=f'en_{chat_id}_{username}'),
             InlineKeyboardButton(
-                '🇷🇺', callback_data=f'rus_{chat_id}_{username}')
+                '🇷🇺', callback_data=f'ru_{chat_id}_{username}')
         ]
     ]
 
@@ -351,7 +351,7 @@ def do_lang_change(update: Update, context: CallbackContext):
 
     update.message.reply_text(
         text='<b>Пожалуйста, выберите язык</b>\n'
-             '<b>Please, choose language:</b>',
+             '<b>Please, select language</b>',
         parse_mode='HTML',
         reply_markup=reply_markup)
 
@@ -359,11 +359,11 @@ def do_lang_change(update: Update, context: CallbackContext):
 @log_errors
 def do_help(update: Update, context: CallbackContext):
     lang_for_help = {
-        'eng':
+        'en':
             [
                 'Notification Bot manual.\n\nTo start type /add command with some YouTube channel URL.\nNow, if everything went smoothly🤞, You should have this channel in our database.\nTry to check whether it is true and type /list command.\nTo check if there is a new video on this channel try to use /check + name of the channel command.\nThis way You can get fresh information about the latest video from this channel,\nbut don`t worry You`ll be getting notifications automatically if a new video is out there.\nTo remove some channels, just type /remove + name of the channel command.\n\nNow You are free to add any channel from YouTube and this bot will take care of notifying You about new videos.\n\nTo contact developer follow this link: https://t.me/golovakanta'
             ],
-        'rus':
+        'ru':
             [
                 'Notification Bot мануал.\n\nЧтобы начать пользоваться ботом, воспользуйтесь коммандой /add плюс ссылка на ютуб канал.\nТеперь, если ничего не сломалось🤞, этот канал будет добавлен в нашу базу данных.\nПопробуйте проверить так ли это и напишите комманду /list.\nЧтобы проверить появилось ли новое видео, воспользуйтесь коммандой /check плюс имя канала, которое было в списке.\nТак вы можете получать последнюю информацию касательно последнего видео на канале,\nоднако не волнуйтесь, вы все еще будете получать сообщения от этого бота автоматически, как только мы заметим новое видео на одном из добавленных вами каналов.\nДля того чтобы удалить какой-либо канал, используйте комманду /remove плюс имя канала.\n\nТеперь, когда вы знаете основную функциональности бота, можете добавлять любой интересующий вас канал, а бот позаботится о том, чтобы снабжать вас актуальной информацией относительно последнего видео на канале.\nДля связи с разработчиком: https://t.me/golovakanta'
             ]
@@ -382,16 +382,16 @@ def do_help(update: Update, context: CallbackContext):
 @log_errors
 def do_add(update: Update, context: CallbackContext):
     lang_for_add_command = {
-        'eng':
-        [
-            'Unknown format. Try again /add + channel`s URL, name (optional).',
-            'Now send channel`s name or URL, then channel`s name will be set by bot.'
-        ],
-        'rus':
-        [
-            'Нераспознанный формат. Попробуйте снова /add + URL канала, имя (необязательно).',
-            'Теперь можете написать имя нового канал или же прислать URL канала, тогда оно будет определено автоматически.'
-        ]
+        'en':
+            [
+                'Unknown format. Try again /add + channel`s URL, name (optional).',
+                'Now send channel`s name or URL, then channel`s name will be set by bot.'
+            ],
+        'ru':
+            [
+                'Нераспознанный формат. Попробуйте снова /add + URL канала, имя (необязательно).',
+                'Теперь можете написать имя нового канал или же прислать URL канала, тогда оно будет определено автоматически.'
+            ]
     }
     chat_id = update.message.chat_id
 
