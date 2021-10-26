@@ -78,7 +78,7 @@ def get_or_create_profile(chat_id, name, reset: Optional[bool] = True):
         external_id=chat_id,
         defaults={
             'name': name,
-            'language': 'eng',
+            'language': 'en',
         }
     )
     if reset:
