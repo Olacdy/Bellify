@@ -55,7 +55,7 @@ def get_channel_title(channel_id):
 
 # Checks if given string is youtube channel url
 def is_channel_url(string):
-    return bool(re.search(r'http[s]*://www.youtube.com/(?:c|user|channel)/[\w-]+', string))
+    return bool(re.search(r'http[s]*://(.*?)youtube.com/(?:c|user|channel)/[\w-]+', string))
 
 
 # Gets channel id by given channel url
