@@ -24,14 +24,12 @@ headers = {
     'upgrade-insecure-requests': '1',
     'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.54 Safari/537.36',
     'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
-    'x-client-data': 'CJC2yQEIpbbJAQjEtskBCKmdygEIjPjKAQjq8ssBCO/yywEInvnLAQjnhMwBCLaFzAEI/4XMAQiBhswBCIqIzAEIy4nMAQ==',
     'sec-fetch-site': 'same-origin',
     'sec-fetch-mode': 'navigate',
     'sec-fetch-user': '?1',
     'sec-fetch-dest': 'document',
-    'referer': 'https://www.youtube.com/signin_passive',
-    'accept-language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7',
-    'cookie': 'GPS=1; YSC=Z9CIwZos5KY; VISITOR_INFO1_LIVE=fvmz9_N-FZg; __Secure-3PSID=DQi-v1E-vy5bPRw3LkBB4CF1z2xLQsqvktlFZjZ1cvJSjyd8D_vu_63KzcjNQ4zsjTLi-w.; __Secure-3PAPISID=e2ugJSAofPMMc6U8/Apyi1E1BUnN3b_47f; LOGIN_INFO=AFmmF2swRgIhAJqMg7lU-LudnZd5llgvBVhgJBvmH9xNDqZaCb_p3vLtAiEA2qMR_BTnkGhUKVTjIFaZYC4u0ATanggJOdCN2skqNYE:QUQ3MjNmemFGREM3eTkyVjBSc05hTlREYkc1X0dhbGItN2l6aE1yRUtWaVpubi1Ra1JhLUpSUFRiZUZaMms4djdFWnZhaVZNQVdXclNEanFIQWFpajFmUzYyRUFWQ0h6Q2UzMUVFRmJqOFVweXpaZ2NzdnIyQkFDc3lEc2VIWFFzYlhrZlltVXRLRWJFVUlmcUhhRHczMWsxZ2l3OGd3WmV3; PREF=f6=80&tz=Europe.Kiev; __Secure-3PSIDCC=AJi4QfFmiVpY_-ksjHdIHrA4dbqjoXzOsMHGcOoELL0n-3ogSxguMyBoHphPyhzYULMycT6B',
+    'accept-language': 'en-EN,en;q=0.9',
+    'cookie': 'GPS=1; YSC=0Gn_kvw4MXo; VISITOR_INFO1_LIVE=JeEfdF3VQbo; PREF=tz=Europe.Kiev; CONSISTENCY=AGDxDeOS0GcNBCG5Pqg8fplB2ISbeNUb6GCu1OOkFxDGFS8aMznudiXh2diInBzimIXjmB7y_OSopJ7sbPMYgUeHBwLlXyj7tWq0s8lYIcNMCI7PcrBUq7ahxl12cpgArj7gjhErbn4qfoy2IS2WNeE',
 }
 
 
