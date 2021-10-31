@@ -7,26 +7,46 @@ import telegram_notification.tasks as tasks
 from youtube.models import Channel, ChannelUserItem
 from telegram_bot.models import Profile
 from typing import Optional
+import scrapetube
 
 
 # Gets last video from given channel by it`s id
 def get_last_video(channel_id):
-    channel_id = channel_id[:1] + 'U' + channel_id[2:]
+    playlist_id = channel_id[:1] + 'U' + channel_id[2:]
     api_response = requests.get(
-        f'https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId={channel_id}&maxResults=5&key={settings.YOUTUBE_API_KEY}')
-    title = api_response.json()['items'][0]['snippet']['title']
-    publication_date = parser.parse(api_response.json(
-    )['items'][0]['snippet']['publishedAt']).strftime("%m/%d/%Y, %H:%M:%S")
-    url = f"https://www.youtube.com/watch?v={api_response.json()['items'][0]['snippet']['resourceId']['videoId']}"
+        f'https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId={playlist_id}&maxResults=5&key={settings.YOUTUBE_API_KEY}')
+    try:
+        title = api_response.json()['items'][0]['snippet']['title']
+        publication_date = parser.parse(api_response.json(
+        )['items'][0]['snippet']['publishedAt']).strftime("%m/%d/%Y, %H:%M:%S")
+        url = f"https://www.youtube.com/watch?v={api_response.json()['items'][0]['snippet']['resourceId']['videoId']}"
+    except:
+        videos = scrapetube.get_channel(channel_id)
+        video_id = [video['videoId'] for video in videos][0]
+        api_response = requests.get(
+            f'https://www.googleapis.com/youtube/v3/videos?part=snippet&id={video_id}&key={settings.YOUTUBE_API_KEY}')
+        title = api_response.json()['items'][0]['snippet']['title']
+        publication_date = parser.parse(api_response.json()['items'][0]['snippet']['publishedAt']).strftime(
+            "%m/%d/%Y, %H:%M:%S")
+        url = f"https://www.youtube.com/watch?v={video_id}"
     return title, url, publication_date
 
 
 # Gets channel title from given channel id
 def get_channel_title(channel_id):
-    channel_id = channel_id[:1] + 'U' + channel_id[2:]
+    playlist_id = channel_id[:1] + 'U' + channel_id[2:]
     api_response = requests.get(
-        f'https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId={channel_id}&maxResults=5&key={settings.YOUTUBE_API_KEY}')
-    channel_title = api_response.json()['items'][0]['snippet']['channelTitle']
+        f'https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId={playlist_id}&maxResults=5&key={settings.YOUTUBE_API_KEY}')
+    try:
+        channel_title = api_response.json(
+        )['items'][0]['snippet']['channelTitle']
+    except:
+        videos = scrapetube.get_channel(channel_id)
+        video_id = [video['videoId'] for video in videos][0]
+        api_response = requests.get(
+            f'https://www.googleapis.com/youtube/v3/videos?part=snippet&id={video_id}&key={settings.YOUTUBE_API_KEY}')
+        channel_title = api_response.json(
+        )['items'][0]['snippet']['channelTitle']
     return channel_title
 
 
