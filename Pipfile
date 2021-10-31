@@ -23,6 +23,7 @@ celery = "*"
 sqlalchemy = "*"
 honcho = "*"
 scrapetube = "*"
+typing-extensions = "*"
 
 [requires]
 python_version = "3.9"
