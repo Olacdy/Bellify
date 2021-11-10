@@ -11,7 +11,7 @@ def notify_users(users, channel):
             channel=channel, user=user) if ChannelUserItem.objects.get(
             channel=channel, user=user) else channel.title
         utils.send_message(
-            user.external_id, f"New video from {user_title} is out!\n<a href=\"{channel.video_url}\">{channel.video_title}</a>.")
+            user.external_id, f"New video from {user_title} is out!\n <a href=\"{channel.video_url}\">{channel.video_title}</a>")
     return None
 
 
