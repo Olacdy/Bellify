@@ -1,6 +1,6 @@
 from django.conf import settings
 import re
-from bs4 import BeautifulSoup
+from datetime import datetime
 import requests
 from dateutil import parser
 import telegram_notification.tasks as tasks
@@ -112,7 +112,8 @@ def check_for_new_video(channel: Channel):
     if new_video_url != channel.video_url:
         channel.video_title = new_video_title
         channel.video_url = new_video_url
-        channel.video_publication_date = new_upload_time
+        channel.video_publication_date = datetime.strptime(
+            new_upload_time, "%m/%d/%Y, %H:%M:%S")
         channel.save()
         users = [item.user for item in ChannelUserItem.objects.filter(
             channel=channel)]
