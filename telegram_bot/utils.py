@@ -1,73 +1,79 @@
 from django.conf import settings
 import re
-from bs4 import BeautifulSoup
+from datetime import datetime
 import requests
 from dateutil import parser
 import telegram_notification.tasks as tasks
 from youtube.models import Channel, ChannelUserItem
 from telegram_bot.models import Profile
 from typing import Optional
-
-
-headers = {
-    'authority': 'www.youtube.com',
-    'pragma': 'no-cache',
-    'cache-control': 'no-cache',
-    'sec-ch-ua': '"Google Chrome";v="95", "Chromium";v="95", ";Not A Brand";v="99"',
-    'sec-ch-ua-mobile': '?0',
-    'sec-ch-ua-full-version': '"95.0.4638.54"',
-    'sec-ch-ua-arch': '"x86"',
-    'sec-ch-ua-platform': '"Windows"',
-    'sec-ch-ua-platform-version': '"7.0.0"',
-    'sec-ch-ua-model': '""',
-    'sec-ch-ua-bitness': '"64"',
-    'upgrade-insecure-requests': '1',
-    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.54 Safari/537.36',
-    'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
-    'sec-fetch-site': 'same-origin',
-    'sec-fetch-mode': 'navigate',
-    'sec-fetch-user': '?1',
-    'sec-fetch-dest': 'document',
-    'accept-language': 'en-EN,en;q=0.9',
-    'cookie': 'GPS=1; YSC=0Gn_kvw4MXo; VISITOR_INFO1_LIVE=JeEfdF3VQbo; PREF=tz=Europe.Kiev; CONSISTENCY=AGDxDeOS0GcNBCG5Pqg8fplB2ISbeNUb6GCu1OOkFxDGFS8aMznudiXh2diInBzimIXjmB7y_OSopJ7sbPMYgUeHBwLlXyj7tWq0s8lYIcNMCI7PcrBUq7ahxl12cpgArj7gjhErbn4qfoy2IS2WNeE',
-}
+import scrapetube
 
 
 # Gets last video from given channel by it`s id
 def get_last_video(channel_id):
-    html = requests.get(
-        f"https://www.youtube.com/feeds/videos.xml?channel_id={channel_id}", headers=headers)
-    soup = BeautifulSoup(html.text, "lxml")
-    entry = soup.find("entry")
-    return entry.find("title").text, entry.find("link")["href"], parser.parse(entry.find("published").text).strftime("%m/%d/%Y, %H:%M:%S")
+    playlist_id = channel_id[:1] + 'U' + channel_id[2:]
+    api_response = requests.get(
+        f'https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId={playlist_id}&maxResults=5&key={settings.YOUTUBE_API_KEY}')
+    try:
+        title = api_response.json()['items'][0]['snippet']['title']
+        publication_date = parser.parse(api_response.json(
+        )['items'][0]['snippet']['publishedAt']).strftime("%m/%d/%Y, %H:%M:%S")
+        url = f"https://www.youtube.com/watch?v={api_response.json()['items'][0]['snippet']['resourceId']['videoId']}"
+    except:
+        videos = scrapetube.get_channel(channel_id)
+        video_id = [video['videoId'] for video in videos][0]
+        api_response = requests.get(
+            f'https://www.googleapis.com/youtube/v3/videos?part=snippet&id={video_id}&key={settings.YOUTUBE_API_KEY}')
+        title = api_response.json()['items'][0]['snippet']['title']
+        publication_date = parser.parse(api_response.json()['items'][0]['snippet']['publishedAt']).strftime(
+            "%m/%d/%Y, %H:%M:%S")
+        url = f"https://www.youtube.com/watch?v={video_id}"
+    return title, url, publication_date
 
 
 # Gets channel title from given channel id
 def get_channel_title(channel_id):
-    html = requests.get(
-        f"https://www.youtube.com/feeds/videos.xml?channel_id={channel_id}", headers=headers)
-    soup = BeautifulSoup(html.text, "lxml")
-    entry = soup.find("entry")
-    return entry.find("name").text
+    playlist_id = channel_id[:1] + 'U' + channel_id[2:]
+    api_response = requests.get(
+        f'https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId={playlist_id}&maxResults=5&key={settings.YOUTUBE_API_KEY}')
+    try:
+        channel_title = api_response.json(
+        )['items'][0]['snippet']['channelTitle']
+    except:
+        videos = scrapetube.get_channel(channel_id)
+        video_id = [video['videoId'] for video in videos][0]
+        api_response = requests.get(
+            f'https://www.googleapis.com/youtube/v3/videos?part=snippet&id={video_id}&key={settings.YOUTUBE_API_KEY}')
+        channel_title = api_response.json(
+        )['items'][0]['snippet']['channelTitle']
+    return channel_title
 
 
 # Checks if given string is youtube channel url
 def is_channel_url(string):
-    return bool(re.search(r'http[s]*://(.*?)youtube.com/(?:c|user|channel)/[\w-]+', string))
+    return bool(re.search(r'http[s]*://(?:www.)youtube.com/(?:c|user|channel)/([\w-]+)(?:[/]*)', string))
 
 
-# Gets channel id by given channel url
-def get_channel_id_by_url(channel_url):
-    html = requests.get(channel_url, headers=headers)
-    soup = BeautifulSoup(html.text, "lxml")
-    columns = soup.find('script', text=re.compile(
-        r'\"externalId\":\"([\w-]+)\"'))
+# Checks if channels identifier is channel id
+def is_id_in_url(string):
     try:
-        channel_id = re.findall(
-            r'\"externalId\":\"([\w-]+)\"', str(columns))[0]
+        ident = get_identifier_from_url(string)
     except:
-        return
-    return channel_id
+        return False
+    return bool(re.search(r'UC[\w-]+', ident))
+
+
+# Gets identifier from url
+def get_identifier_from_url(string):
+    return re.findall(r'http[s]*://(?:www.)youtube.com/(?:c|user|channel)/([\w-]+)(?:[/]*)', string)[0]
+
+
+# Gets id from channel name
+def get_id_from_name(name):
+    api_response = requests.get(
+        f'https://www.googleapis.com/youtube/v3/search?part=snippet&type=channel&maxResults=5&q={name}&key={settings.YOUTUBE_API_KEY}')
+    return api_response.json()['items'][0]['id']['channelId']
 
 
 # Gets or create profile from chat_id and username
@@ -106,7 +112,8 @@ def check_for_new_video(channel: Channel):
     if new_video_url != channel.video_url:
         channel.video_title = new_video_title
         channel.video_url = new_video_url
-        channel.video_publication_date = new_upload_time
+        channel.video_publication_date = datetime.strptime(
+            new_upload_time, "%m/%d/%Y, %H:%M:%S")
         channel.save()
         users = [item.user for item in ChannelUserItem.objects.filter(
             channel=channel)]

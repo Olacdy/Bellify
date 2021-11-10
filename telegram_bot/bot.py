@@ -43,7 +43,10 @@ def add(url: str, update: Update, p: Profile, name: Optional[str] = None) -> Non
             ]
     }
 
-    channel_id = get_channel_id_by_url(url)
+    if is_id_in_url(url):
+        channel_id = get_identifier_from_url(url)
+    else:
+        channel_id = get_id_from_name(get_identifier_from_url(url))
     video_title, video_url, upload_time = get_last_video(channel_id)
     channel_name = name if name else get_channel_title(
         channel_id)
