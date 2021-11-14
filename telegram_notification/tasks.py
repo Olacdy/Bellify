@@ -7,12 +7,22 @@ import urllib.parse
 
 @shared_task
 def notify_users(users, channel):
+    lang_for_notifying = {
+        'en':
+            [
+                ['New video from', 'is out!']
+            ],
+        'ru':
+            [
+                ['Новое видео на канале', 'уже вышло!']
+            ]
+    }
     for user in users:
         user_title = ChannelUserItem.objects.get(
             channel=channel, user=user) if ChannelUserItem.objects.get(
             channel=channel, user=user) else channel.title
         utils.send_message(
-            user.external_id, f"New video from {user_title} is out!\n<a href=\"{channel.video_url}\">{urllib.parse.quote(channel.video_title)}</a>")
+            user.external_id, f"{lang_for_notifying[user.language][0][0]} {user_title} {lang_for_notifying[user.language][0][1]}\n<a href=\"{channel.video_url}\">{urllib.parse.quote(channel.video_title)}</a>")
     return None
 
 

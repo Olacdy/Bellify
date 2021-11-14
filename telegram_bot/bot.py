@@ -225,8 +225,8 @@ def do_start(update: Update, context: CallbackContext) -> None:
 @log_errors
 def language_button(update: Update, context: CallbackContext) -> None:
     lang_for_lang_button = {
-        'en': 'Thanks, You`ll continue work on English',
-        'ru': 'Спасибо, теперь работа будет продолжена на русском'
+        'en': 'Thanks, You`ll continue work on English.',
+        'ru': 'Спасибо, теперь работа будет продолжена на русском.'
     }
 
     query = update.callback_query
