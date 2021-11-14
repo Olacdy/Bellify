@@ -10,8 +10,13 @@ class Profile(models.Model):
         verbose_name='User name'
     )
     language = models.CharField(
-        max_length=3,
-        default='eng'
+        max_length=2,
+        default='en'
+    )
+    menu = models.CharField(
+        max_length=20,
+        blank=True,
+        null=True
     )
 
     def __str__(self):
@@ -24,7 +29,7 @@ class Profile(models.Model):
 
 class Message(models.Model):
     profile = models.ForeignKey(
-        to='telegram_profile.Profile',
+        to='telegram_bot.Profile',
         verbose_name='User name',
         on_delete=models.PROTECT,
     )

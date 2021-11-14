@@ -43,7 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_celery_beat',
-    'telegram_profile',
+    'telegram_bot',
     'youtube'
 ]
 
@@ -137,7 +137,10 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+YOUTUBE_API_KEY = env.str('YOUTUBE_API_KEY')
+
 TOKEN = env.str('TELEGRAM_TOKEN')
+PORT = env.int('PORT', '8443')
 
 CELERY_BROKER_URL = env.str('POSTGRESQL_URI')
 CELERY_ACCEPT_CONTENT = ['json']
@@ -146,6 +149,6 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_BEAT_SCHEDULE = {
     "check_channels": {
         "task": "telegram_notification.tasks.check_channels",
-        "schedule": crontab(minute="*/1"),
+        "schedule": crontab(minute="*/5"),
     },
 }

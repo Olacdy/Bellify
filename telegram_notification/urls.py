@@ -17,6 +17,7 @@ from django.contrib import admin
 from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
+from django.urls.conf import include
 
 admin.site.site_header = "Telegram Admin"
 admin.site.site_title = "Telegram Admin"
@@ -26,4 +27,5 @@ admin.site.site_header = 'View Bot'
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('', include('telegram_bot.urls')),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
