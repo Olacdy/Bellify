@@ -20,15 +20,21 @@ def get_last_video(channel_id):
         publication_date = parser.parse(api_response.json(
         )['items'][0]['snippet']['publishedAt']).strftime("%m/%d/%Y, %H:%M:%S")
         url = f"https://www.youtube.com/watch?v={api_response.json()['items'][0]['snippet']['resourceId']['videoId']}"
-    except:
+    except Exception as e:
         videos = scrapetube.get_channel(channel_id)
         video_id = [video['videoId'] for video in videos][0]
         api_response = requests.get(
             f'https://www.googleapis.com/youtube/v3/videos?part=snippet&id={video_id}&key={settings.YOUTUBE_API_KEY}')
-        title = api_response.json()['items'][0]['snippet']['title']
-        publication_date = parser.parse(api_response.json()['items'][0]['snippet']['publishedAt']).strftime(
-            "%m/%d/%Y, %H:%M:%S")
-        url = f"https://www.youtube.com/watch?v={video_id}"
+        try:
+            title = api_response.json()['items'][0]['snippet']['title']
+            publication_date = parser.parse(api_response.json()['items'][0]['snippet']['publishedAt']).strftime(
+                "%m/%d/%Y, %H:%M:%S")
+            url = f"https://www.youtube.com/watch?v={video_id}"
+        except:
+            channel = Channel.objects.get(channel_id=channel_id)
+            title = channel.title
+            publication_date = channel.video_publication_date
+            url = channel.video_url
     return title, url, publication_date
 
 
