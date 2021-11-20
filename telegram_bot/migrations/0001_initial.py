@@ -2,6 +2,13 @@
 
 from django.db import migrations, models
 import django.db.models.deletion
+from django.contrib.auth import get_user_model
+
+
+def create_initial_superuser(apps, schema_editor):
+    User = get_user_model()
+    User.objects.create_superuser(
+        'admin', 'admin@admin.com', 'admin')
 
 
 class Migration(migrations.Migration):
@@ -15,9 +22,12 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Profile',
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('external_id', models.PositiveIntegerField(unique=True, verbose_name='ID of an user')),
-                ('name', models.TextField(blank=True, null=True, verbose_name='User name')),
+                ('id', models.BigAutoField(auto_created=True,
+                 primary_key=True, serialize=False, verbose_name='ID')),
+                ('external_id', models.PositiveIntegerField(
+                    unique=True, verbose_name='ID of an user')),
+                ('name', models.TextField(blank=True,
+                 null=True, verbose_name='User name')),
                 ('language', models.CharField(default='en', max_length=2)),
                 ('menu', models.CharField(blank=True, max_length=20, null=True)),
             ],
@@ -29,14 +39,18 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Message',
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('id', models.BigAutoField(auto_created=True,
+                 primary_key=True, serialize=False, verbose_name='ID')),
                 ('text', models.TextField(verbose_name='Text')),
-                ('created_at', models.DateTimeField(auto_now_add=True, verbose_name='Recieve time')),
-                ('profile', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='telegram_bot.profile', verbose_name='User name')),
+                ('created_at', models.DateTimeField(
+                    auto_now_add=True, verbose_name='Recieve time')),
+                ('profile', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT,
+                 to='telegram_bot.profile', verbose_name='User name')),
             ],
             options={
                 'verbose_name': 'Message',
                 'verbose_name_plural': 'Message',
             },
         ),
+        migrations.RunPython(create_initial_superuser)
     ]
