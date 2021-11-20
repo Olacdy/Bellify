@@ -7,6 +7,7 @@ class Profile(models.Model):
         unique=True,
     )
     name = models.TextField(
+        null=True, blank=True,
         verbose_name='User name'
     )
     language = models.CharField(
