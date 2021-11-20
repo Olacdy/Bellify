@@ -15,7 +15,7 @@ class Profile(models.Model):
         default='en'
     )
     menu = models.CharField(
-        max_length=20,
+        max_length=200,
         blank=True,
         null=True
     )
