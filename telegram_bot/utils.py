@@ -8,6 +8,7 @@ from youtube.models import Channel, ChannelUserItem
 from telegram_bot.models import Profile
 from typing import Optional
 import scrapetube
+import bs4 as soup
 
 
 # Gets last video from given channel by it`s id
@@ -75,11 +76,17 @@ def get_identifier_from_url(string):
     return re.findall(r'http[s]*://(?:www\.)?youtube.com/(?:c|user|channel)/([\w-]+)(?:[/]*)', string)[0]
 
 
-# Gets id from channel name
-def get_id_from_name(name):
-    api_response = requests.get(
-        f'https://www.googleapis.com/youtube/v3/search?part=snippet&type=channel&maxResults=5&q={name}&key={settings.YOUTUBE_API_KEY}')
-    return api_response.json()['items'][0]['id']['channelId']
+# Scrapes channel id from url
+def scrape_id_by_url(url):
+    session = requests.Session()
+    response = session.get(url)
+    if "uxe=" in response.request.url:
+        session.cookies.set("CONSENT", "YES+cb", domain=".youtube.com")
+        response = session.get(url)
+    session.close()
+
+    html = soup.BeautifulSoup(response.text, 'lxml')
+    return html.find('meta', {'itemprop': 'channelId'})['content']
 
 
 # Gets or create profile from chat_id and username
