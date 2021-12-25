@@ -11,6 +11,18 @@ import scrapetube
 import bs4 as soup
 
 
+def log_errors(f):
+    def inner(*args, **kwargs):
+        try:
+            return f(*args, **kwargs)
+        except Exception as e:
+            error_message = f'Exception occured {e}'
+            print(error_message)
+            raise e
+
+    return inner
+
+
 # Gets last video from given channel by it`s id
 def get_last_video(channel_id):
     playlist_id = channel_id[:1] + 'U' + channel_id[2:]

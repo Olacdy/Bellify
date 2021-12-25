@@ -9,19 +9,8 @@ from .utils import *
 from telegram_notification.celery import app
 from typing import Optional
 import sys
+from .inline_handler import inline_handler
 import logging
-
-
-def log_errors(f):
-    def inner(*args, **kwargs):
-        try:
-            return f(*args, **kwargs)
-        except Exception as e:
-            error_message = f'Exception occured {e}'
-            print(error_message)
-            raise e
-
-    return inner
 
 
 @log_errors
@@ -198,7 +187,8 @@ def do_echo(update: Update, context: CallbackContext) -> None:
 
 @log_errors
 def do_start(update: Update, context: CallbackContext) -> None:
-    p, _ = get_or_create_profile(update.message.chat_id, update.message.from_user.username)
+    get_or_create_profile(update.message.chat_id,
+                          update.message.from_user.username)
 
     keyboard = [
         [
@@ -219,30 +209,6 @@ def do_start(update: Update, context: CallbackContext) -> None:
 
 
 @log_errors
-def inline_handler(update: Update, context: CallbackContext) -> None:
-    query = update.callback_query
-
-    query.answer()
-
-    p, _ = get_or_create_profile(query.message.chat_id, query.message.from_user)
-
-    mode = query.data.split('_')[0]
-
-    if mode == 'lang':
-        lang_for_lang = {
-        'en': 'Thanks, You`ll continue work on English.',
-        'ru': 'Спасибо, теперь работа будет продолжена на русском.'
-        }
-
-        p.language = query.data.split('_')[1]
-        p.save()
-
-        query.edit_message_text(
-            text=lang_for_lang[query.data.split('_')[1]],
-            parse_mode='HTML')
-
-
-@log_errors
 def do_remove(update: Update, context: CallbackContext):
     lang_for_remove_command = {
         'en':
@@ -255,7 +221,8 @@ def do_remove(update: Update, context: CallbackContext):
             ]
     }
 
-    p, _ = get_or_create_profile(update.message.chat_id, update.message.from_user.username)
+    p, _ = get_or_create_profile(
+        update.message.chat_id, update.message.from_user.username)
 
     if context.args:
         name = ' '.join(context.args)
@@ -283,7 +250,8 @@ def do_list(update: Update, context: CallbackContext):
             ]
     }
 
-    p, _ = get_or_create_profile(update.message.chat_id, update.message.from_user.username)
+    p, _ = get_or_create_profile(
+        update.message.chat_id, update.message.from_user.username)
 
     items = ChannelUserItem.objects.filter(user=p)
     if items:
@@ -314,7 +282,8 @@ def do_check(update: Update, context: CallbackContext):
             ]
     }
 
-    p, _ = get_or_create_profile(update.message.chat_id, update.message.from_user.username)
+    p, _ = get_or_create_profile(
+        update.message.chat_id, update.message.from_user.username)
 
     if context.args:
         name = ' '.join(context.args)
@@ -329,8 +298,8 @@ def do_check(update: Update, context: CallbackContext):
 
 @log_errors
 def do_lang(update: Update, context: CallbackContext):
-    chat_id = update.message.chat_id
-    username = update.message.from_user.username
+    get_or_create_profile(update.message.chat_id,
+                          update.message.from_user.username)
 
     keyboard = [
         [
@@ -387,9 +356,9 @@ def do_add(update: Update, context: CallbackContext):
                 'Теперь можете написать имя нового канал или же прислать URL канала, тогда оно будет определено автоматически.'
             ]
     }
-    chat_id = update.message.chat_id
 
-    p, _ = get_or_create_profile(chat_id, update.message.from_user.username)
+    p, _ = get_or_create_profile(
+        update.message.chat_id, update.message.from_user.username)
 
     if context.args:
         if len(context.args) > 1:
