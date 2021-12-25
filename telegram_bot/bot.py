@@ -155,10 +155,9 @@ def do_echo(update: Update, context: CallbackContext) -> None:
                 'Нераспознанная команда.'
             ]
     }
-    chat_id = update.message.chat_id
 
     p, _ = get_or_create_profile(
-        chat_id, update.message.from_user.username, False)
+        update.message.chat_id, update.message.from_user.username, False)
 
     if p.menu == 'add':
         user_text = update.message.text
@@ -199,17 +198,14 @@ def do_echo(update: Update, context: CallbackContext) -> None:
 
 @log_errors
 def do_start(update: Update, context: CallbackContext) -> None:
-    chat_id = update.message.chat_id
-    username = update.message.from_user.username
-
-    p, _ = get_or_create_profile(chat_id, username)
+    p, _ = get_or_create_profile(update.message.chat_id, update.message.from_user.username)
 
     keyboard = [
         [
             InlineKeyboardButton(
-                '🇬🇧', callback_data=f'en_{chat_id}_{username}'),
+                '🇬🇧', callback_data=f'lang_en'),
             InlineKeyboardButton(
-                '🇷🇺', callback_data=f'ru_{chat_id}_{username}')
+                '🇷🇺', callback_data=f'lang_ru')
         ]
     ]
 
@@ -223,26 +219,27 @@ def do_start(update: Update, context: CallbackContext) -> None:
 
 
 @log_errors
-def language_button(update: Update, context: CallbackContext) -> None:
-    lang_for_lang_button = {
-        'en': 'Thanks, You`ll continue work on English.',
-        'ru': 'Спасибо, теперь работа будет продолжена на русском.'
-    }
-
+def inline_handler(update: Update, context: CallbackContext) -> None:
     query = update.callback_query
 
     query.answer()
 
-    p, _ = get_or_create_profile(query.data.split(
-        '_')[1], query.data.split(
-        '_')[2])
+    p, _ = get_or_create_profile(query.message.chat_id, query.message.from_user)
 
-    p.language = query.data.split('_')[0]
-    p.save()
+    mode = query.data.split('_')[0]
 
-    query.edit_message_text(
-        text=lang_for_lang_button[query.data.split('_')[0]],
-        parse_mode='HTML')
+    if mode == 'lang':
+        lang_for_lang = {
+        'en': 'Thanks, You`ll continue work on English.',
+        'ru': 'Спасибо, теперь работа будет продолжена на русском.'
+        }
+
+        p.language = query.data.split('_')[1]
+        p.save()
+
+        query.edit_message_text(
+            text=lang_for_lang[query.data.split('_')[1]],
+            parse_mode='HTML')
 
 
 @log_errors
@@ -258,9 +255,7 @@ def do_remove(update: Update, context: CallbackContext):
             ]
     }
 
-    chat_id = update.message.chat_id
-
-    p, _ = get_or_create_profile(chat_id, update.message.from_user.username)
+    p, _ = get_or_create_profile(update.message.chat_id, update.message.from_user.username)
 
     if context.args:
         name = ' '.join(context.args)
@@ -288,9 +283,7 @@ def do_list(update: Update, context: CallbackContext):
             ]
     }
 
-    chat_id = update.message.chat_id
-
-    p, _ = get_or_create_profile(chat_id, update.message.from_user.username)
+    p, _ = get_or_create_profile(update.message.chat_id, update.message.from_user.username)
 
     items = ChannelUserItem.objects.filter(user=p)
     if items:
@@ -321,9 +314,7 @@ def do_check(update: Update, context: CallbackContext):
             ]
     }
 
-    chat_id = update.message.chat_id
-
-    p, _ = get_or_create_profile(chat_id, update.message.from_user.username)
+    p, _ = get_or_create_profile(update.message.chat_id, update.message.from_user.username)
 
     if context.args:
         name = ' '.join(context.args)
@@ -337,16 +328,16 @@ def do_check(update: Update, context: CallbackContext):
 
 
 @log_errors
-def do_lang_change(update: Update, context: CallbackContext):
+def do_lang(update: Update, context: CallbackContext):
     chat_id = update.message.chat_id
     username = update.message.from_user.username
 
     keyboard = [
         [
             InlineKeyboardButton(
-                '🇬🇧', callback_data=f'en_{chat_id}_{username}'),
+                '🇬🇧', callback_data=f'lang_en'),
             InlineKeyboardButton(
-                '🇷🇺', callback_data=f'ru_{chat_id}_{username}')
+                '🇷🇺', callback_data=f'lang_ru')
         ]
     ]
 
@@ -475,10 +466,10 @@ def setup_dispatcher(dp):
     dp.add_handler(CommandHandler('list', do_list))
     dp.add_handler(CommandHandler('help', do_help))
     dp.add_handler(CommandHandler('start', do_start))
-    dp.add_handler(CommandHandler('lang', do_lang_change))
+    dp.add_handler(CommandHandler('lang', do_lang))
     dp.add_handler(MessageHandler(
         Filters.text & ~Filters.command, do_echo))
-    dp.add_handler(CallbackQueryHandler(language_button))
+    dp.add_handler(CallbackQueryHandler(inline_handler))
 
     return dp
 
