@@ -14,7 +14,7 @@ import logging
 
 
 @log_errors
-def add(url: str, update: Update, p: Profile, name: Optional[str] = None) -> None:
+def add(channel_id: str, update: Update, p: Profile, name: Optional[str] = None) -> None:
     lang_for_add = {
         'en':
             [
@@ -32,15 +32,11 @@ def add(url: str, update: Update, p: Profile, name: Optional[str] = None) -> Non
             ]
     }
 
-    if is_id_in_url(url):
-        channel_id = get_identifier_from_url(url)
-    else:
-        channel_id = scrape_id_by_url(url)
     video_title, video_url, upload_time = get_last_video(channel_id)
     channel_name = name if name else get_channel_title(
         channel_id)
     channel, _ = Channel.objects.get_or_create(
-        channel_url=url,
+        channel_url=f'https://www.youtube.com/channel/{channel_id}',
         defaults={
             'title': channel_name,
             'channel_id': channel_id,
@@ -71,7 +67,7 @@ def add(url: str, update: Update, p: Profile, name: Optional[str] = None) -> Non
 
 
 @log_errors
-def remove(update: Update, p: Profile, name: str):
+def remove(update: Update, p: Profile, name: str) -> None:
     lang_for_remove = {
         'en':
             [
@@ -100,7 +96,7 @@ def remove(update: Update, p: Profile, name: str):
 
 
 @log_errors
-def check(update: Update, p: Profile, name: str):
+def check(update: Update, p: Profile, name: str) -> None:
     lang_for_check = {
         'en':
         [
@@ -133,56 +129,48 @@ def do_echo(update: Update, context: CallbackContext) -> None:
     lang_for_echo = {
         'en':
             [
-                'Now send URL of a channel',
                 'This doesn`t look like a URL 🤔. Try again.',
-                'Unknown command.'
+                'Do You want to change channel\'s name?'
             ],
         'ru':
             [
-                'Теперь можете прислать URL канала',
                 'Что-то не похоже на URL 🤔. Попробуйте еще раз.',
-                'Нераспознанная команда.'
+                'Хотите ли вы изменить имя канала?'
             ]
     }
 
     p, _ = get_or_create_profile(
         update.message.chat_id, update.message.from_user.username, False)
 
-    if p.menu == 'add':
+    if 'add' in p.menu.split('_'):
         user_text = update.message.text
         if is_channel_url(user_text):
-            add(user_text, update, p)
+            keyboard = [
+                [
+                    InlineKeyboardButton(
+                        'Yes' if p.language == 'en' else 'Да', callback_data=f'add_{scrape_id_by_url(user_text)}_yes'),
+                    InlineKeyboardButton(
+                        'No' if p.language == 'en' else 'Нет', callback_data=f'add_{scrape_id_by_url(user_text)}')
+                ]
+            ]
+
+            reply_markup = InlineKeyboardMarkup(keyboard)
+
             set_menu_field(p)
+
+            update.message.reply_text(
+                text=lang_for_echo[p.language][1],
+                parse_mode='HTML',
+                reply_markup=reply_markup)
         else:
-            set_menu_field(p, f'add_{user_text}')
             update.message.reply_text(
                 text=lang_for_echo[p.language][0],
                 parse_mode='HTML'
             )
-    elif '_' in p.menu:
-        name = p.menu.split('_')[1]
+    elif 'name' in p.menu.split('_'):
         user_text = update.message.text
-        if is_channel_url(user_text):
-            add(user_text, update, p, name)
-            set_menu_field(p)
-        else:
-            update.message.reply_text(
-                text=lang_for_echo[p.language][1],
-                parse_mode='HTML'
-            )
-    elif p.menu == 'check':
-        name = update.message.text
-        check(update, p, name)
-        set_menu_field(p)
-    elif p.menu == 'remove':
-        name = update.message.text
-        remove(update, p, name)
-        set_menu_field(p)
-    else:
-        update.message.reply_text(
-            text=lang_for_echo[p.language][2],
-            parse_mode='HTML'
-        )
+        channel_id = p.menu.split('_')[-1]
+        add(channel_id, update, p, user_text)
 
 
 @log_errors
@@ -209,7 +197,7 @@ def do_start(update: Update, context: CallbackContext) -> None:
 
 
 @log_errors
-def do_remove(update: Update, context: CallbackContext):
+def do_remove(update: Update, context: CallbackContext) -> None:
     lang_for_remove_command = {
         'en':
             [
@@ -236,7 +224,7 @@ def do_remove(update: Update, context: CallbackContext):
 
 
 @log_errors
-def do_list(update: Update, context: CallbackContext):
+def do_list(update: Update, context: CallbackContext) -> None:
     lang_for_list = {
         'en':
             [
@@ -270,7 +258,7 @@ def do_list(update: Update, context: CallbackContext):
 
 
 @log_errors
-def do_check(update: Update, context: CallbackContext):
+def do_check(update: Update, context: CallbackContext) -> None:
     lang_for_check_command = {
         'en':
             [
@@ -297,7 +285,7 @@ def do_check(update: Update, context: CallbackContext):
 
 
 @log_errors
-def do_lang(update: Update, context: CallbackContext):
+def do_lang(update: Update, context: CallbackContext) -> None:
     get_or_create_profile(update.message.chat_id,
                           update.message.from_user.username)
 
@@ -320,7 +308,7 @@ def do_lang(update: Update, context: CallbackContext):
 
 
 @log_errors
-def do_help(update: Update, context: CallbackContext):
+def do_help(update: Update, context: CallbackContext) -> None:
     lang_for_help = {
         'en':
             [
@@ -343,54 +331,27 @@ def do_help(update: Update, context: CallbackContext):
 
 
 @log_errors
-def do_add(update: Update, context: CallbackContext):
+def do_add(update: Update, context: CallbackContext) -> None:
     lang_for_add_command = {
         'en':
             [
-                'Unknown format. Try again /add + channel`s URL, name (optional).',
-                'Now send channel`s name or URL, then channel`s name will be set by bot.'
+                'Now send channel`s URL.'
             ],
         'ru':
             [
-                'Нераспознанный формат. Попробуйте снова /add + URL канала, имя (необязательно).',
-                'Теперь можете написать имя нового канал или же прислать URL канала, тогда оно будет определено автоматически.'
+                'Теперь можете прислать URL канала.'
             ]
     }
 
     p, _ = get_or_create_profile(
         update.message.chat_id, update.message.from_user.username)
 
-    if context.args:
-        if len(context.args) > 1:
-            for arg in context.args:
-                if is_channel_url(arg):
-                    url = arg
-                    break
-            if url:
-                args = context.args
-                args.remove(url)
-                name = ' '.join(args)
-                print(url, name)
-                add(url, update, p, name)
-            else:
-                update.message.reply_text(
-                    text=lang_for_add_command[p.language][0],
-                    parse_mode='HTML'
-                )
-        elif len(context.args) == 1 and is_channel_url(context.args[0]):
-            url = context.args[0]
-            add(url, update, p)
-        else:
-            update.message.reply_text(
-                text=lang_for_add_command[p.language][0],
-                parse_mode='HTML'
-            )
-    else:
-        set_menu_field(p, 'add')
-        update.message.reply_text(
-            text=lang_for_add_command[p.language][1],
-            parse_mode='HTML'
-        )
+    set_menu_field(p, 'add')
+
+    update.message.reply_text(
+        text=lang_for_add_command[p.language][0],
+        parse_mode='HTML'
+    )
 
 
 def set_up_commands(bot_instance: Bot) -> None:

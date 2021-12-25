@@ -1,6 +1,6 @@
 from telegram import Update
 from telegram.ext import CallbackContext
-from .utils import get_or_create_profile, log_errors
+from .utils import get_or_create_profile, log_errors, set_menu_field, add
 
 
 @log_errors
@@ -25,4 +25,26 @@ def inline_handler(update: Update, context: CallbackContext) -> None:
 
         query.edit_message_text(
             text=lang_for_lang[query.data.split('_')[1]],
-            parse_mode='HTML')
+            parse_mode='HTML'
+        )
+
+    elif mode == 'add':
+        lang_for_add = {
+            'en': 'Send Your custom channel name.',
+            'ru': 'Можете прислать имя, под которым хотите сохранить канал.'
+        }
+
+        if query.data.split('_')[-1] == 'yes':
+            query.edit_message_text(
+                text=lang_for_add[p.language],
+                parse_mode='HTML'
+            )
+            set_menu_field(p, f"name_{query.data.split('_')[1]}")
+        else:
+            add(query.data.split('_')[-1], update, p)
+    elif mode == 'check':
+        pass
+    elif mode == 'remove':
+        pass
+    elif mode == 'list':
+        pass
