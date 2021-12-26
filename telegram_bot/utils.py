@@ -207,26 +207,17 @@ def remove(update: Update, p: Profile, name: str) -> None:
     lang_for_remove = {
         'en':
             [
-                'Sorry. There is no such channel added right now, maybe try using /add command.',
                 'Your record was deleted successfully.'
             ],
         'ru':
             [
-                'Извините, но данного канала не существует, попробуйте добавить новый с помощью /add.',
                 'Ваш канал успешно удален.'
             ]
     }
-    try:
-        item = ChannelUserItem.objects.get(user=p, channel_title=name)
-    except ChannelUserItem.DoesNotExist:
-        update.callback_query.message.reply_text(
-            text=lang_for_remove[p.language][0],
-            parse_mode='HTML'
-        )
-        return
+    item = ChannelUserItem.objects.get(user=p, channel_title=name)
     item.delete()
-    update.callback_query.message.reply_text(
-        text=lang_for_remove[p.language][1],
+    update.callback_query.edit_message_text(
+        text=lang_for_remove[p.language][0],
         parse_mode='HTML'
     )
 
@@ -245,16 +236,11 @@ def check(update: Update, p: Profile, name: str) -> None:
             'На этом канале еще нет нового видео. \nПоследнее видео'
         ]
     }
-    try:
-        item = ChannelUserItem.objects.get(user=p, channel_title=name)
-    except ChannelUserItem.DoesNotExist:
-        update.callback_query.message.reply_text(
-            text=lang_for_check[p.language][0],
-            parse_mode='HTML'
-        )
-        return
+    item = ChannelUserItem.objects.get(user=p, channel_title=name)
     if not check_for_new_video(item.channel):
-        update.callback_query.message.reply_text(
+        update.callback_query.edit_message_text(
             text=f'{lang_for_check[p.language][1]} <a href=\"{item.channel.video_url}\">{item.channel.video_title}</a>',
             parse_mode='HTML'
         )
+    else:
+        update.callback_query.delete_message()

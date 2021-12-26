@@ -1,127 +1,14 @@
-from datetime import datetime
 from django.conf import settings
 from telegram import Bot, BotCommand, Update
 from telegram.error import Unauthorized
 from telegram.ext import CommandHandler, CallbackContext, CallbackQueryHandler, Updater, Dispatcher, MessageHandler, Filters
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-from youtube.models import Channel, ChannelUserItem
+from youtube.models import ChannelUserItem
 from .utils import *
 from telegram_notification.celery import app
-from typing import Optional
 import sys
 from .inline_handler import inline_handler
 import logging
-
-
-@log_errors
-def add(channel_id: str, update: Update, p: Profile, name: Optional[str] = None) -> None:
-    lang_for_add = {
-        'en':
-            [
-                ['New channel added with name', '. \nLast video is'],
-                'Unable to add a new channel, because one with the same name already exists. \nTry to come up with a new name or leave the name parameter empty.',
-                'This channel is already added to Your profile! \nLast video is',
-                'Sorry, can`t recognize this format.'
-            ],
-        'ru':
-            [
-                ['Новый канал под именем', 'был добавлен.\nПоследнее видео'],
-                'Невозможно добавить новый канал под этим именем.\nПопробуйте придумать новое имя или оставить параметр имени пустым.',
-                'Этот канал уже добавлен к вашему профилю!\nПоследнее видео',
-                'Извините, нераспознанный формат.'
-            ]
-    }
-
-    video_title, video_url, upload_time = get_last_video(channel_id)
-    channel_name = name if name else get_channel_title(
-        channel_id)
-    channel, _ = Channel.objects.get_or_create(
-        channel_url=f'https://www.youtube.com/channel/{channel_id}',
-        defaults={
-            'title': channel_name,
-            'channel_id': channel_id,
-            'video_title': video_title,
-            'video_url': video_url,
-            'video_publication_date': datetime.strptime(upload_time, "%m/%d/%Y, %H:%M:%S")
-        }
-    )
-    if not p in channel.users.all():
-        if not ChannelUserItem.objects.filter(user=p, channel_title=channel_name).exists():
-            ChannelUserItem.objects.create(
-                user=p, channel=channel, channel_title=channel_name)
-            update.message.reply_text(
-                text=f"{lang_for_add[p.language][0][0]} {channel_name} {lang_for_add[p.language][0][1]} <a href=\"{video_url}\">{video_title}</a>",
-                parse_mode='HTML'
-            )
-            return
-        else:
-            update.message.reply_text(
-                text=lang_for_add[p.language][1],
-                parse_mode='HTML'
-            )
-    else:
-        update.message.reply_text(
-            text=f"{lang_for_add[p.language][2]} <a href=\"{video_url}\">{video_title}</a>",
-            parse_mode='HTML'
-        )
-
-
-@log_errors
-def remove(update: Update, p: Profile, name: str) -> None:
-    lang_for_remove = {
-        'en':
-            [
-                'Sorry. There is no such channel added right now, maybe try using /add command.',
-                'Your record was deleted successfully.'
-            ],
-        'ru':
-            [
-                'Извините, но данного канала не существует, попробуйте добавить новый с помощью /add.',
-                'Ваш канал успешно удален.'
-            ]
-    }
-    try:
-        item = ChannelUserItem.objects.get(user=p, channel_title=name)
-    except ChannelUserItem.DoesNotExist:
-        update.message.reply_text(
-            text=lang_for_remove[p.language][0],
-            parse_mode='HTML'
-        )
-        return
-    item.delete()
-    update.message.reply_text(
-        text=lang_for_remove[p.language][1],
-        parse_mode='HTML'
-    )
-
-
-@log_errors
-def check(update: Update, p: Profile, name: str) -> None:
-    lang_for_check = {
-        'en':
-        [
-            'Sorry. There is no channels added right now, maybe try using /add command.',
-            'No new video on this channel. \nLast video is'
-        ],
-        'ru':
-        [
-            'Извините, но данного канала не существует, попробуйте добавить новый с помощью /add.',
-            'На этом канале еще нет нового видео. \nПоследнее видео'
-        ]
-    }
-    try:
-        item = ChannelUserItem.objects.get(user=p, channel_title=name)
-    except ChannelUserItem.DoesNotExist:
-        update.message.reply_text(
-            text=lang_for_check[p.language][0],
-            parse_mode='HTML'
-        )
-        return
-    if not check_for_new_video(item.channel):
-        update.message.reply_text(
-            text=f'{lang_for_check[p.language][1]} <a href=\"{item.channel.video_url}\">{item.channel.video_title}</a>',
-            parse_mode='HTML'
-        )
 
 
 @log_errors
@@ -175,8 +62,18 @@ def do_echo(update: Update, context: CallbackContext) -> None:
 
 @log_errors
 def do_start(update: Update, context: CallbackContext) -> None:
-    get_or_create_profile(update.message.chat_id,
-                          update.message.from_user.username)
+    lang_for_start_command = {
+        'en':
+            [
+                'Please, select language.'
+            ],
+        'ru':
+            [
+                'Пожалуйста, выберите язык.'
+            ]
+    }
+    p, _ = get_or_create_profile(update.message.chat_id,
+                                 update.message.from_user.username)
 
     keyboard = [
         [
@@ -190,8 +87,7 @@ def do_start(update: Update, context: CallbackContext) -> None:
     reply_markup = InlineKeyboardMarkup(keyboard)
 
     update.message.reply_text(
-        text='<b>Пожалуйста, выберите язык</b>\n'
-             '<b>Please, choose language</b>',
+        text=lang_for_start_command[p.language][0],
         parse_mode='HTML',
         reply_markup=reply_markup)
 
@@ -201,26 +97,34 @@ def do_remove(update: Update, context: CallbackContext) -> None:
     lang_for_remove_command = {
         'en':
             [
-                'Now send the name of an added channel.'
+                'Select a channel that You would like to remove.'
             ],
         'ru':
             [
-                'Пришлите имя вашего канала.'
+                'Выберите канал, который вы хотите удалить.'
             ]
     }
 
     p, _ = get_or_create_profile(
         update.message.chat_id, update.message.from_user.username)
 
-    if context.args:
-        name = ' '.join(context.args)
-        remove(update, p, name)
-    else:
-        set_menu_field(p, 'remove')
-        update.message.reply_text(
-            text=lang_for_remove_command[p.language][0],
-            parse_mode='HTML'
-        )
+    keyboard = []
+
+    for index, channel in enumerate(ChannelUserItem.objects.filter(user=p)):
+        keyboard.append([
+            InlineKeyboardButton(
+                f'{channel.channel_title}', callback_data=f'remove_{index}')
+        ])
+
+    keyboard.append([InlineKeyboardButton('Next', callback_data=f'remove_next_10')]) if len(
+        ChannelUserItem.objects.filter(user=p)) > 10 else None
+
+    reply_markup = InlineKeyboardMarkup(keyboard)
+
+    update.message.reply_text(
+        text=lang_for_remove_command[p.language][0],
+        parse_mode='HTML',
+        reply_markup=reply_markup)
 
 
 @log_errors
@@ -273,21 +177,39 @@ def do_check(update: Update, context: CallbackContext) -> None:
     p, _ = get_or_create_profile(
         update.message.chat_id, update.message.from_user.username)
 
-    if context.args:
-        name = ' '.join(context.args)
-        check(update, p, name)
-    else:
-        set_menu_field(p, 'check')
-        update.message.reply_text(
-            text=lang_for_check_command[p.language][0],
-            parse_mode='HTML'
-        )
+    keyboard = []
+
+    for index, channel in enumerate(ChannelUserItem.objects.filter(user=p)):
+        keyboard.append([
+            InlineKeyboardButton(
+                f'{channel.channel_title}', callback_data=f'check_{index}')
+        ])
+
+    keyboard.append([InlineKeyboardButton('Next', callback_data=f'check_next_10')]) if len(
+        ChannelUserItem.objects.filter(user=p)) > 10 else None
+
+    reply_markup = InlineKeyboardMarkup(keyboard)
+
+    update.message.reply_text(
+        text=lang_for_check_command[p.language][0],
+        parse_mode='HTML',
+        reply_markup=reply_markup)
 
 
 @log_errors
 def do_lang(update: Update, context: CallbackContext) -> None:
-    get_or_create_profile(update.message.chat_id,
-                          update.message.from_user.username)
+    lang_for_lang_command = {
+        'en':
+            [
+                'Please, select language.'
+            ],
+        'ru':
+            [
+                'Пожалуйста, выберите язык.'
+            ]
+    }
+    p, _ = get_or_create_profile(update.message.chat_id,
+                                 update.message.from_user.username)
 
     keyboard = [
         [
@@ -301,8 +223,7 @@ def do_lang(update: Update, context: CallbackContext) -> None:
     reply_markup = InlineKeyboardMarkup(keyboard)
 
     update.message.reply_text(
-        text='<b>Пожалуйста, выберите язык</b>\n'
-             '<b>Please, select language</b>',
+        text=lang_for_lang_command[p.language][0],
         parse_mode='HTML',
         reply_markup=reply_markup)
 

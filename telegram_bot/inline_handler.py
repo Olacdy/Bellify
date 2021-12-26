@@ -1,6 +1,7 @@
 from telegram import Update
 from telegram.ext import CallbackContext
-from .utils import get_or_create_profile, log_errors, set_menu_field, add
+from youtube.models import ChannelUserItem
+from .utils import get_or_create_profile, log_errors, set_menu_field, add, check, remove
 
 
 @log_errors
@@ -43,8 +44,20 @@ def inline_handler(update: Update, context: CallbackContext) -> None:
         else:
             add(query.data.split('_')[-1], update, p)
     elif mode == 'check':
-        pass
+        if 'next' in query.data.split('_'):
+            pass
+        else:
+            index = int(query.data.split('_')[-1])
+            channel_name = ChannelUserItem.objects.filter(user=p)[
+                index].channel_title
+            check(update, p, channel_name)
     elif mode == 'remove':
-        pass
+        if 'next' in query.data.split('_'):
+            pass
+        else:
+            index = int(query.data.split('_')[-1])
+            channel_name = ChannelUserItem.objects.filter(user=p)[
+                index].channel_title
+            remove(update, p, channel_name)
     elif mode == 'list':
         pass
