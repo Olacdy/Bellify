@@ -15,7 +15,7 @@ def inline_handler(update: Update, context: CallbackContext) -> None:
     p, _ = get_or_create_profile(
         query.message.chat_id, query.message.from_user)
 
-    mode = query.data.split(', ')[0]
+    mode = query.data.split('‽')[0]
 
     if mode == 'lang':
         lang_for_lang = {
@@ -23,11 +23,11 @@ def inline_handler(update: Update, context: CallbackContext) -> None:
             'ru': 'Спасибо, теперь работа будет продолжена на русском.'
         }
 
-        p.language = query.data.split(', ')[1]
+        p.language = query.data.split('‽')[1]
         p.save()
 
         query.edit_message_text(
-            text=lang_for_lang[query.data.split(', ')[1]],
+            text=lang_for_lang[query.data.split('‽')[1]],
             parse_mode='HTML'
         )
 
@@ -37,15 +37,15 @@ def inline_handler(update: Update, context: CallbackContext) -> None:
             'ru': 'Можете прислать имя, под которым хотите сохранить канал.'
         }
 
-        if query.data.split(', ')[-1] == 'yes':
+        if query.data.split('‽')[-1] == 'yes':
             query.edit_message_text(
                 text=lang_for_add[p.language],
                 parse_mode='HTML'
             )
-            set_menu_field(p, f"name_{query.data.split(', ')[1]}")
+            set_menu_field(p, f"name‽{query.data.split('‽')[1]}")
         else:
             query.delete_message()
-            add(query.data.split(', ')[-1], update, p)
+            add(query.data.split('‽')[-1], update, p)
     elif mode == 'check':
         lang_for_check = {
             'en':
@@ -60,9 +60,9 @@ def inline_handler(update: Update, context: CallbackContext) -> None:
                 ]
         }
 
-        if 'pagination' in query.data.split(', '):
+        if 'pagination' in query.data.split('‽'):
             page_num = int(query.data.split(
-                ', ')[-1])
+                '‽')[-1])
 
             keyboard = []
             pagination_button_set = []
@@ -73,13 +73,13 @@ def inline_handler(update: Update, context: CallbackContext) -> None:
             for channel in channels[page_num]:
                 keyboard.append([
                     InlineKeyboardButton(
-                        f'{channel.channel_title}', callback_data=f'check, {channel.channel.channel_id}')
+                        f'{channel.channel_title}', callback_data=f'check‽{channel.channel.channel_id}')
                 ])
 
             pagination_button_set.append(InlineKeyboardButton(
-                'Previous' if p.language == 'en' else 'Назад', callback_data=f'check, pagination, {page_num - 1}')) if page_num - 1 >= 0 else None
+                '❮', callback_data=f'check‽pagination‽{page_num - 1}')) if page_num - 1 >= 0 else None
             pagination_button_set.append(InlineKeyboardButton(
-                'Next' if p.language == 'en' else 'Вперед', callback_data=f'check, pagination, {page_num + 1}')) if page_num + 1 < len(channels) else None
+                '❯', callback_data=f'check‽pagination‽{page_num + 1}')) if page_num + 1 < len(channels) else None
             keyboard.append(
                 pagination_button_set) if pagination_button_set else None
             reply_markup = InlineKeyboardMarkup(keyboard)
@@ -89,7 +89,7 @@ def inline_handler(update: Update, context: CallbackContext) -> None:
                 parse_mode='HTML',
                 reply_markup=reply_markup)
         else:
-            channel_id = query.data.split(', ')[-1]
+            channel_id = query.data.split('‽')[-1]
             try:
                 channel_name = [channel.channel_title for channel in ChannelUserItem.objects.filter(
                     user=p) if channel.channel.channel_id == channel_id][0]
@@ -113,9 +113,9 @@ def inline_handler(update: Update, context: CallbackContext) -> None:
                 ]
         }
 
-        if 'pagination' in query.data.split(', '):
+        if 'pagination' in query.data.split('‽'):
             page_num = int(query.data.split(
-                ', ')[-1])
+                '‽')[-1])
 
             keyboard = []
             pagination_button_set = []
@@ -126,13 +126,13 @@ def inline_handler(update: Update, context: CallbackContext) -> None:
             for channel in channels[page_num]:
                 keyboard.append([
                     InlineKeyboardButton(
-                        f'{channel.channel_title}', callback_data=f'remove, {channel.channel.channel_id}')
+                        f'{channel.channel_title}', callback_data=f'remove‽{channel.channel.channel_id}')
                 ])
 
             pagination_button_set.append(InlineKeyboardButton(
-                'Previous' if p.language == 'en' else 'Назад', callback_data=f'remove, pagination, {page_num - 1}')) if page_num - 1 >= 0 else None
+                '❮', callback_data=f'remove‽pagination‽{page_num - 1}')) if page_num - 1 >= 0 else None
             pagination_button_set.append(InlineKeyboardButton(
-                'Next' if p.language == 'en' else 'Вперед', callback_data=f'remove, pagination, {page_num + 1}')) if page_num + 1 < len(channels) else None
+                '❯', callback_data=f'remove‽pagination‽{page_num + 1}')) if page_num + 1 < len(channels) else None
             keyboard.append(
                 pagination_button_set) if pagination_button_set else None
             reply_markup = InlineKeyboardMarkup(keyboard)
@@ -142,7 +142,7 @@ def inline_handler(update: Update, context: CallbackContext) -> None:
                 parse_mode='HTML',
                 reply_markup=reply_markup)
         else:
-            channel_id = query.data.split(', ')[-1]
+            channel_id = query.data.split('‽')[-1]
             try:
                 channel_name = [channel.channel_title for channel in ChannelUserItem.objects.filter(
                     user=p) if channel.channel.channel_id == channel_id][0]
@@ -163,9 +163,9 @@ def inline_handler(update: Update, context: CallbackContext) -> None:
                     'Список добавленных вами каналов',
                 ]
         }
-        if 'pagination' in query.data.split(', '):
+        if 'pagination' in query.data.split('‽'):
             page_num = int(query.data.split(
-                ', ')[-1])
+                '‽')[-1])
 
             keyboard = []
             pagination_button_set = []
@@ -180,9 +180,9 @@ def inline_handler(update: Update, context: CallbackContext) -> None:
                 ])
 
             pagination_button_set.append(InlineKeyboardButton(
-                'Previous' if p.language == 'en' else 'Назад', callback_data=f'list, pagination, {page_num - 1}')) if page_num - 1 >= 0 else None
+                '❮', callback_data=f'list‽pagination‽{page_num - 1}')) if page_num - 1 >= 0 else None
             pagination_button_set.append(InlineKeyboardButton(
-                'Next' if p.language == 'en' else 'Вперед', callback_data=f'list, pagination, {page_num + 1}')) if page_num + 1 < len(channels) else None
+                '❯', callback_data=f'list‽pagination‽{page_num + 1}')) if page_num + 1 < len(channels) else None
             keyboard.append(
                 pagination_button_set) if pagination_button_set else None
             reply_markup = InlineKeyboardMarkup(keyboard)

@@ -185,21 +185,39 @@ def add(channel_id: str, update: Update, p: Profile, name: Optional[str] = None)
         if not ChannelUserItem.objects.filter(user=p, channel_title=channel_name).exists():
             ChannelUserItem.objects.create(
                 user=p, channel=channel, channel_title=channel_name)
-            update.callback_query.message.reply_text(
-                text=f"{lang_for_add[p.language][0][0]} {channel_name} {lang_for_add[p.language][0][1]} <a href=\"{video_url}\">{video_title}</a>",
-                parse_mode='HTML'
-            )
+            try:
+                update.callback_query.message.reply_text(
+                    text=f"{lang_for_add[p.language][0][0]} {channel_name} {lang_for_add[p.language][0][1]} <a href=\"{video_url}\">{video_title}</a>",
+                    parse_mode='HTML'
+                )
+            except:
+                update.message.reply_text(
+                    text=f"{lang_for_add[p.language][0][0]} {channel_name} {lang_for_add[p.language][0][1]} <a href=\"{video_url}\">{video_title}</a>",
+                    parse_mode='HTML'
+                )
             return
         else:
+            try:
+                update.callback_query.message.reply_text(
+                    text=lang_for_add[p.language][1],
+                    parse_mode='HTML'
+                )
+            except:
+                update.message.reply_text(
+                    text=lang_for_add[p.language][1],
+                    parse_mode='HTML'
+                )
+    else:
+        try:
             update.callback_query.message.reply_text(
-                text=lang_for_add[p.language][1],
+                text=f"{lang_for_add[p.language][2]} <a href=\"{video_url}\">{video_title}</a>",
                 parse_mode='HTML'
             )
-    else:
-        update.callback_query.message.reply_text(
-            text=f"{lang_for_add[p.language][2]} <a href=\"{video_url}\">{video_title}</a>",
-            parse_mode='HTML'
-        )
+        except:
+            update.message.reply_text(
+                text=f"{lang_for_add[p.language][2]} <a href=\"{video_url}\">{video_title}</a>",
+                parse_mode='HTML'
+            )
 
 
 @log_errors
