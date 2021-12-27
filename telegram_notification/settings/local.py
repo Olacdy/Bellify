@@ -152,3 +152,5 @@ CELERY_BEAT_SCHEDULE = {
         "schedule": crontab(minute="*/5"),
     },
 }
+
+PAGINATION_SIZE = 5

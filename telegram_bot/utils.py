@@ -1,5 +1,6 @@
 from django.conf import settings
 import re
+from telegram import Update
 from datetime import datetime
 import requests
 from dateutil import parser
@@ -9,6 +10,18 @@ from telegram_bot.models import Profile
 from typing import Optional
 import scrapetube
 import bs4 as soup
+
+
+def log_errors(f):
+    def inner(*args, **kwargs):
+        try:
+            return f(*args, **kwargs)
+        except Exception as e:
+            error_message = f'Exception occured {e}'
+            print(error_message)
+            raise e
+
+    return inner
 
 
 # Gets last video from given channel by it`s id
@@ -59,7 +72,7 @@ def get_channel_title(channel_id):
 
 # Checks if given string is youtube channel url
 def is_channel_url(string):
-    return bool(re.search(r'http[s]*://(?:www\.)?youtube.com/(?:c|user|channel)/([\w-]+)(?:[/]*)', string))
+    return bool(re.search(r'http[s]*://(?:www\.)?youtube.com/(?:c|user|channel)/([\%\w-]+)(?:[/]*)', string))
 
 
 # Checks if channels identifier is channel id
@@ -73,7 +86,7 @@ def is_id_in_url(string):
 
 # Gets identifier from url
 def get_identifier_from_url(string):
-    return re.findall(r'http[s]*://(?:www\.)?youtube.com/(?:c|user|channel)/([\w-]+)(?:[/]*)', string)[0]
+    return re.findall(r'http[s]*://(?:www\.)?youtube.com/(?:c|user|channel)/([\%\w-]+)(?:[/]*)', string)[0]
 
 
 # Scrapes channel id from url
@@ -134,3 +147,100 @@ def check_for_new_video(channel: Channel):
         return True
     else:
         return False
+
+
+@log_errors
+def add(channel_id: str, update: Update, p: Profile, name: Optional[str] = None) -> None:
+    lang_for_add = {
+        'en':
+            [
+                ['New channel added with name', '. \nLast video is'],
+                'Unable to add a new channel, because one with the same name already exists. \nTry to come up with a new name or leave the name parameter empty.',
+                'This channel is already added to Your profile! \nLast video is',
+                'Sorry, can\'t recognize this format.'
+            ],
+        'ru':
+            [
+                ['Новый канал под именем', 'был добавлен.\nПоследнее видео'],
+                'Невозможно добавить новый канал под этим именем.\nПопробуйте придумать новое имя или оставить параметр имени пустым.',
+                'Этот канал уже добавлен к вашему профилю!\nПоследнее видео',
+                'Извините, нераспознанный формат.'
+            ]
+    }
+
+    video_title, video_url, upload_time = get_last_video(channel_id)
+    channel_name = name if name else get_channel_title(
+        channel_id)
+    channel, _ = Channel.objects.get_or_create(
+        channel_url=f'https://www.youtube.com/channel/{channel_id}',
+        defaults={
+            'title': channel_name,
+            'channel_id': channel_id,
+            'video_title': video_title,
+            'video_url': video_url,
+            'video_publication_date': datetime.strptime(upload_time, "%m/%d/%Y, %H:%M:%S")
+        }
+    )
+    if not p in channel.users.all():
+        if not ChannelUserItem.objects.filter(user=p, channel_title=channel_name).exists():
+            ChannelUserItem.objects.create(
+                user=p, channel=channel, channel_title=channel_name)
+            update.callback_query.message.reply_text(
+                text=f"{lang_for_add[p.language][0][0]} {channel_name} {lang_for_add[p.language][0][1]} <a href=\"{video_url}\">{video_title}</a>",
+                parse_mode='HTML'
+            )
+            return
+        else:
+            update.callback_query.message.reply_text(
+                text=lang_for_add[p.language][1],
+                parse_mode='HTML'
+            )
+    else:
+        update.callback_query.message.reply_text(
+            text=f"{lang_for_add[p.language][2]} <a href=\"{video_url}\">{video_title}</a>",
+            parse_mode='HTML'
+        )
+
+
+@log_errors
+def remove(update: Update, p: Profile, name: str) -> None:
+    lang_for_remove = {
+        'en':
+            [
+                'Your record was deleted successfully.'
+            ],
+        'ru':
+            [
+                'Ваш канал успешно удален.'
+            ]
+    }
+    item = ChannelUserItem.objects.get(user=p, channel_title=name)
+    item.delete()
+    update.callback_query.edit_message_text(
+        text=lang_for_remove[p.language][0],
+        parse_mode='HTML'
+    )
+
+
+@log_errors
+def check(update: Update, p: Profile, name: str) -> None:
+    lang_for_check = {
+        'en':
+        [
+            'Sorry. There is no channels added right now, maybe try using /add command.',
+            'No new video on this channel. \nLast video is'
+        ],
+        'ru':
+        [
+            'Извините, но данного канала не существует, попробуйте добавить новый с помощью /add.',
+            'На этом канале еще нет нового видео. \nПоследнее видео'
+        ]
+    }
+    item = ChannelUserItem.objects.get(user=p, channel_title=name)
+    if not check_for_new_video(item.channel):
+        update.callback_query.edit_message_text(
+            text=f'{lang_for_check[p.language][1]} <a href=\"{item.channel.video_url}\">{item.channel.video_title}</a>',
+            parse_mode='HTML'
+        )
+    else:
+        update.callback_query.delete_message()
