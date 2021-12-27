@@ -32,12 +32,14 @@ def do_echo(update: Update, context: CallbackContext) -> None:
     if 'add' in p.menu.split('_'):
         user_text = update.message.text
         if is_channel_url(user_text):
+            channel_id = scrape_id_by_url(user_text)
+
             keyboard = [
                 [
                     InlineKeyboardButton(
-                        'Yes' if p.language == 'en' else 'Да', callback_data=f'add_{scrape_id_by_url(user_text)}_yes'),
+                        'Yes' if p.language == 'en' else 'Да', callback_data=f'add, {channel_id}, yes'),
                     InlineKeyboardButton(
-                        'No' if p.language == 'en' else 'Нет', callback_data=f'add_{scrape_id_by_url(user_text)}')
+                        'No' if p.language == 'en' else 'Нет', callback_data=f'add, {channel_id}')
                 ]
             ]
 
@@ -65,7 +67,7 @@ def do_start(update: Update, context: CallbackContext) -> None:
     lang_for_start_command = {
         'en':
             [
-                'Please, select language.'
+                'Please, select a language.'
             ],
         'ru':
             [
@@ -78,9 +80,9 @@ def do_start(update: Update, context: CallbackContext) -> None:
     keyboard = [
         [
             InlineKeyboardButton(
-                '🇬🇧', callback_data=f'lang_en'),
+                '🇬🇧', callback_data=f'lang, en'),
             InlineKeyboardButton(
-                '🇷🇺', callback_data=f'lang_ru')
+                '🇷🇺', callback_data=f'lang, ru')
         ]
     ]
 
@@ -110,14 +112,14 @@ def do_remove(update: Update, context: CallbackContext) -> None:
 
     keyboard = []
 
-    for channel in ChannelUserItem.objects.filter(user=p):
+    for channel in ChannelUserItem.objects.filter(user=p)[0: settings.PAGINATION_SIZE]:
         keyboard.append([
             InlineKeyboardButton(
-                f'{channel.channel_title}', callback_data=f'remove_{channel.channel.channel_id}')
+                f'{channel.channel_title}', callback_data=f'remove, {channel.channel.channel_id}')
         ])
 
-    keyboard.append([InlineKeyboardButton('Next', callback_data=f'remove_next_10')]) if len(
-        ChannelUserItem.objects.filter(user=p)) > 10 else None
+    keyboard.append([InlineKeyboardButton('Next' if p.language == 'en' else 'Вперед', callback_data=f'remove, pagination, {1}')]) if len(
+        ChannelUserItem.objects.filter(user=p)) > settings.PAGINATION_SIZE else None
 
     reply_markup = InlineKeyboardMarkup(keyboard)
 
@@ -179,14 +181,14 @@ def do_check(update: Update, context: CallbackContext) -> None:
 
     keyboard = []
 
-    for channel in ChannelUserItem.objects.filter(user=p):
+    for channel in ChannelUserItem.objects.filter(user=p)[0: settings.PAGINATION_SIZE]:
         keyboard.append([
             InlineKeyboardButton(
-                f'{channel.channel_title}', callback_data=f'check_{channel.channel.channel_id}')
+                f'{channel.channel_title}', callback_data=f'check, {channel.channel.channel_id}')
         ])
 
-    keyboard.append([InlineKeyboardButton('Next', callback_data=f'check_next_10')]) if len(
-        ChannelUserItem.objects.filter(user=p)) > 10 else None
+    keyboard.append([InlineKeyboardButton('Next' if p.language == 'en' else 'Вперед', callback_data=f'check, pagination, {1}')]) if len(
+        ChannelUserItem.objects.filter(user=p)) > settings.PAGINATION_SIZE else None
 
     reply_markup = InlineKeyboardMarkup(keyboard)
 
@@ -214,9 +216,9 @@ def do_lang(update: Update, context: CallbackContext) -> None:
     keyboard = [
         [
             InlineKeyboardButton(
-                '🇬🇧', callback_data=f'lang_en'),
+                '🇬🇧', callback_data=f'lang, en'),
             InlineKeyboardButton(
-                '🇷🇺', callback_data=f'lang_ru')
+                '🇷🇺', callback_data=f'lang, ru')
         ]
     ]
 
