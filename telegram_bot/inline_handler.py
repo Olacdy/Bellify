@@ -149,10 +149,47 @@ def inline_handler(update: Update, context: CallbackContext) -> None:
                 remove(update, p, channel_name)
             except:
                 query.edit_message_text(
-                    text=lang_for_remove[p.language],
+                    text=lang_for_remove[p.language][0],
                     parse_mode='HTML'
                 )
     elif mode == 'list':
-        pass
+        lang_for_list = {
+            'en':
+                [
+                    'List of Your added channels.'
+                ],
+            'ru':
+                [
+                    'Список добавленных вами каналов',
+                ]
+        }
+        if 'pagination' in query.data.split(', '):
+            page_num = int(query.data.split(
+                ', ')[-1])
+
+            keyboard = []
+            pagination_button_set = []
+
+            channels = [ChannelUserItem.objects.filter(
+                user=p)[i:i + settings.PAGINATION_SIZE] for i in range(0, len(ChannelUserItem.objects.filter(user=p)), settings.PAGINATION_SIZE)]
+
+            for channel in channels[page_num]:
+                keyboard.append([
+                    InlineKeyboardButton(
+                        f'{channel.channel_title}', url=channel.channel.channel_url)
+                ])
+
+            pagination_button_set.append(InlineKeyboardButton(
+                'Previous' if p.language == 'en' else 'Назад', callback_data=f'list, pagination, {page_num - 1}')) if page_num - 1 >= 0 else None
+            pagination_button_set.append(InlineKeyboardButton(
+                'Next' if p.language == 'en' else 'Вперед', callback_data=f'list, pagination, {page_num + 1}')) if page_num + 1 < len(channels) else None
+            keyboard.append(
+                pagination_button_set) if pagination_button_set else None
+            reply_markup = InlineKeyboardMarkup(keyboard)
+
+            query.edit_message_text(
+                text=lang_for_list[p.language][0],
+                parse_mode='HTML',
+                reply_markup=reply_markup)
     else:
         pass

@@ -99,11 +99,13 @@ def do_remove(update: Update, context: CallbackContext) -> None:
     lang_for_remove_command = {
         'en':
             [
-                'Select a channel that You would like to remove.'
+                'Select a channel that You would like to remove.',
+                'Sorry. There is no channels added right now, maybe try using /add command.'
             ],
         'ru':
             [
-                'Выберите канал, который вы хотите удалить.'
+                'Выберите канал, который вы хотите удалить.',
+                'Извините, пока у вас нет никаких каналов, попробуйте добавить новый с помощью /add.'
             ]
     }
 
@@ -123,15 +125,21 @@ def do_remove(update: Update, context: CallbackContext) -> None:
 
     reply_markup = InlineKeyboardMarkup(keyboard)
 
-    update.message.reply_text(
-        text=lang_for_remove_command[p.language][0],
-        parse_mode='HTML',
-        reply_markup=reply_markup)
+    if ChannelUserItem.objects.filter(user=p):
+        update.message.reply_text(
+            text=lang_for_remove_command[p.language][0],
+            parse_mode='HTML',
+            reply_markup=reply_markup)
+    else:
+        update.message.reply_text(
+            text=lang_for_remove_command[p.language][1],
+            parse_mode='HTML',
+            reply_markup=reply_markup)
 
 
 @log_errors
 def do_list(update: Update, context: CallbackContext) -> None:
-    lang_for_list = {
+    lang_for_list_command = {
         'en':
             [
                 'List of Your added channels',
@@ -147,20 +155,29 @@ def do_list(update: Update, context: CallbackContext) -> None:
     p, _ = get_or_create_profile(
         update.message.chat_id, update.message.from_user.username)
 
-    items = ChannelUserItem.objects.filter(user=p)
-    if items:
-        c_list = [
-            f'<a href=\"{item.channel.channel_url}\"><b>{item.channel_title}</b></a> - <a href=\"{item.channel.video_url}\"><b>{item.channel.video_title}</b></a>\n' for item in items]
+    keyboard = []
+
+    for channel in ChannelUserItem.objects.filter(user=p)[0: settings.PAGINATION_SIZE]:
+        keyboard.append([
+            InlineKeyboardButton(
+                f'{channel.channel_title}', url=channel.channel.channel_url)
+        ])
+
+    keyboard.append([InlineKeyboardButton('Next' if p.language == 'en' else 'Вперед', callback_data=f'list, pagination, {1}')]) if len(
+        ChannelUserItem.objects.filter(user=p)) > settings.PAGINATION_SIZE else None
+
+    reply_markup = InlineKeyboardMarkup(keyboard)
+
+    if ChannelUserItem.objects.filter(user=p):
         update.message.reply_text(
-            text=f'{lang_for_list[p.language][0]}:\n\n' + ''.join(c_list),
+            text=lang_for_list_command[p.language][0],
             parse_mode='HTML',
-            disable_web_page_preview=True
-        )
+            reply_markup=reply_markup)
     else:
         update.message.reply_text(
-            text=lang_for_list[p.language][1],
-            parse_mode='HTML'
-        )
+            text=lang_for_list_command[p.language][1],
+            parse_mode='HTML',
+            reply_markup=reply_markup)
 
 
 @log_errors
@@ -168,11 +185,13 @@ def do_check(update: Update, context: CallbackContext) -> None:
     lang_for_check_command = {
         'en':
             [
-                'Now send the name of an added channel.'
+                'Now send the name of an added channel.',
+                'Sorry. There is no channels added right now, maybe try using /add command.'
             ],
         'ru':
             [
-                'Пришлите имя вашего канала.'
+                'Пришлите имя вашего канала.',
+                'Извините, пока у вас нет никаких каналов, попробуйте добавить новый с помощью /add.',
             ]
     }
 
@@ -192,10 +211,16 @@ def do_check(update: Update, context: CallbackContext) -> None:
 
     reply_markup = InlineKeyboardMarkup(keyboard)
 
-    update.message.reply_text(
-        text=lang_for_check_command[p.language][0],
-        parse_mode='HTML',
-        reply_markup=reply_markup)
+    if ChannelUserItem.objects.filter(user=p):
+        update.message.reply_text(
+            text=lang_for_check_command[p.language][0],
+            parse_mode='HTML',
+            reply_markup=reply_markup)
+    else:
+        update.message.reply_text(
+            text=lang_for_check_command[p.language][1],
+            parse_mode='HTML',
+            reply_markup=reply_markup)
 
 
 @log_errors
