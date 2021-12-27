@@ -30,14 +30,12 @@ def get_last_video(channel_id):
     api_response = requests.get(
         f'https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId={playlist_id}&maxResults=5&key={settings.YOUTUBE_API_KEY}')
     try:
-        print(api_response.json())
         title = api_response.json()['items'][0]['snippet']['title']
         publication_date = parser.parse(api_response.json(
         )['items'][0]['snippet']['publishedAt']).strftime("%m/%d/%Y, %H:%M:%S")
         url = f"https://www.youtube.com/watch?v={api_response.json()['items'][0]['snippet']['resourceId']['videoId']}"
     except Exception as e:
         videos = scrapetube.get_channel(channel_id)
-        print(channel_id)
         video_id = [video['videoId'] for video in videos][0]
         api_response = requests.get(
             f'https://www.googleapis.com/youtube/v3/videos?part=snippet&id={video_id}&key={settings.YOUTUBE_API_KEY}')
