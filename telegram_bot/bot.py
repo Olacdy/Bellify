@@ -16,7 +16,7 @@ def do_echo(update: Update, context: CallbackContext) -> None:
     lang_for_echo = {
         'en':
             [
-                'This doesn`t look like a URL 🤔. Try again.',
+                'This doesn\'t look like a URL 🤔. Try again.',
                 'Do You want to change channel\'s name?'
             ],
         'ru':
@@ -110,10 +110,10 @@ def do_remove(update: Update, context: CallbackContext) -> None:
 
     keyboard = []
 
-    for index, channel in enumerate(ChannelUserItem.objects.filter(user=p)):
+    for channel in ChannelUserItem.objects.filter(user=p):
         keyboard.append([
             InlineKeyboardButton(
-                f'{channel.channel_title}', callback_data=f'remove_{index}')
+                f'{channel.channel_title}', callback_data=f'remove_{channel.channel.channel_id}')
         ])
 
     keyboard.append([InlineKeyboardButton('Next', callback_data=f'remove_next_10')]) if len(
@@ -179,10 +179,10 @@ def do_check(update: Update, context: CallbackContext) -> None:
 
     keyboard = []
 
-    for index, channel in enumerate(ChannelUserItem.objects.filter(user=p)):
+    for channel in ChannelUserItem.objects.filter(user=p):
         keyboard.append([
             InlineKeyboardButton(
-                f'{channel.channel_title}', callback_data=f'check_{index}')
+                f'{channel.channel_title}', callback_data=f'check_{channel.channel.channel_id}')
         ])
 
     keyboard.append([InlineKeyboardButton('Next', callback_data=f'check_next_10')]) if len(
@@ -256,7 +256,7 @@ def do_add(update: Update, context: CallbackContext) -> None:
     lang_for_add_command = {
         'en':
             [
-                'Now send channel`s URL.'
+                'Now send channel\'s URL.'
             ],
         'ru':
             [

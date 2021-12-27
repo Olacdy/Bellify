@@ -157,7 +157,7 @@ def add(channel_id: str, update: Update, p: Profile, name: Optional[str] = None)
                 ['New channel added with name', '. \nLast video is'],
                 'Unable to add a new channel, because one with the same name already exists. \nTry to come up with a new name or leave the name parameter empty.',
                 'This channel is already added to Your profile! \nLast video is',
-                'Sorry, can`t recognize this format.'
+                'Sorry, can\'t recognize this format.'
             ],
         'ru':
             [

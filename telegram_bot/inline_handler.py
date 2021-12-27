@@ -17,7 +17,7 @@ def inline_handler(update: Update, context: CallbackContext) -> None:
 
     if mode == 'lang':
         lang_for_lang = {
-            'en': 'Thanks, You`ll continue work on English.',
+            'en': 'Thanks, You\'ll continue work on English.',
             'ru': 'Спасибо, теперь работа будет продолжена на русском.'
         }
 
@@ -42,22 +42,45 @@ def inline_handler(update: Update, context: CallbackContext) -> None:
             )
             set_menu_field(p, f"name_{query.data.split('_')[1]}")
         else:
+            query.delete_message()
             add(query.data.split('_')[-1], update, p)
     elif mode == 'check':
+        lang_for_check = {
+            'en': 'No channel with such name.',
+            'ru': 'Канала с таким именем не существует.'
+        }
+
         if 'next' in query.data.split('_'):
             pass
         else:
-            index = int(query.data.split('_')[-1])
-            channel_name = ChannelUserItem.objects.filter(user=p)[
-                index].channel_title
-            check(update, p, channel_name)
+            channel_id = query.data.split('_')[-1]
+            try:
+                channel_name = [channel.channel_title for channel in ChannelUserItem.objects.filter(
+                    user=p) if channel.channel.channel_id == channel_id][0]
+                check(update, p, channel_name)
+            except:
+                query.edit_message_text(
+                    text=lang_for_check[p.language],
+                    parse_mode='HTML'
+                )
     elif mode == 'remove':
+        lang_for_remove = {
+            'en': 'No channel with such name.',
+            'ru': 'Канала с таким именем не существует.'
+        }
+
         if 'next' in query.data.split('_'):
             pass
         else:
-            index = int(query.data.split('_')[-1])
-            channel_name = ChannelUserItem.objects.filter(user=p)[
-                index].channel_title
-            remove(update, p, channel_name)
+            channel_id = query.data.split('_')[-1]
+            try:
+                channel_name = [channel.channel_title for channel in ChannelUserItem.objects.filter(
+                    user=p) if channel.channel.channel_id == channel_id][0]
+                remove(update, p, channel_name)
+            except:
+                query.edit_message_text(
+                    text=lang_for_remove[p.language],
+                    parse_mode='HTML'
+                )
     elif mode == 'list':
         pass
