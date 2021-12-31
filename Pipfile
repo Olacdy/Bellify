@@ -24,7 +24,6 @@ sqlalchemy = "*"
 honcho = "*"
 scrapetube = "*"
 typing-extensions = "*"
-dj-database-url = "*"
 
 [requires]
 python_version = "3.9"
