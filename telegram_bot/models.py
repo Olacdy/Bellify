@@ -7,6 +7,7 @@ class Profile(models.Model):
         unique=True,
     )
     name = models.TextField(
+        null=True, blank=True,
         verbose_name='User name'
     )
     language = models.CharField(
@@ -14,7 +15,7 @@ class Profile(models.Model):
         default='en'
     )
     menu = models.CharField(
-        max_length=20,
+        max_length=200,
         blank=True,
         null=True
     )

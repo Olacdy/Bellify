@@ -8,10 +8,11 @@ autopep8 = "*"
 
 [packages]
 django = "*"
-psycopg2 = "*"
+redis = "*"
+psycopg2-binary = "*"
 whitenoise = "*"
 django-environ = "*"
-waitress = "*"
+gunicorn = "*"
 sqlparse = "*"
 beautifulsoup4 = "*"
 requests = "*"

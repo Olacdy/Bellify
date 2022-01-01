@@ -4,10 +4,10 @@ from telegram_bot.models import Profile
 
 # Channel model
 class Channel(models.Model):
-    title = models.CharField(max_length=100)
-    channel_id = models.CharField(max_length=100)
+    title = models.CharField(max_length=200)
+    channel_id = models.CharField(max_length=200)
     channel_url = models.URLField()
-    video_title = models.CharField(max_length=150)
+    video_title = models.CharField(max_length=200)
     video_url = models.URLField()
     video_publication_date = models.DateTimeField()
     users = models.ManyToManyField(Profile, through='ChannelUserItem')
@@ -24,7 +24,7 @@ class Channel(models.Model):
 class ChannelUserItem(models.Model):
     channel = models.ForeignKey(Channel, on_delete=models.CASCADE)
     user = models.ForeignKey(Profile, on_delete=models.CASCADE)
-    channel_title = models.CharField(max_length=100, default='')
+    channel_title = models.CharField(max_length=200, default='')
 
     def __str__(self) -> str:
         return self.channel_title

@@ -140,9 +140,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 YOUTUBE_API_KEY = env.str('YOUTUBE_API_KEY')
 
 TOKEN = env.str('TELEGRAM_TOKEN')
-PORT = env.int('PORT', '8443')
+PORT = env.int('PORT', 8443)
 
-CELERY_BROKER_URL = env.str('POSTGRESQL_URI')
+CELERY_BROKER_URL = env.str('CELERY_URI')
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 
@@ -152,3 +152,5 @@ CELERY_BEAT_SCHEDULE = {
         "schedule": crontab(minute="*/5"),
     },
 }
+
+PAGINATION_SIZE = 5
