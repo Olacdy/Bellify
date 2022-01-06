@@ -22,7 +22,6 @@ python-telegram-bot = "*"
 django-celery-beat = "*"
 celery = "*"
 sqlalchemy = "*"
-honcho = "*"
 scrapetube = "*"
 typing-extensions = "*"
 
