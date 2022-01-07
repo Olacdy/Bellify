@@ -1,16 +1,19 @@
-from celery import local
-from django.conf import settings
-from telegram import Bot, BotCommand, Update
-from telegram.error import Unauthorized
-from telegram.ext import CommandHandler, CallbackContext, CallbackQueryHandler, Updater, Dispatcher, MessageHandler, Filters
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-from youtube.models import ChannelUserItem
-from .utils import *
-from telegram_notification.celery import app
-import sys
-from .inline_handler import inline_handler
 import logging
+import sys
+
+from django.conf import settings
+from telegram import (Bot, BotCommand, InlineKeyboardButton,
+                      InlineKeyboardMarkup, Update)
+from telegram.error import Unauthorized
+from telegram.ext import (CallbackContext, CallbackQueryHandler,
+                          CommandHandler, Dispatcher, Filters, MessageHandler,
+                          Updater)
+from telegram_notification.celery import app
+from youtube.models import ChannelUserItem
+
+from .inline_handler import inline_handler
 from .localization import localization
+from .utils import *
 
 
 @log_errors
@@ -78,18 +81,7 @@ def do_remove(update: Update, context: CallbackContext) -> None:
     p, _ = get_or_create_profile(
         update.message.chat_id, update.message.from_user.username)
 
-    keyboard = []
-
-    for channel in ChannelUserItem.objects.filter(user=p)[0: settings.PAGINATION_SIZE]:
-        keyboard.append([
-            InlineKeyboardButton(
-                f'{channel.channel_title}', callback_data=f'remove‽{channel.channel.channel_id}')
-        ])
-
-    keyboard.append([InlineKeyboardButton('❯', callback_data=f'remove‽pagination‽{1}')]) if len(
-        ChannelUserItem.objects.filter(user=p)) > settings.PAGINATION_SIZE else None
-
-    reply_markup = InlineKeyboardMarkup(keyboard)
+    reply_markup = InlineKeyboardMarkup(get_inline_keyboard(p, 'remove', 0))
 
     if ChannelUserItem.objects.filter(user=p):
         update.message.reply_text(
@@ -108,18 +100,8 @@ def do_list(update: Update, context: CallbackContext) -> None:
     p, _ = get_or_create_profile(
         update.message.chat_id, update.message.from_user.username)
 
-    keyboard = []
-
-    for channel in ChannelUserItem.objects.filter(user=p)[0: settings.PAGINATION_SIZE]:
-        keyboard.append([
-            InlineKeyboardButton(
-                f'{channel.channel_title}', url=channel.channel.channel_url)
-        ])
-
-    keyboard.append([InlineKeyboardButton('❯', callback_data=f'list‽pagination‽{1}')]) if len(
-        ChannelUserItem.objects.filter(user=p)) > settings.PAGINATION_SIZE else None
-
-    reply_markup = InlineKeyboardMarkup(keyboard)
+    reply_markup = InlineKeyboardMarkup(
+        get_inline_keyboard(p, 'list', 0, 'url'))
 
     if ChannelUserItem.objects.filter(user=p):
         update.message.reply_text(
@@ -138,18 +120,7 @@ def do_check(update: Update, context: CallbackContext) -> None:
     p, _ = get_or_create_profile(
         update.message.chat_id, update.message.from_user.username)
 
-    keyboard = []
-
-    for channel in ChannelUserItem.objects.filter(user=p)[0: settings.PAGINATION_SIZE]:
-        keyboard.append([
-            InlineKeyboardButton(
-                f'{channel.channel_title}', callback_data=f'check‽{channel.channel.channel_id}')
-        ])
-
-    keyboard.append([InlineKeyboardButton('❯', callback_data=f'check‽pagination‽{1}')]) if len(
-        ChannelUserItem.objects.filter(user=p)) > settings.PAGINATION_SIZE else None
-
-    reply_markup = InlineKeyboardMarkup(keyboard)
+    reply_markup = InlineKeyboardMarkup(get_inline_keyboard(p, 'check', 0))
 
     if ChannelUserItem.objects.filter(user=p):
         update.message.reply_text(
@@ -213,18 +184,18 @@ def set_up_commands(bot_instance: Bot) -> None:
     langs_with_commands = {
         'en': {
             'start': 'Start notification bot 🚀',
-            'add': '+ Channel url, name (optional)',
-            'remove': '+ Channel name',
-            'check': '+ Channel name',
+            'add': 'Add channel by it\'s URL',
+            'remove': 'Remove channel from list',
+            'check': 'Check channel from list',
             'list': 'List of saved channels',
             'help': 'Useguide for bot',
             'lang': 'For language change'
         },
         'ru': {
             'start': 'Запустить бота 🚀',
-            'add': '+ Ссылка на канал, имя канала (необязательно)',
-            'remove': '+ Имя канала',
-            'check': '+ Имя канала',
+            'add': 'Добавление канала с помощью URL',
+            'remove': 'Удалить канал из списка',
+            'check': 'Проверить канал из списка',
             'list': 'Список сохраненных каналов',
             'help': 'Справка',
             'lang': 'Смена языка'
@@ -242,9 +213,6 @@ def set_up_commands(bot_instance: Bot) -> None:
 
 
 def setup_dispatcher(dp):
-    """
-    Adding handlers for events from Telegram
-    """
     dp.add_handler(CommandHandler('add', do_add))
     dp.add_handler(CommandHandler('remove', do_remove))
     dp.add_handler(CommandHandler('check', do_check))
@@ -270,7 +238,6 @@ dispatcher = setup_dispatcher(Dispatcher(
 
 
 def run_pooling():
-    """ Run bot in pooling mode """
     updater = Updater(settings.TOKEN, use_context=True)
 
     dp = updater.dispatcher

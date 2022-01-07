@@ -1,9 +1,10 @@
 import json
 import logging
-from django.views import View
-from django.http import JsonResponse
 
 from django.conf import settings
+from django.http import JsonResponse
+from django.views import View
+
 from .bot import process_telegram_event
 
 logger = logging.getLogger(__name__)

@@ -1,17 +1,19 @@
-from celery import local
-from django.conf import settings
 import re
-from telegram import Update
 from datetime import datetime
-import requests
-from dateutil import parser
-import telegram_notification.tasks as tasks
-from youtube.models import Channel, ChannelUserItem
-from telegram_bot.models import Profile
 from typing import Optional
-import scrapetube
-from .localization import localization
+
 import bs4 as soup
+import requests
+import scrapetube
+import telegram_notification.tasks as tasks
+from dateutil import parser
+from django.conf import settings
+from telegram import InlineKeyboardButton, Update
+from youtube.models import Channel, ChannelUserItem
+
+from telegram_bot.models import Profile
+
+from .localization import localization
 
 
 def log_errors(f):
@@ -27,7 +29,7 @@ def log_errors(f):
 
 
 # Gets last video from given channel by it`s id
-def get_last_video(channel_id):
+def get_last_video(channel_id: str):
     playlist_id = channel_id[:1] + 'U' + channel_id[2:]
     api_response = requests.get(
         f'https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId={playlist_id}&maxResults=5&key={settings.YOUTUBE_API_KEY}')
@@ -55,7 +57,7 @@ def get_last_video(channel_id):
 
 
 # Gets channel title from given channel id
-def get_channel_title(channel_id):
+def get_channel_title(channel_id: str):
     playlist_id = channel_id[:1] + 'U' + channel_id[2:]
     api_response = requests.get(
         f'https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId={playlist_id}&maxResults=5&key={settings.YOUTUBE_API_KEY}')
@@ -73,12 +75,12 @@ def get_channel_title(channel_id):
 
 
 # Checks if given string is youtube channel url
-def is_channel_url(string):
+def is_channel_url(string: str):
     return bool(re.search(r'http[s]*://(?:www\.)?youtube.com/(?:c|user|channel)/([\%\w-]+)(?:[/]*)', string))
 
 
 # Checks if channels identifier is channel id
-def is_id_in_url(string):
+def is_id_in_url(string: str):
     try:
         ident = get_identifier_from_url(string)
     except:
@@ -87,12 +89,12 @@ def is_id_in_url(string):
 
 
 # Gets identifier from url
-def get_identifier_from_url(string):
+def get_identifier_from_url(string: str):
     return re.findall(r'http[s]*://(?:www\.)?youtube.com/(?:c|user|channel)/([\%\w-]+)(?:[/]*)', string)[0]
 
 
 # Scrapes channel id from url
-def scrape_id_by_url(url):
+def scrape_id_by_url(url: str):
     session = requests.Session()
     response = session.get(url)
     if "uxe=" in response.request.url:
@@ -105,7 +107,7 @@ def scrape_id_by_url(url):
 
 
 # Gets or create profile from chat_id and username
-def get_or_create_profile(chat_id, name, reset: Optional[bool] = True):
+def get_or_create_profile(chat_id: str, name: str, reset: Optional[bool] = True):
     profile_data = Profile.objects.get_or_create(
         external_id=chat_id,
         defaults={
@@ -125,7 +127,7 @@ def set_menu_field(p: Profile, value: Optional[str] = '') -> None:
 
 
 # Sends message to user by chat_id
-def send_message(chat_id, bot_message, parse_mode='HTML'):
+def send_message(chat_id: str, bot_message: str, parse_mode: Optional[str] = 'HTML'):
     send_text = 'https://api.telegram.org/bot' + str(settings.TOKEN) + \
         '/sendMessage?chat_id=' + str(chat_id) + '&text=' + \
         bot_message + '&parse_mode=' + parse_mode
@@ -149,6 +151,36 @@ def check_for_new_video(channel: Channel):
         return True
     else:
         return False
+
+
+def get_inline_keyboard(p: Profile, command: str, page_num: int, buttons_mode: Optional[str] = 'callback_data'):
+    keyboard = []
+    pagination_button_set = []
+
+    channels = [ChannelUserItem.objects.filter(
+        user=p)[i:i + settings.PAGINATION_SIZE] for i in range(0, len(ChannelUserItem.objects.filter(user=p)), settings.PAGINATION_SIZE)]
+
+    if buttons_mode == 'url':
+        for channel in channels[page_num]:
+            keyboard.append([
+                InlineKeyboardButton(
+                    f'{channel.channel_title}', url=channel.channel.channel_url)
+            ])
+    else:
+        for channel in channels[page_num]:
+            keyboard.append([
+                InlineKeyboardButton(
+                    f'{channel.channel_title}', callback_data=f'{command}‽{channel.channel.channel_id}')
+            ])
+
+    pagination_button_set.append(InlineKeyboardButton(
+        '❮', callback_data=f'{command}‽pagination‽{page_num - 1}')) if page_num - 1 >= 0 else None
+    pagination_button_set.append(InlineKeyboardButton(
+        '❯', callback_data=f'{command}‽pagination‽{page_num + 1}')) if page_num + 1 < len(channels) else None
+    keyboard.append(
+        pagination_button_set) if pagination_button_set else None
+
+    return keyboard
 
 
 @log_errors

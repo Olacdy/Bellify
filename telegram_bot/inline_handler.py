@@ -1,11 +1,10 @@
-from celery import local
-from telegram import Update
-from django.conf import settings
+from telegram import InlineKeyboardMarkup, Update
 from telegram.ext import CallbackContext
 from youtube.models import ChannelUserItem
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-from .utils import get_or_create_profile, log_errors, set_menu_field, add, check, remove
+
 from .localization import localization
+from .utils import (add, check, get_or_create_profile, log_errors, remove,
+                    set_menu_field, get_inline_keyboard)
 
 
 @log_errors
@@ -44,25 +43,8 @@ def inline_handler(update: Update, context: CallbackContext) -> None:
             page_num = int(query.data.split(
                 '‽')[-1])
 
-            keyboard = []
-            pagination_button_set = []
-
-            channels = [ChannelUserItem.objects.filter(
-                user=p)[i:i + settings.PAGINATION_SIZE] for i in range(0, len(ChannelUserItem.objects.filter(user=p)), settings.PAGINATION_SIZE)]
-
-            for channel in channels[page_num]:
-                keyboard.append([
-                    InlineKeyboardButton(
-                        f'{channel.channel_title}', callback_data=f'check‽{channel.channel.channel_id}')
-                ])
-
-            pagination_button_set.append(InlineKeyboardButton(
-                '❮', callback_data=f'check‽pagination‽{page_num - 1}')) if page_num - 1 >= 0 else None
-            pagination_button_set.append(InlineKeyboardButton(
-                '❯', callback_data=f'check‽pagination‽{page_num + 1}')) if page_num + 1 < len(channels) else None
-            keyboard.append(
-                pagination_button_set) if pagination_button_set else None
-            reply_markup = InlineKeyboardMarkup(keyboard)
+            reply_markup = InlineKeyboardMarkup(
+                get_inline_keyboard(p, 'check', page_num))
 
             query.edit_message_text(
                 text=localization[p.language]['check_command'][0],
@@ -84,25 +66,8 @@ def inline_handler(update: Update, context: CallbackContext) -> None:
             page_num = int(query.data.split(
                 '‽')[-1])
 
-            keyboard = []
-            pagination_button_set = []
-
-            channels = [ChannelUserItem.objects.filter(
-                user=p)[i:i + settings.PAGINATION_SIZE] for i in range(0, len(ChannelUserItem.objects.filter(user=p)), settings.PAGINATION_SIZE)]
-
-            for channel in channels[page_num]:
-                keyboard.append([
-                    InlineKeyboardButton(
-                        f'{channel.channel_title}', callback_data=f'remove‽{channel.channel.channel_id}')
-                ])
-
-            pagination_button_set.append(InlineKeyboardButton(
-                '❮', callback_data=f'remove‽pagination‽{page_num - 1}')) if page_num - 1 >= 0 else None
-            pagination_button_set.append(InlineKeyboardButton(
-                '❯', callback_data=f'remove‽pagination‽{page_num + 1}')) if page_num + 1 < len(channels) else None
-            keyboard.append(
-                pagination_button_set) if pagination_button_set else None
-            reply_markup = InlineKeyboardMarkup(keyboard)
+            reply_markup = InlineKeyboardMarkup(
+                get_inline_keyboard(p, 'remove', page_num))
 
             query.edit_message_text(
                 text=localization[p.language]['remove_command'][0],
@@ -124,25 +89,8 @@ def inline_handler(update: Update, context: CallbackContext) -> None:
             page_num = int(query.data.split(
                 '‽')[-1])
 
-            keyboard = []
-            pagination_button_set = []
-
-            channels = [ChannelUserItem.objects.filter(
-                user=p)[i:i + settings.PAGINATION_SIZE] for i in range(0, len(ChannelUserItem.objects.filter(user=p)), settings.PAGINATION_SIZE)]
-
-            for channel in channels[page_num]:
-                keyboard.append([
-                    InlineKeyboardButton(
-                        f'{channel.channel_title}', url=channel.channel.channel_url)
-                ])
-
-            pagination_button_set.append(InlineKeyboardButton(
-                '❮', callback_data=f'list‽pagination‽{page_num - 1}')) if page_num - 1 >= 0 else None
-            pagination_button_set.append(InlineKeyboardButton(
-                '❯', callback_data=f'list‽pagination‽{page_num + 1}')) if page_num + 1 < len(channels) else None
-            keyboard.append(
-                pagination_button_set) if pagination_button_set else None
-            reply_markup = InlineKeyboardMarkup(keyboard)
+            reply_markup = InlineKeyboardMarkup(
+                get_inline_keyboard(p, 'list', page_num, 'url'))
 
             query.edit_message_text(
                 text=localization[p.language]['list_command'][0],
