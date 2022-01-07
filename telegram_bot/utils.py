@@ -1,3 +1,4 @@
+from celery import local
 from django.conf import settings
 import re
 from telegram import Update
@@ -9,6 +10,7 @@ from youtube.models import Channel, ChannelUserItem
 from telegram_bot.models import Profile
 from typing import Optional
 import scrapetube
+from .localization import localization
 import bs4 as soup
 
 
@@ -151,23 +153,6 @@ def check_for_new_video(channel: Channel):
 
 @log_errors
 def add(channel_id: str, update: Update, p: Profile, name: Optional[str] = None) -> None:
-    lang_for_add = {
-        'en':
-            [
-                ['New channel added with name', '. \nLast video is'],
-                'Unable to add a new channel, because one with the same name already exists. \nTry to come up with a new name or leave the name parameter empty.',
-                'This channel is already added to Your profile! \nLast video is',
-                'Sorry, can\'t recognize this format.'
-            ],
-        'ru':
-            [
-                ['Новый канал под именем', 'был добавлен.\nПоследнее видео'],
-                'Невозможно добавить новый канал под этим именем.\nПопробуйте придумать новое имя или оставить параметр имени пустым.',
-                'Этот канал уже добавлен к вашему профилю!\nПоследнее видео',
-                'Извините, нераспознанный формат.'
-            ]
-    }
-
     video_title, video_url, upload_time = get_last_video(channel_id)
     channel_name = name if name else get_channel_title(
         channel_id)
@@ -187,77 +172,55 @@ def add(channel_id: str, update: Update, p: Profile, name: Optional[str] = None)
                 user=p, channel=channel, channel_title=channel_name)
             try:
                 update.callback_query.message.reply_text(
-                    text=f"{lang_for_add[p.language][0][0]} {channel_name} {lang_for_add[p.language][0][1]} <a href=\"{video_url}\">{video_title}</a>",
+                    text=f"{localization[p.language]['add_command'][2][0]} {channel_name} {localization[p.language]['add_command'][2][1]} <a href=\"{video_url}\">{video_title}</a>",
                     parse_mode='HTML'
                 )
             except:
                 update.message.reply_text(
-                    text=f"{lang_for_add[p.language][0][0]} {channel_name} {lang_for_add[p.language][0][1]} <a href=\"{video_url}\">{video_title}</a>",
+                    text=f"{localization[p.language]['add_command'][2][0]} {channel_name} {localization[p.language]['add_command'][2][1]} <a href=\"{video_url}\">{video_title}</a>",
                     parse_mode='HTML'
                 )
             return
         else:
             try:
                 update.callback_query.message.reply_text(
-                    text=lang_for_add[p.language][1],
+                    text=localization[p.language]['add_command'][3],
                     parse_mode='HTML'
                 )
             except:
                 update.message.reply_text(
-                    text=lang_for_add[p.language][1],
+                    text=localization[p.language]['add_command'][3],
                     parse_mode='HTML'
                 )
     else:
         try:
             update.callback_query.message.reply_text(
-                text=f"{lang_for_add[p.language][2]} <a href=\"{video_url}\">{video_title}</a>",
+                text=f"{localization[p.language]['add_command'][4]} <a href=\"{video_url}\">{video_title}</a>",
                 parse_mode='HTML'
             )
         except:
             update.message.reply_text(
-                text=f"{lang_for_add[p.language][2]} <a href=\"{video_url}\">{video_title}</a>",
+                text=f"{localization[p.language]['add_command'][4]} <a href=\"{video_url}\">{video_title}</a>",
                 parse_mode='HTML'
             )
 
 
 @log_errors
 def remove(update: Update, p: Profile, name: str) -> None:
-    lang_for_remove = {
-        'en':
-            [
-                'Your record was deleted successfully.'
-            ],
-        'ru':
-            [
-                'Ваш канал успешно удален.'
-            ]
-    }
     item = ChannelUserItem.objects.get(user=p, channel_title=name)
     item.delete()
     update.callback_query.edit_message_text(
-        text=lang_for_remove[p.language][0],
+        text=localization[p.language]['remove_command'][2],
         parse_mode='HTML'
     )
 
 
 @log_errors
 def check(update: Update, p: Profile, name: str) -> None:
-    lang_for_check = {
-        'en':
-        [
-            'Sorry. There is no channels added right now, maybe try using /add command.',
-            'No new video on this channel. \nLast video is'
-        ],
-        'ru':
-        [
-            'Извините, но данного канала не существует, попробуйте добавить новый с помощью /add.',
-            'На этом канале еще нет нового видео. \nПоследнее видео'
-        ]
-    }
     item = ChannelUserItem.objects.get(user=p, channel_title=name)
     if not check_for_new_video(item.channel):
         update.callback_query.edit_message_text(
-            text=f'{lang_for_check[p.language][1]} <a href=\"{item.channel.video_url}\">{item.channel.video_title}</a>',
+            text=f'{localization[p.language]["check_command"][3]} <a href=\"{item.channel.video_url}\">{item.channel.video_title}</a>',
             parse_mode='HTML'
         )
     else:

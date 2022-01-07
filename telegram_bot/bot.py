@@ -1,3 +1,4 @@
+from celery import local
 from django.conf import settings
 from telegram import Bot, BotCommand, Update
 from telegram.error import Unauthorized
@@ -9,23 +10,11 @@ from telegram_notification.celery import app
 import sys
 from .inline_handler import inline_handler
 import logging
+from .localization import localization
 
 
 @log_errors
 def do_echo(update: Update, context: CallbackContext) -> None:
-    lang_for_echo = {
-        'en':
-            [
-                'This doesn\'t look like a URL 🤔. Try again.',
-                'Do You want to change channel\'s name?'
-            ],
-        'ru':
-            [
-                'Что-то не похоже на URL 🤔. Попробуйте еще раз.',
-                'Хотите ли вы изменить имя канала?'
-            ]
-    }
-
     p, _ = get_or_create_profile(
         update.message.chat_id, update.message.from_user.username, False)
 
@@ -48,12 +37,12 @@ def do_echo(update: Update, context: CallbackContext) -> None:
             set_menu_field(p)
 
             update.message.reply_text(
-                text=lang_for_echo[p.language][1],
+                text=localization[p.language]['echo'][0],
                 parse_mode='HTML',
                 reply_markup=reply_markup)
         else:
             update.message.reply_text(
-                text=lang_for_echo[p.language][0],
+                text=localization[p.language]['echo'][1],
                 parse_mode='HTML'
             )
     elif 'name' in p.menu.split('‽'):
@@ -64,16 +53,6 @@ def do_echo(update: Update, context: CallbackContext) -> None:
 
 @log_errors
 def do_start(update: Update, context: CallbackContext) -> None:
-    lang_for_start_command = {
-        'en':
-            [
-                'Please, select a language.'
-            ],
-        'ru':
-            [
-                'Пожалуйста, выберите язык.'
-            ]
-    }
     p, _ = get_or_create_profile(update.message.chat_id,
                                  update.message.from_user.username)
 
@@ -89,26 +68,13 @@ def do_start(update: Update, context: CallbackContext) -> None:
     reply_markup = InlineKeyboardMarkup(keyboard)
 
     update.message.reply_text(
-        text=lang_for_start_command[p.language][0],
+        text=localization[p.language]['lang_start_command'][0],
         parse_mode='HTML',
         reply_markup=reply_markup)
 
 
 @log_errors
 def do_remove(update: Update, context: CallbackContext) -> None:
-    lang_for_remove_command = {
-        'en':
-            [
-                'Select a channel that You would like to remove.',
-                'Sorry. There is no channels added right now, maybe try using /add command.'
-            ],
-        'ru':
-            [
-                'Выберите канал, который вы хотите удалить.',
-                'Извините, пока у вас нет никаких каналов, попробуйте добавить новый с помощью /add.'
-            ]
-    }
-
     p, _ = get_or_create_profile(
         update.message.chat_id, update.message.from_user.username)
 
@@ -127,31 +93,18 @@ def do_remove(update: Update, context: CallbackContext) -> None:
 
     if ChannelUserItem.objects.filter(user=p):
         update.message.reply_text(
-            text=lang_for_remove_command[p.language][0],
+            text=localization[p.language]['remove_command'][0],
             parse_mode='HTML',
             reply_markup=reply_markup)
     else:
         update.message.reply_text(
-            text=lang_for_remove_command[p.language][1],
+            text=localization[p.language]['remove_command'][1],
             parse_mode='HTML',
             reply_markup=reply_markup)
 
 
 @log_errors
 def do_list(update: Update, context: CallbackContext) -> None:
-    lang_for_list_command = {
-        'en':
-            [
-                'List of Your added channels',
-                'Sorry. There is no channels added right now, maybe try using /add command.'
-            ],
-        'ru':
-            [
-                'Список добавленных вами каналов',
-                'Извините, пока у вас нет никаких каналов, попробуйте добавить новый с помощью /add.',
-            ]
-    }
-
     p, _ = get_or_create_profile(
         update.message.chat_id, update.message.from_user.username)
 
@@ -170,31 +123,18 @@ def do_list(update: Update, context: CallbackContext) -> None:
 
     if ChannelUserItem.objects.filter(user=p):
         update.message.reply_text(
-            text=lang_for_list_command[p.language][0],
+            text=localization[p.language]['list_command'][0],
             parse_mode='HTML',
             reply_markup=reply_markup)
     else:
         update.message.reply_text(
-            text=lang_for_list_command[p.language][1],
+            text=localization[p.language]['list_command'][1],
             parse_mode='HTML',
             reply_markup=reply_markup)
 
 
 @log_errors
 def do_check(update: Update, context: CallbackContext) -> None:
-    lang_for_check_command = {
-        'en':
-            [
-                'Select a channel that You would like to check.',
-                'Sorry. There is no channels added right now, maybe try using /add command.'
-            ],
-        'ru':
-            [
-                'Выберите канал, который вы хотите проверить.',
-                'Извините, пока у вас нет никаких каналов, попробуйте добавить новый с помощью /add.',
-            ]
-    }
-
     p, _ = get_or_create_profile(
         update.message.chat_id, update.message.from_user.username)
 
@@ -213,28 +153,18 @@ def do_check(update: Update, context: CallbackContext) -> None:
 
     if ChannelUserItem.objects.filter(user=p):
         update.message.reply_text(
-            text=lang_for_check_command[p.language][0],
+            text=localization[p.language]['check_command'][0],
             parse_mode='HTML',
             reply_markup=reply_markup)
     else:
         update.message.reply_text(
-            text=lang_for_check_command[p.language][1],
+            text=localization[p.language]['check_command'][1],
             parse_mode='HTML',
             reply_markup=reply_markup)
 
 
 @log_errors
 def do_lang(update: Update, context: CallbackContext) -> None:
-    lang_for_lang_command = {
-        'en':
-            [
-                'Please, select language.'
-            ],
-        'ru':
-            [
-                'Пожалуйста, выберите язык.'
-            ]
-    }
     p, _ = get_or_create_profile(update.message.chat_id,
                                  update.message.from_user.username)
 
@@ -250,54 +180,31 @@ def do_lang(update: Update, context: CallbackContext) -> None:
     reply_markup = InlineKeyboardMarkup(keyboard)
 
     update.message.reply_text(
-        text=lang_for_lang_command[p.language][0],
+        text=localization[p.language]['lang_start_command'][0],
         parse_mode='HTML',
         reply_markup=reply_markup)
 
 
 @log_errors
 def do_help(update: Update, context: CallbackContext) -> None:
-    lang_for_help = {
-        'en':
-            [
-                'Notification Bot manual.\n\nTo start type /add command with some YouTube channel URL.\nNow, if everything went smoothly🤞, You should have this channel in our database.\nTry to check whether it is true and type /list command.\nTo check if there is a new video on this channel try to use /check + name of the channel command.\nThis way You can get fresh information about the latest video from this channel,\nbut don`t worry You`ll be getting notifications automatically if a new video is out there.\nTo remove some channels, just type /remove + name of the channel command.\n\nNow You are free to add any channel from YouTube and this bot will take care of notifying You about new videos.\n\nTo contact developer follow this link: https://t.me/golovakanta'
-            ],
-        'ru':
-            [
-                'Notification Bot мануал.\n\nЧтобы начать пользоваться ботом, воспользуйтесь коммандой /add плюс ссылка на ютуб канал.\nТеперь, если ничего не сломалось🤞, этот канал будет добавлен в нашу базу данных.\nПопробуйте проверить так ли это и напишите комманду /list.\nЧтобы проверить появилось ли новое видео, воспользуйтесь коммандой /check плюс имя канала, которое было в списке.\nТак вы можете получать последнюю информацию касательно последнего видео на канале,\nоднако не волнуйтесь, вы все еще будете получать сообщения от этого бота автоматически, как только мы заметим новое видео на одном из добавленных вами каналов.\nДля того чтобы удалить какой-либо канал, используйте комманду /remove плюс имя канала.\n\nТеперь, когда вы знаете основные функциональности бота, вы можете добавлять любой интересующий вас канал, а бот позаботится о том, чтобы снабжать вас актуальной информацией относительно последнего видео на канале.\nДля связи с разработчиком: https://t.me/golovakanta'
-            ]
-    }
-
-    chat_id = update.message.chat_id
-
-    p, _ = get_or_create_profile(chat_id, update.message.from_user.username)
+    p, _ = get_or_create_profile(
+        update.message.chat_id, update.message.from_user.username)
 
     update.message.reply_text(
-        text=lang_for_help[p.language][0],
+        text=localization[p.language]['help_command'][0],
         parse_mode='HTML'
     )
 
 
 @log_errors
 def do_add(update: Update, context: CallbackContext) -> None:
-    lang_for_add_command = {
-        'en':
-            [
-                'Now send channel\'s URL.'
-            ],
-        'ru':
-            [
-                'Теперь можете прислать URL канала.'
-            ]
-    }
-
     p, _ = get_or_create_profile(
         update.message.chat_id, update.message.from_user.username)
 
     set_menu_field(p, 'add')
 
     update.message.reply_text(
-        text=lang_for_add_command[p.language][0],
+        text=localization[p.language]['add_command'][0],
         parse_mode='HTML'
     )
 

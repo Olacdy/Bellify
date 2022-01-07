@@ -1,9 +1,11 @@
+from celery import local
 from telegram import Update
 from django.conf import settings
 from telegram.ext import CallbackContext
 from youtube.models import ChannelUserItem
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from .utils import get_or_create_profile, log_errors, set_menu_field, add, check, remove
+from .localization import localization
 
 
 @log_errors
@@ -18,28 +20,19 @@ def inline_handler(update: Update, context: CallbackContext) -> None:
     mode = query.data.split('‽')[0]
 
     if mode == 'lang':
-        lang_for_lang = {
-            'en': 'Thanks, You\'ll continue work on English.',
-            'ru': 'Спасибо, теперь работа будет продолжена на русском.'
-        }
-
         p.language = query.data.split('‽')[1]
         p.save()
 
         query.edit_message_text(
-            text=lang_for_lang[query.data.split('‽')[1]],
+            text=localization[query.data.split(
+                '‽')[1]]['lang_start_command'][1],
             parse_mode='HTML'
         )
 
     elif mode == 'add':
-        lang_for_add = {
-            'en': 'Send Your custom channel name.',
-            'ru': 'Можете прислать имя, под которым хотите сохранить канал.'
-        }
-
         if query.data.split('‽')[-1] == 'yes':
             query.edit_message_text(
-                text=lang_for_add[p.language],
+                text=localization[p.language]['add_command'][1],
                 parse_mode='HTML'
             )
             set_menu_field(p, f"name‽{query.data.split('‽')[1]}")
@@ -47,19 +40,6 @@ def inline_handler(update: Update, context: CallbackContext) -> None:
             query.delete_message()
             add(query.data.split('‽')[-1], update, p)
     elif mode == 'check':
-        lang_for_check = {
-            'en':
-                [
-                    'No channel with such name.',
-                    'Select a channel that You would like to check.'
-                ],
-            'ru':
-                [
-                    'Канала с таким именем не существует.',
-                    'Выберите канал, который вы хотите проверить.'
-                ]
-        }
-
         if 'pagination' in query.data.split('‽'):
             page_num = int(query.data.split(
                 '‽')[-1])
@@ -85,7 +65,7 @@ def inline_handler(update: Update, context: CallbackContext) -> None:
             reply_markup = InlineKeyboardMarkup(keyboard)
 
             query.edit_message_text(
-                text=lang_for_check[p.language][1],
+                text=localization[p.language]['check_command'][0],
                 parse_mode='HTML',
                 reply_markup=reply_markup)
         else:
@@ -96,23 +76,10 @@ def inline_handler(update: Update, context: CallbackContext) -> None:
                 check(update, p, channel_name)
             except:
                 query.edit_message_text(
-                    text=lang_for_check[p.language][0],
+                    text=localization[p.language]['check_command'][2],
                     parse_mode='HTML'
                 )
     elif mode == 'remove':
-        lang_for_remove = {
-            'en':
-                [
-                    'No channel with such name.',
-                    'Select a channel that You would like to remove.'
-                ],
-            'ru':
-                [
-                    'Канала с таким именем не существует.',
-                    'Выберите канал, который вы хотите удалить.'
-                ]
-        }
-
         if 'pagination' in query.data.split('‽'):
             page_num = int(query.data.split(
                 '‽')[-1])
@@ -138,7 +105,7 @@ def inline_handler(update: Update, context: CallbackContext) -> None:
             reply_markup = InlineKeyboardMarkup(keyboard)
 
             query.edit_message_text(
-                text=lang_for_remove[p.language][1],
+                text=localization[p.language]['remove_command'][0],
                 parse_mode='HTML',
                 reply_markup=reply_markup)
         else:
@@ -149,20 +116,10 @@ def inline_handler(update: Update, context: CallbackContext) -> None:
                 remove(update, p, channel_name)
             except:
                 query.edit_message_text(
-                    text=lang_for_remove[p.language][0],
+                    text=localization[p.language]['remove_command'][3],
                     parse_mode='HTML'
                 )
     elif mode == 'list':
-        lang_for_list = {
-            'en':
-                [
-                    'List of Your added channels.'
-                ],
-            'ru':
-                [
-                    'Список добавленных вами каналов',
-                ]
-        }
         if 'pagination' in query.data.split('‽'):
             page_num = int(query.data.split(
                 '‽')[-1])
@@ -188,7 +145,7 @@ def inline_handler(update: Update, context: CallbackContext) -> None:
             reply_markup = InlineKeyboardMarkup(keyboard)
 
             query.edit_message_text(
-                text=lang_for_list[p.language][0],
+                text=localization[p.language]['list_command'][0],
                 parse_mode='HTML',
                 reply_markup=reply_markup)
     else:
