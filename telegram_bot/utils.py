@@ -10,7 +10,7 @@ from youtube.models import Channel, ChannelUserItem
 from telegram_bot.models import Profile
 from typing import Optional
 import scrapetube
-from localization import localization
+from .localization import localization
 import bs4 as soup
 
 

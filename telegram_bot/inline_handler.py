@@ -5,7 +5,7 @@ from telegram.ext import CallbackContext
 from youtube.models import ChannelUserItem
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from .utils import get_or_create_profile, log_errors, set_menu_field, add, check, remove
-from localization import localization
+from .localization import localization
 
 
 @log_errors
@@ -105,7 +105,7 @@ def inline_handler(update: Update, context: CallbackContext) -> None:
             reply_markup = InlineKeyboardMarkup(keyboard)
 
             query.edit_message_text(
-                text=localization[p.language][0],
+                text=localization[p.language]['remove_command'][0],
                 parse_mode='HTML',
                 reply_markup=reply_markup)
         else:
@@ -116,7 +116,7 @@ def inline_handler(update: Update, context: CallbackContext) -> None:
                 remove(update, p, channel_name)
             except:
                 query.edit_message_text(
-                    text=localization[p.language][3],
+                    text=localization[p.language]['remove_command'][3],
                     parse_mode='HTML'
                 )
     elif mode == 'list':

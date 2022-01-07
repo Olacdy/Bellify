@@ -10,7 +10,7 @@ from telegram_notification.celery import app
 import sys
 from .inline_handler import inline_handler
 import logging
-from localization import localization
+from .localization import localization
 
 
 @log_errors
@@ -128,7 +128,7 @@ def do_list(update: Update, context: CallbackContext) -> None:
             reply_markup=reply_markup)
     else:
         update.message.reply_text(
-            text=localization[p.language]['remove_command'][1],
+            text=localization[p.language]['list_command'][1],
             parse_mode='HTML',
             reply_markup=reply_markup)
 
@@ -153,12 +153,12 @@ def do_check(update: Update, context: CallbackContext) -> None:
 
     if ChannelUserItem.objects.filter(user=p):
         update.message.reply_text(
-            text=localization[p.language]['remove_command'][0],
+            text=localization[p.language]['check_command'][0],
             parse_mode='HTML',
             reply_markup=reply_markup)
     else:
         update.message.reply_text(
-            text=localization[p.language]['remove_command'][1],
+            text=localization[p.language]['check_command'][1],
             parse_mode='HTML',
             reply_markup=reply_markup)
 
