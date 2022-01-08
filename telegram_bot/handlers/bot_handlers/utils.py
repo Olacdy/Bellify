@@ -96,12 +96,12 @@ def add(channel_id: str, update: Update, p: User, name: Optional[str] = None) ->
                 user=p, channel=channel, channel_title=channel_name)
             try:
                 update.callback_query.message.reply_text(
-                    text=f"{localization[p.language]['add_command'][2][0]} {channel_name} {localization[p.language]['add_command'][2][1]} <a href=\"{video_url}\">{video_title}</a>",
+                    text=f"{localization[p.language]['add_command'][2][0]} {channel_name}{localization[p.language]['add_command'][2][1]} <a href=\"{video_url}\">{video_title}</a>",
                     parse_mode='HTML'
                 )
             except:
                 update.message.reply_text(
-                    text=f"{localization[p.language]['add_command'][2][0]} {channel_name} {localization[p.language]['add_command'][2][1]} <a href=\"{video_url}\">{video_title}</a>",
+                    text=f"{localization[p.language]['add_command'][2][0]} {channel_name}{localization[p.language]['add_command'][2][1]} <a href=\"{video_url}\">{video_title}</a>",
                     parse_mode='HTML'
                 )
             return
