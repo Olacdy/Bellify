@@ -6,7 +6,7 @@ from django_celery_beat.models import (
     PeriodicTask,
 )
 from django.contrib import admin
-from .models import Channel, ChannelUserItem
+from youtube.models import Channel, ChannelUserItem
 
 
 class ChannelUserItemInline(admin.TabularInline):
