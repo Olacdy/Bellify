@@ -19,6 +19,7 @@ class UserAdmin(admin.ModelAdmin):
     search_fields = ('username', 'user_id')
     actions = ['broadcast']
 
+    @admin.action(description='Broadcast message to selected Users')
     def broadcast(self, request, queryset):
         """ Select users via check mark in django-admin panel, then select "Broadcast" to send message"""
         user_ids = queryset.values_list(

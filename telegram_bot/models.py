@@ -32,8 +32,8 @@ class User(CreateUpdateTracker):
     admins = AdminUserManager()
 
     class Meta:
-        verbose_name = 'User Telegram'
-        verbose_name_plural = 'Users Telegram'
+        verbose_name = 'Telegram User'
+        verbose_name_plural = 'Telegram Users'
 
     def __str__(self):
         return f'@{self.username}' if self.username is not None else f'{self.user_id}'
