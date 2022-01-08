@@ -20,7 +20,8 @@ localization = {
             'Select a channel that You would like to check.',
             'Sorry. There is no channels added right now, maybe try using /add command.',
             'No channel with such name.',
-            'No new video on this channel. \nLast video is'
+            'No new video on this channel. \nLast video is',
+            ['New video from', 'is out!'],
         ],
         'list_command':
         [
@@ -62,7 +63,8 @@ localization = {
             'Выберите канал, который вы хотите проверить.',
             'Извините, пока у вас нет никаких каналов, попробуйте добавить новый с помощью /add.',
             'Канала с таким именем не существует.',
-            'На этом канале еще нет нового видео. \nПоследнее видео'
+            'На этом канале еще нет нового видео. \nПоследнее видео',
+            ['Новое видео от', 'уже вышло!'],
         ],
         'list_command':
         [
@@ -77,7 +79,7 @@ localization = {
         'lang_start_command':
         [
             'Пожалуйста, выберите язык.',
-            'Спасибо, теперь работа будет продолжена на русском.'
+            'Спасибо, теперь работа будет продолжена на русском.',
         ],
         'echo':
         [
