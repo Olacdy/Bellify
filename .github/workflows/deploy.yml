@@ -1,0 +1,20 @@
+name: Deploy dokku
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - id: deploy
+        name: Deploy to dokku
+        uses: idoberko2/dokku-deploy-github-action@v1
+        with:
+            ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+            dokku-host: 'telegram-notification.com'
+            app-name: 'telegram-notification'
