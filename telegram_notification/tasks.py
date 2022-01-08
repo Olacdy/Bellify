@@ -1,9 +1,11 @@
-from celery import shared_task
-from youtube.models import ChannelUserItem
-from django.core.management import call_command
-import telegram_bot.utils as utils
 import urllib.parse
+
+import telegram_bot.utils as utils
+from django.core.management import call_command
 from telegram_bot.localization import localization
+from youtube.models import ChannelUserItem
+
+from celery import shared_task
 
 
 @shared_task
