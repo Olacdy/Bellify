@@ -1,0 +1,24 @@
+{
+  "name": "Telegram Notification Bot",
+  "description": "Saves preferred channels and notifies users, when a new video is out.",
+  "keywords": ["python", "django", "celery", "telegram"],
+  "repository": "https://github.com/frikol3000/Telegram-Notification-Bot",
+  "image": "gliderlabs/herokuish",
+  "addons": ["dokku-postgres", "dokku-redis"],
+  "formation": {
+    "web": {
+      "quantity": 1
+    },
+    "worker": {
+      "quantity": 1
+    },
+    "beat": {
+      "quantity": 1
+    }
+  },
+  "buildpacks": [
+    {
+      "url": "https://github.com/plotly/heroku-buildpack-python"
+    }
+  ]
+}
