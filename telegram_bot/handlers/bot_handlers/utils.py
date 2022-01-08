@@ -44,6 +44,7 @@ def check_for_new_video(channel: Channel):
         return False
 
 
+# Return Inline keyboard regarding mode and command
 def get_inline_keyboard(p: User, command: str, page_num: int, buttons_mode: Optional[str] = 'callback_data'):
     keyboard = []
     pagination_button_set = []
@@ -150,6 +151,7 @@ def check(update: Update, p: User, name: str) -> None:
         update.callback_query.delete_message()
 
 
+# Sends message to user
 def _send_message(
     user_id: Union[str, int],
     text: str,

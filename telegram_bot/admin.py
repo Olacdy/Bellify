@@ -27,10 +27,8 @@ class UserAdmin(admin.ModelAdmin):
         if 'apply' in request.POST:
             broadcast_message_text = request.POST["broadcast_text"]
 
-            if settings.DEBUG:  # for test / debug purposes - run in same thread
+            if settings.DEBUG:
                 for user_id in user_ids:
-                    self.message_user(
-                        request, f"{user_id} {broadcast_message_text}")
                     _send_message(
                         user_id=user_id,
                         text=broadcast_message_text,
@@ -55,3 +53,4 @@ class UserAdmin(admin.ModelAdmin):
 @admin.register(Message)
 class MessageAdmin(admin.ModelAdmin):
     list_display = ('id', 'user', 'text', 'created_at')
+    search_fields = ('user__username', 'text')

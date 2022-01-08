@@ -28,8 +28,12 @@ class User(CreateUpdateTracker):
 
     is_admin = models.BooleanField(default=False)
 
-    objects = GetOrNoneManager()  # user = User.objects.get_or_none(user_id=<some_id>)
-    admins = AdminUserManager()  # User.admins.all()
+    objects = GetOrNoneManager()
+    admins = AdminUserManager()
+
+    class Meta:
+        verbose_name = 'User Telegram'
+        verbose_name_plural = 'Users Telegram'
 
     def __str__(self):
         return f'@{self.username}' if self.username is not None else f'{self.user_id}'
@@ -64,7 +68,7 @@ class User(CreateUpdateTracker):
         return f"{self.first_name} {self.last_name}" if self.last_name else f"{self.first_name}"
 
 
-class Message(models.Model):
+class Message(CreateUpdateTracker):
     user = models.ForeignKey(
         to='telegram_bot.User',
         verbose_name='User name',
@@ -73,10 +77,6 @@ class Message(models.Model):
     text = models.TextField(
         verbose_name='Text',
     )
-    created_at = models.DateTimeField(
-        verbose_name='Recieve time',
-        auto_now_add=True,
-    )
 
     def __str__(self):
         return f'Message {self.pk} of {self.profile}'
@@ -84,3 +84,10 @@ class Message(models.Model):
     class Meta:
         verbose_name = 'Message'
         verbose_name_plural = 'Message'
+
+    @classmethod
+    def get_or_create_message(cls, u: User, text: str):
+        return cls.objects.get_or_create(
+            text=text,
+            user=u
+        )

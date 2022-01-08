@@ -10,20 +10,20 @@ from telegram.ext import (CallbackContext, CallbackQueryHandler,
                           Updater)
 from telegram_notification.celery import app
 from youtube.models import ChannelUserItem
-from .handlers.broadcast_message import broadcast_handlers
-from .handlers.broadcast_message.manage_data import CONFIRM_DECLINE_BROADCAST
-from .handlers.broadcast_message.static_text import broadcast_command
 
 from telegram_bot.inline_handler import inline_handler
 from telegram_bot.localization import localization
 from youtube.utils import is_channel_url, scrape_id_by_url
-from telegram_bot.handlers.bot_handlers.utils import *
+from telegram_bot.handlers.bot_handlers.utils import get_inline_keyboard, log_errors, add
+from telegram_bot.models import User, Message
 
 
 @log_errors
 def do_echo(update: Update, context: CallbackContext) -> None:
     u, _ = User.get_or_create_profile(
         update.message.chat_id, update.message.from_user.username, False)
+
+    Message.get_or_create_message(u, update.message.text)
 
     try:
         echo_data = u.menu.split('‽')
@@ -230,14 +230,6 @@ def setup_dispatcher(dp):
     dp.add_handler(CommandHandler('help', do_help))
     dp.add_handler(CommandHandler('start', do_start))
     dp.add_handler(CommandHandler('lang', do_lang))
-    dp.add_handler(
-        MessageHandler(Filters.regex(
-            rf'^{broadcast_command}(/s)?.*'), broadcast_handlers.broadcast_command_with_message)
-    )
-    dp.add_handler(
-        CallbackQueryHandler(broadcast_handlers.broadcast_decision_handler,
-                             pattern=f"^{CONFIRM_DECLINE_BROADCAST}")
-    )
     dp.add_handler(MessageHandler(
         Filters.text & ~Filters.command, do_echo))
     dp.add_handler(CallbackQueryHandler(inline_handler))
