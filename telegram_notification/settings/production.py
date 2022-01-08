@@ -3,19 +3,16 @@ Production Settings for Heroku
 """
 
 import environ
-from socket import gethostname, gethostbyname 
 
 from .local import *
 
-env = environ.Env(
-    DEBUG=(bool, False)
-)
+env = environ.Env()
 
-DEBUG = env('DEBUG')
+DEBUG = env.bool('DEBUG', False)
 
 SECRET_KEY = env('SECRET_KEY')
 
-ALLOWED_HOSTS = [ gethostname(), gethostbyname(gethostname()), ] 
+ALLOWED_HOSTS = env.list("ALLOWED_HOSTS")
 
 if "DATABASE_URL" in env:
     DATABASES['default'] = env.db('DATABASE_URL')

@@ -1,15 +1,19 @@
-from django.conf import settings
 import re
-from telegram import Update
 from datetime import datetime
-import requests
-from dateutil import parser
-import telegram_notification.tasks as tasks
-from youtube.models import Channel, ChannelUserItem
-from telegram_bot.models import Profile
 from typing import Optional
-import scrapetube
+
 import bs4 as soup
+import requests
+import scrapetube
+import telegram_notification.tasks as tasks
+from dateutil import parser
+from django.conf import settings
+from telegram import InlineKeyboardButton, Update
+from youtube.models import Channel, ChannelUserItem
+
+from telegram_bot.models import Profile
+
+from .localization import localization
 
 
 def log_errors(f):
@@ -25,7 +29,7 @@ def log_errors(f):
 
 
 # Gets last video from given channel by it`s id
-def get_last_video(channel_id):
+def get_last_video(channel_id: str):
     playlist_id = channel_id[:1] + 'U' + channel_id[2:]
     api_response = requests.get(
         f'https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId={playlist_id}&maxResults=5&key={settings.YOUTUBE_API_KEY}')
@@ -53,7 +57,7 @@ def get_last_video(channel_id):
 
 
 # Gets channel title from given channel id
-def get_channel_title(channel_id):
+def get_channel_title(channel_id: str):
     playlist_id = channel_id[:1] + 'U' + channel_id[2:]
     api_response = requests.get(
         f'https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId={playlist_id}&maxResults=5&key={settings.YOUTUBE_API_KEY}')
@@ -71,12 +75,12 @@ def get_channel_title(channel_id):
 
 
 # Checks if given string is youtube channel url
-def is_channel_url(string):
+def is_channel_url(string: str):
     return bool(re.search(r'http[s]*://(?:www\.)?youtube.com/(?:c|user|channel)/([\%\w-]+)(?:[/]*)', string))
 
 
 # Checks if channels identifier is channel id
-def is_id_in_url(string):
+def is_id_in_url(string: str):
     try:
         ident = get_identifier_from_url(string)
     except:
@@ -85,12 +89,12 @@ def is_id_in_url(string):
 
 
 # Gets identifier from url
-def get_identifier_from_url(string):
+def get_identifier_from_url(string: str):
     return re.findall(r'http[s]*://(?:www\.)?youtube.com/(?:c|user|channel)/([\%\w-]+)(?:[/]*)', string)[0]
 
 
 # Scrapes channel id from url
-def scrape_id_by_url(url):
+def scrape_id_by_url(url: str):
     session = requests.Session()
     response = session.get(url)
     if "uxe=" in response.request.url:
@@ -103,7 +107,7 @@ def scrape_id_by_url(url):
 
 
 # Gets or create profile from chat_id and username
-def get_or_create_profile(chat_id, name, reset: Optional[bool] = True):
+def get_or_create_profile(chat_id: str, name: str, reset: Optional[bool] = True):
     profile_data = Profile.objects.get_or_create(
         external_id=chat_id,
         defaults={
@@ -123,7 +127,7 @@ def set_menu_field(p: Profile, value: Optional[str] = '') -> None:
 
 
 # Sends message to user by chat_id
-def send_message(chat_id, bot_message, parse_mode='HTML'):
+def send_message(chat_id: str, bot_message: str, parse_mode: Optional[str] = 'HTML'):
     send_text = 'https://api.telegram.org/bot' + str(settings.TOKEN) + \
         '/sendMessage?chat_id=' + str(chat_id) + '&text=' + \
         bot_message + '&parse_mode=' + parse_mode
@@ -149,25 +153,38 @@ def check_for_new_video(channel: Channel):
         return False
 
 
+def get_inline_keyboard(p: Profile, command: str, page_num: int, buttons_mode: Optional[str] = 'callback_data'):
+    keyboard = []
+    pagination_button_set = []
+
+    channels = [ChannelUserItem.objects.filter(
+        user=p)[i:i + settings.PAGINATION_SIZE] for i in range(0, len(ChannelUserItem.objects.filter(user=p)), settings.PAGINATION_SIZE)]
+
+    if buttons_mode == 'url':
+        for channel in channels[page_num]:
+            keyboard.append([
+                InlineKeyboardButton(
+                    f'{channel.channel_title}', url=channel.channel.channel_url)
+            ])
+    else:
+        for channel in channels[page_num]:
+            keyboard.append([
+                InlineKeyboardButton(
+                    f'{channel.channel_title}', callback_data=f'{command}‽{channel.channel.channel_id}')
+            ])
+
+    pagination_button_set.append(InlineKeyboardButton(
+        '❮', callback_data=f'{command}‽pagination‽{page_num - 1}')) if page_num - 1 >= 0 else None
+    pagination_button_set.append(InlineKeyboardButton(
+        '❯', callback_data=f'{command}‽pagination‽{page_num + 1}')) if page_num + 1 < len(channels) else None
+    keyboard.append(
+        pagination_button_set) if pagination_button_set else None
+
+    return keyboard
+
+
 @log_errors
 def add(channel_id: str, update: Update, p: Profile, name: Optional[str] = None) -> None:
-    lang_for_add = {
-        'en':
-            [
-                ['New channel added with name', '. \nLast video is'],
-                'Unable to add a new channel, because one with the same name already exists. \nTry to come up with a new name or leave the name parameter empty.',
-                'This channel is already added to Your profile! \nLast video is',
-                'Sorry, can\'t recognize this format.'
-            ],
-        'ru':
-            [
-                ['Новый канал под именем', 'был добавлен.\nПоследнее видео'],
-                'Невозможно добавить новый канал под этим именем.\nПопробуйте придумать новое имя или оставить параметр имени пустым.',
-                'Этот канал уже добавлен к вашему профилю!\nПоследнее видео',
-                'Извините, нераспознанный формат.'
-            ]
-    }
-
     video_title, video_url, upload_time = get_last_video(channel_id)
     channel_name = name if name else get_channel_title(
         channel_id)
@@ -187,77 +204,55 @@ def add(channel_id: str, update: Update, p: Profile, name: Optional[str] = None)
                 user=p, channel=channel, channel_title=channel_name)
             try:
                 update.callback_query.message.reply_text(
-                    text=f"{lang_for_add[p.language][0][0]} {channel_name} {lang_for_add[p.language][0][1]} <a href=\"{video_url}\">{video_title}</a>",
+                    text=f"{localization[p.language]['add_command'][2][0]} {channel_name} {localization[p.language]['add_command'][2][1]} <a href=\"{video_url}\">{video_title}</a>",
                     parse_mode='HTML'
                 )
             except:
                 update.message.reply_text(
-                    text=f"{lang_for_add[p.language][0][0]} {channel_name} {lang_for_add[p.language][0][1]} <a href=\"{video_url}\">{video_title}</a>",
+                    text=f"{localization[p.language]['add_command'][2][0]} {channel_name} {localization[p.language]['add_command'][2][1]} <a href=\"{video_url}\">{video_title}</a>",
                     parse_mode='HTML'
                 )
             return
         else:
             try:
                 update.callback_query.message.reply_text(
-                    text=lang_for_add[p.language][1],
+                    text=localization[p.language]['add_command'][3],
                     parse_mode='HTML'
                 )
             except:
                 update.message.reply_text(
-                    text=lang_for_add[p.language][1],
+                    text=localization[p.language]['add_command'][3],
                     parse_mode='HTML'
                 )
     else:
         try:
             update.callback_query.message.reply_text(
-                text=f"{lang_for_add[p.language][2]} <a href=\"{video_url}\">{video_title}</a>",
+                text=f"{localization[p.language]['add_command'][4]} <a href=\"{video_url}\">{video_title}</a>",
                 parse_mode='HTML'
             )
         except:
             update.message.reply_text(
-                text=f"{lang_for_add[p.language][2]} <a href=\"{video_url}\">{video_title}</a>",
+                text=f"{localization[p.language]['add_command'][4]} <a href=\"{video_url}\">{video_title}</a>",
                 parse_mode='HTML'
             )
 
 
 @log_errors
 def remove(update: Update, p: Profile, name: str) -> None:
-    lang_for_remove = {
-        'en':
-            [
-                'Your record was deleted successfully.'
-            ],
-        'ru':
-            [
-                'Ваш канал успешно удален.'
-            ]
-    }
     item = ChannelUserItem.objects.get(user=p, channel_title=name)
     item.delete()
     update.callback_query.edit_message_text(
-        text=lang_for_remove[p.language][0],
+        text=localization[p.language]['remove_command'][2],
         parse_mode='HTML'
     )
 
 
 @log_errors
 def check(update: Update, p: Profile, name: str) -> None:
-    lang_for_check = {
-        'en':
-        [
-            'Sorry. There is no channels added right now, maybe try using /add command.',
-            'No new video on this channel. \nLast video is'
-        ],
-        'ru':
-        [
-            'Извините, но данного канала не существует, попробуйте добавить новый с помощью /add.',
-            'На этом канале еще нет нового видео. \nПоследнее видео'
-        ]
-    }
     item = ChannelUserItem.objects.get(user=p, channel_title=name)
     if not check_for_new_video(item.channel):
         update.callback_query.edit_message_text(
-            text=f'{lang_for_check[p.language][1]} <a href=\"{item.channel.video_url}\">{item.channel.video_title}</a>',
+            text=f'{localization[p.language]["check_command"][3]} <a href=\"{item.channel.video_url}\">{item.channel.video_title}</a>',
             parse_mode='HTML'
         )
     else:
