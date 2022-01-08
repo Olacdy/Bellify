@@ -3,7 +3,7 @@ from youtube.models import ChannelUserItem
 from django.core.management import call_command
 import telegram_bot.utils as utils
 import urllib.parse
-from ..telegram_bot.localization import localization
+from telegram_bot.localization import localization
 
 
 @shared_task
