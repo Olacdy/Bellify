@@ -1,5 +1,5 @@
 from django.db import models
-from telegram_bot.models import Profile
+from telegram_bot.models import User
 
 
 # Channel model
@@ -10,7 +10,7 @@ class Channel(models.Model):
     video_title = models.CharField(max_length=200)
     video_url = models.URLField()
     video_publication_date = models.DateTimeField()
-    users = models.ManyToManyField(Profile, through='ChannelUserItem')
+    users = models.ManyToManyField(User, through='ChannelUserItem')
 
     def __str__(self):
         return f'{self.title}'
@@ -23,7 +23,7 @@ class Channel(models.Model):
 # Custom through model with title
 class ChannelUserItem(models.Model):
     channel = models.ForeignKey(Channel, on_delete=models.CASCADE)
-    user = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     channel_title = models.CharField(max_length=200, default='')
 
     def __str__(self) -> str:

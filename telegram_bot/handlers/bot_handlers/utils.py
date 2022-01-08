@@ -1,16 +1,16 @@
 from datetime import datetime
-from typing import Optional
+from typing import Dict, List, Optional, Union
 
-import requests
+import telegram
 import telegram_notification.tasks as tasks
 from django.conf import settings
-from telegram import InlineKeyboardButton, Update
+from telegram import InlineKeyboardButton, MessageEntity, Update
 from youtube.models import Channel, ChannelUserItem
 from youtube.utils import get_channel_title, get_last_video
 
-from telegram_bot.models import Profile
+from telegram_bot.models import User
 
-from .localization import localization
+from telegram_bot.localization import localization
 
 
 def log_errors(f):
@@ -23,26 +23,6 @@ def log_errors(f):
             raise e
 
     return inner
-
-
-# Sets value for menu field in Profile model
-def set_menu_field(p: Profile, value: Optional[str] = '') -> None:
-    p.menu = value
-    p.save()
-
-
-# Gets or create profile from chat_id and username
-def get_or_create_profile(chat_id: str, name: str, reset: Optional[bool] = True):
-    profile_data = Profile.objects.get_or_create(
-        external_id=chat_id,
-        defaults={
-            'name': name,
-            'language': 'en',
-        }
-    )
-    if reset:
-        set_menu_field(profile_data[0])
-    return profile_data
 
 
 # Checks for new video and alerts every user if there is one
@@ -64,15 +44,7 @@ def check_for_new_video(channel: Channel):
         return False
 
 
-# Sends message to user by chat_id
-def send_message(chat_id: str, bot_message: str, parse_mode: Optional[str] = 'HTML'):
-    send_text = 'https://api.telegram.org/bot' + str(settings.TOKEN) + \
-        '/sendMessage?chat_id=' + str(chat_id) + '&text=' + \
-        bot_message + '&parse_mode=' + parse_mode
-    requests.get(send_text)
-
-
-def get_inline_keyboard(p: Profile, command: str, page_num: int, buttons_mode: Optional[str] = 'callback_data'):
+def get_inline_keyboard(p: User, command: str, page_num: int, buttons_mode: Optional[str] = 'callback_data'):
     keyboard = []
     pagination_button_set = []
 
@@ -103,7 +75,7 @@ def get_inline_keyboard(p: Profile, command: str, page_num: int, buttons_mode: O
 
 
 @log_errors
-def add(channel_id: str, update: Update, p: Profile, name: Optional[str] = None) -> None:
+def add(channel_id: str, update: Update, p: User, name: Optional[str] = None) -> None:
     video_title, video_url, upload_time = get_last_video(channel_id)
     channel_name = name if name else get_channel_title(
         channel_id)
@@ -157,7 +129,7 @@ def add(channel_id: str, update: Update, p: Profile, name: Optional[str] = None)
 
 
 @log_errors
-def remove(update: Update, p: Profile, name: str) -> None:
+def remove(update: Update, p: User, name: str) -> None:
     item = ChannelUserItem.objects.get(user=p, channel_title=name)
     item.delete()
     update.callback_query.edit_message_text(
@@ -167,7 +139,7 @@ def remove(update: Update, p: Profile, name: str) -> None:
 
 
 @log_errors
-def check(update: Update, p: Profile, name: str) -> None:
+def check(update: Update, p: User, name: str) -> None:
     item = ChannelUserItem.objects.get(user=p, channel_title=name)
     if not check_for_new_video(item.channel):
         update.callback_query.edit_message_text(
@@ -176,3 +148,34 @@ def check(update: Update, p: Profile, name: str) -> None:
         )
     else:
         update.callback_query.delete_message()
+
+
+def _send_message(
+    user_id: Union[str, int],
+    text: str,
+    parse_mode: Optional[str] = 'HTML',
+    reply_markup: Optional[List[List[Dict]]] = None,
+    reply_to_message_id: Optional[int] = None,
+    disable_web_page_preview: Optional[bool] = None,
+    entities: Optional[List[MessageEntity]] = None,
+    tg_token: str = settings.TOKEN,
+) -> bool:
+    bot = telegram.Bot(tg_token)
+    try:
+        m = bot.send_message(
+            chat_id=user_id,
+            text=text,
+            parse_mode=parse_mode,
+            reply_markup=reply_markup,
+            reply_to_message_id=reply_to_message_id,
+            disable_web_page_preview=disable_web_page_preview,
+            entities=entities,
+        )
+    except telegram.error.Unauthorized:
+        print(f"Can't send message to {user_id}. Reason: Bot was stopped.")
+        User.objects.filter(user_id=user_id).update(is_blocked_bot=True)
+        success = False
+    else:
+        success = True
+        User.objects.filter(user_id=user_id).update(is_blocked_bot=False)
+    return success
