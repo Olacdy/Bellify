@@ -33,33 +33,41 @@ def do_echo(update: Update, context: CallbackContext) -> None:
 
     if 'add' in echo_data:
         if is_channel_url(user_text):
+            User.set_menu_field(u)
             channel_id = scrape_id_by_url(user_text)
 
-            keyboard = [
-                [
-                    InlineKeyboardButton(
-                        'Yes' if u.language == 'en' else 'Да', callback_data=f'add‽{channel_id}‽yes'),
-                    InlineKeyboardButton(
-                        'No' if u.language == 'en' else 'Нет', callback_data=f'add‽{channel_id}')
+            if ChannelUserItem.objects.filter(user=u, channel=Channel.objects.filter(channel_id=channel_id).first()).exists():
+                channel = ChannelUserItem.objects.filter(
+                    user=u, channel=Channel.objects.filter(channel_id=channel_id).first()).first().channel
+                update.message.reply_text(
+                    text=f"{localization[u.language]['add_command'][4]} <a href=\"{channel.video_url}\">{channel.video_title}</a>",
+                    parse_mode='HTML'
+                )
+            else:
+                keyboard = [
+                    [
+                        InlineKeyboardButton(
+                            'Yes' if u.language == 'en' else 'Да', callback_data=f'add‽{channel_id}‽yes'),
+                        InlineKeyboardButton(
+                            'No' if u.language == 'en' else 'Нет', callback_data=f'add‽{channel_id}')
+                    ]
                 ]
-            ]
 
-            reply_markup = InlineKeyboardMarkup(keyboard)
+                reply_markup = InlineKeyboardMarkup(keyboard)
 
-            User.set_menu_field(u)
-
-            update.message.reply_text(
-                text=localization[u.language]['echo'][0],
-                parse_mode='HTML',
-                reply_markup=reply_markup)
+                update.message.reply_text(
+                    text=localization[u.language]['echo'][0],
+                    parse_mode='HTML',
+                    reply_markup=reply_markup)
         else:
             update.message.reply_text(
                 text=localization[u.language]['echo'][1],
                 parse_mode='HTML'
             )
     elif 'name' in echo_data:
+        User.set_menu_field(u)
         channel_id = u.menu.split('‽')[-1]
-        add(channel_id, update, u, user_text)
+        add(channel_id, update, u, user_text.lstrip())
     else:
         if is_channel_url(user_text):
             channel_id = scrape_id_by_url(user_text)

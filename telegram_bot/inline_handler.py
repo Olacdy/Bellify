@@ -1,10 +1,11 @@
-from telegram import InlineKeyboardMarkup, Update
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import CallbackContext
 from youtube.models import ChannelUserItem
 
+from telegram_bot.handlers.bot_handlers.utils import (add, check,
+                                                      get_inline_keyboard,
+                                                      log_errors, remove)
 from telegram_bot.localization import localization
-from telegram_bot.handlers.bot_handlers.utils import (
-    add, check, log_errors, remove, get_inline_keyboard)
 from telegram_bot.models import User
 
 
@@ -97,15 +98,11 @@ def inline_handler(update: Update, context: CallbackContext) -> None:
         channel_id = query_data[-2]
         if any(command in query_data for command in ['check', 'remove']):
             try:
-                print(channel_id)
-                print([channel.channel_title for channel in ChannelUserItem.objects.filter(
-                    user=u) if channel.channel.channel_id == channel_id])
                 channel_name = [channel.channel_title for channel in ChannelUserItem.objects.filter(
                     user=u) if channel.channel.channel_id == channel_id][0]
                 check(update, u, channel_name) if 'check' in query_data else remove(
                     update, u, channel_name)
             except Exception as e:
-                print(str(e))
                 query.edit_message_text(
                     text=localization[u.language]['echo'][4],
                     parse_mode='HTML'
@@ -113,6 +110,23 @@ def inline_handler(update: Update, context: CallbackContext) -> None:
         elif any(command in query_data for command in ['yes', 'no']):
             query.delete_message() if 'yes' in query_data else query.edit_message_text(
                 text=localization[u.language]['echo'][5], parse_mode='HTML')
-            add(channel_id, update, u) if 'yes' in query_data else None
+            if 'yes' in query_data:
+                keyboard = [
+                    [
+                        InlineKeyboardButton(
+                            'Yes' if u.language == 'en' else 'Да', callback_data=f'add‽{channel_id}‽yes'),
+                        InlineKeyboardButton(
+                            'No' if u.language == 'en' else 'Нет', callback_data=f'add‽{channel_id}')
+                    ]
+                ]
+
+                reply_markup = InlineKeyboardMarkup(keyboard)
+
+                User.set_menu_field(u)
+
+                query.message.reply_text(
+                    text=localization[u.language]['echo'][0],
+                    parse_mode='HTML',
+                    reply_markup=reply_markup)
     else:
         pass
