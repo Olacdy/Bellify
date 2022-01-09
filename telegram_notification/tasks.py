@@ -1,5 +1,4 @@
 import time
-import urllib.parse
 from typing import Dict, List, Optional, Union
 
 import telegram_bot.handlers.bot_handlers.utils as utils
@@ -8,20 +7,19 @@ from django.core.management import call_command
 from telegram_bot.localization import localization
 from youtube.models import ChannelUserItem
 
-from celery import shared_task
 from celery.utils.log import get_task_logger
 
 logger = get_task_logger(__name__)
 
 
-@shared_task
+@app.task(ignore_result=True)
 def notify_users(users, channel):
     for user in users:
         user_title = ChannelUserItem.objects.get(
             channel=channel, user=user) if ChannelUserItem.objects.get(
             channel=channel, user=user) else channel.title
         utils._send_message(
-            user.user_id, f"{localization[user.language]['check_command'][4][0]} {user_title} {localization[user.language]['check_command'][4][1]}\n<a href=\"{channel.video_url}\">{urllib.parse.quote(channel.video_title)}</a>")
+            user.user_id, f"{localization[user.language]['check_command'][4][0]} {user_title} {localization[user.language]['check_command'][4][1]}\n<a href=\"{channel.video_url}\">{channel.video_title}</a>")
 
 
 @app.task(ignore_result=True)
@@ -55,6 +53,6 @@ def broadcast_message(
     logger.info("Broadcast finished!")
 
 
-@shared_task
+@app.task(ignore_result=True)
 def check_channels():
     call_command("check_channels", )
