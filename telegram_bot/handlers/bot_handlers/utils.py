@@ -45,12 +45,12 @@ def check_for_new_video(channel: Channel):
 
 
 # Return Inline keyboard regarding mode and command
-def get_inline_keyboard(p: User, command: str, page_num: int, buttons_mode: Optional[str] = 'callback_data'):
+def get_inline_keyboard(u: User, command: str, page_num: int, buttons_mode: Optional[str] = 'callback_data'):
     keyboard = []
     pagination_button_set = []
 
     channels = [ChannelUserItem.objects.filter(
-        user=p)[i:i + settings.PAGINATION_SIZE] for i in range(0, len(ChannelUserItem.objects.filter(user=p)), settings.PAGINATION_SIZE)]
+        user=u)[i:i + settings.PAGINATION_SIZE] for i in range(0, len(ChannelUserItem.objects.filter(user=u)), settings.PAGINATION_SIZE)]
 
     if buttons_mode == 'url':
         for channel in channels[page_num]:
@@ -62,13 +62,13 @@ def get_inline_keyboard(p: User, command: str, page_num: int, buttons_mode: Opti
         for channel in channels[page_num]:
             keyboard.append([
                 InlineKeyboardButton(
-                    f'{channel.channel_title}', callback_data=f'{command}‽{channel.channel.channel_id}')
+                    f'{channel.channel_title}', callback_data=f'{command}{settings.SPLITTING_CHARACTER}{channel.channel.channel_id}')
             ])
 
     pagination_button_set.append(InlineKeyboardButton(
-        '❮', callback_data=f'{command}‽pagination‽{page_num - 1}')) if page_num - 1 >= 0 else None
+        '❮', callback_data=f'{command}{settings.SPLITTING_CHARACTER}pagination{settings.SPLITTING_CHARACTER}{page_num - 1}')) if page_num - 1 >= 0 else None
     pagination_button_set.append(InlineKeyboardButton(
-        '❯', callback_data=f'{command}‽pagination‽{page_num + 1}')) if page_num + 1 < len(channels) else None
+        '❯', callback_data=f'{command}{settings.SPLITTING_CHARACTER}pagination{settings.SPLITTING_CHARACTER}{page_num + 1}')) if page_num + 1 < len(channels) else None
     keyboard.append(
         pagination_button_set) if pagination_button_set else None
 
@@ -76,7 +76,7 @@ def get_inline_keyboard(p: User, command: str, page_num: int, buttons_mode: Opti
 
 
 @log_errors
-def add(channel_id: str, update: Update, p: User, name: Optional[str] = None) -> None:
+def add(channel_id: str, update: Update, u: User, name: Optional[str] = None) -> None:
     video_title, video_url, upload_time = get_last_video(channel_id)
     channel_name = name if name else get_channel_title(
         channel_id)
@@ -90,61 +90,61 @@ def add(channel_id: str, update: Update, p: User, name: Optional[str] = None) ->
             'video_publication_date': datetime.strptime(upload_time, "%m/%d/%Y, %H:%M:%S")
         }
     )
-    if not p in channel.users.all():
-        if not ChannelUserItem.objects.filter(user=p, channel_title=channel_name).exists():
+    if not u in channel.users.all():
+        if not ChannelUserItem.objects.filter(user=u, channel_title=channel_name).exists():
             ChannelUserItem.objects.create(
-                user=p, channel=channel, channel_title=channel_name)
+                user=u, channel=channel, channel_title=channel_name)
             try:
                 update.callback_query.message.reply_text(
-                    text=f"{localization[p.language]['add_command'][2][0]} {channel_name}{localization[p.language]['add_command'][2][1]} <a href=\"{video_url}\">{video_title}</a>",
+                    text=f"{localization[u.language]['add_command'][2][0]} {channel_name}{localization[u.language]['add_command'][2][1]} <a href=\"{video_url}\">{video_title}</a>",
                     parse_mode='HTML'
                 )
             except:
                 update.message.reply_text(
-                    text=f"{localization[p.language]['add_command'][2][0]} {channel_name}{localization[p.language]['add_command'][2][1]} <a href=\"{video_url}\">{video_title}</a>",
+                    text=f"{localization[u.language]['add_command'][2][0]} {channel_name}{localization[u.language]['add_command'][2][1]} <a href=\"{video_url}\">{video_title}</a>",
                     parse_mode='HTML'
                 )
             return
         else:
             try:
                 update.callback_query.message.reply_text(
-                    text=localization[p.language]['add_command'][3],
+                    text=localization[u.language]['add_command'][3],
                     parse_mode='HTML'
                 )
             except:
                 update.message.reply_text(
-                    text=localization[p.language]['add_command'][3],
+                    text=localization[u.language]['add_command'][3],
                     parse_mode='HTML'
                 )
     else:
         try:
             update.callback_query.message.reply_text(
-                text=f"{localization[p.language]['add_command'][4]} <a href=\"{video_url}\">{video_title}</a>",
+                text=f"{localization[u.language]['add_command'][4]} <a href=\"{video_url}\">{video_title}</a>",
                 parse_mode='HTML'
             )
         except:
             update.message.reply_text(
-                text=f"{localization[p.language]['add_command'][4]} <a href=\"{video_url}\">{video_title}</a>",
+                text=f"{localization[u.language]['add_command'][4]} <a href=\"{video_url}\">{video_title}</a>",
                 parse_mode='HTML'
             )
 
 
 @log_errors
-def remove(update: Update, p: User, name: str) -> None:
-    item = ChannelUserItem.objects.get(user=p, channel_title=name)
+def remove(update: Update, u: User, name: str) -> None:
+    item = ChannelUserItem.objects.get(user=u, channel_title=name)
     item.delete()
     update.callback_query.edit_message_text(
-        text=localization[p.language]['remove_command'][2],
+        text=localization[u.language]['remove_command'][2],
         parse_mode='HTML'
     )
 
 
 @log_errors
-def check(update: Update, p: User, name: str) -> None:
-    item = ChannelUserItem.objects.get(user=p, channel_title=name)
+def check(update: Update, u: User, name: str) -> None:
+    item = ChannelUserItem.objects.get(user=u, channel_title=name)
     if not check_for_new_video(item.channel):
         update.callback_query.edit_message_text(
-            text=f'{localization[p.language]["check_command"][3]} <a href=\"{item.channel.video_url}\">{item.channel.video_title}</a>',
+            text=f'{localization[u.language]["check_command"][3]} <a href=\"{item.channel.video_url}\">{item.channel.video_title}</a>',
             parse_mode='HTML'
         )
     else:

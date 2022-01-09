@@ -3,64 +3,110 @@ import sys
 
 from django.conf import settings
 from telegram import (Bot, BotCommand, InlineKeyboardButton,
-                      InlineKeyboardMarkup, Update)
+                      InlineKeyboardMarkup, Update, user)
 from telegram.error import Unauthorized
 from telegram.ext import (CallbackContext, CallbackQueryHandler,
                           CommandHandler, Dispatcher, Filters, MessageHandler,
                           Updater)
 from telegram_notification.celery import app
-from youtube.models import ChannelUserItem
+from youtube.models import Channel, ChannelUserItem
+from youtube.utils import is_channel_url, scrape_id_by_url
 
+from telegram_bot.handlers.bot_handlers.utils import (add, get_inline_keyboard,
+                                                      log_errors)
 from telegram_bot.inline_handler import inline_handler
 from telegram_bot.localization import localization
-from youtube.utils import is_channel_url, scrape_id_by_url
-from telegram_bot.handlers.bot_handlers.utils import get_inline_keyboard, log_errors, add
-from telegram_bot.models import User, Message
+from telegram_bot.models import Message, User
 
 
 @log_errors
 def do_echo(update: Update, context: CallbackContext) -> None:
     u, _ = User.get_or_create_profile(
         update.message.chat_id, update.message.from_user.username, False)
+    user_text = update.message.text
 
-    Message.get_or_create_message(u, update.message.text)
+    Message.get_or_create_message(u, user_text)
 
     try:
-        echo_data = u.menu.split('‽')
+        echo_data = u.menu.split(f'{settings.SPLITTING_CHARACTER}')
     except Exception as e:
         echo_data = []
 
     if 'add' in echo_data:
-        user_text = update.message.text
         if is_channel_url(user_text):
+            User.set_menu_field(u)
             channel_id = scrape_id_by_url(user_text)
 
-            keyboard = [
-                [
-                    InlineKeyboardButton(
-                        'Yes' if u.language == 'en' else 'Да', callback_data=f'add‽{channel_id}‽yes'),
-                    InlineKeyboardButton(
-                        'No' if u.language == 'en' else 'Нет', callback_data=f'add‽{channel_id}')
+            if ChannelUserItem.objects.filter(user=u, channel=Channel.objects.filter(channel_id=channel_id).first()).exists():
+                channel = ChannelUserItem.objects.filter(
+                    user=u, channel=Channel.objects.filter(channel_id=channel_id).first()).first().channel
+                update.message.reply_text(
+                    text=f"{localization[u.language]['add_command'][4]} <a href=\"{channel.video_url}\">{channel.video_title}</a>",
+                    parse_mode='HTML'
+                )
+            else:
+                keyboard = [
+                    [
+                        InlineKeyboardButton(
+                            'Yes' if u.language == 'en' else 'Да', callback_data=f'add{settings.SPLITTING_CHARACTER}{channel_id}{settings.SPLITTING_CHARACTER}yes'),
+                        InlineKeyboardButton(
+                            'No' if u.language == 'en' else 'Нет', callback_data=f'add{settings.SPLITTING_CHARACTER}{channel_id}')
+                    ]
                 ]
-            ]
 
-            reply_markup = InlineKeyboardMarkup(keyboard)
+                reply_markup = InlineKeyboardMarkup(keyboard)
 
-            User.set_menu_field(u)
-
-            update.message.reply_text(
-                text=localization[u.language]['echo'][0],
-                parse_mode='HTML',
-                reply_markup=reply_markup)
+                update.message.reply_text(
+                    text=localization[u.language]['echo'][0],
+                    parse_mode='HTML',
+                    reply_markup=reply_markup)
         else:
             update.message.reply_text(
                 text=localization[u.language]['echo'][1],
                 parse_mode='HTML'
             )
     elif 'name' in echo_data:
-        user_text = update.message.text
-        channel_id = u.menu.split('‽')[-1]
-        add(channel_id, update, u, user_text)
+        User.set_menu_field(u)
+        channel_id = u.menu.split(f'{settings.SPLITTING_CHARACTER}')[-1]
+        add(channel_id, update, u, user_text.lstrip())
+    else:
+        if is_channel_url(user_text):
+            channel_id = scrape_id_by_url(user_text)
+            channel = Channel.objects.filter(channel_url=user_text).first()
+            if ChannelUserItem.objects.filter(user=u, channel=channel).exists():
+                keyboard = [
+                    [
+                        InlineKeyboardButton(
+                            'Check' if u.language == 'en' else 'Проверить', callback_data=f'echo{settings.SPLITTING_CHARACTER}{channel_id}{settings.SPLITTING_CHARACTER}check'),
+                        InlineKeyboardButton(
+                            'Remove' if u.language == 'en' else 'Удалить', callback_data=f'echo{settings.SPLITTING_CHARACTER}{channel_id}{settings.SPLITTING_CHARACTER}remove')
+                    ]
+                ]
+
+                reply_markup = InlineKeyboardMarkup(keyboard)
+
+                update.message.reply_text(
+                    text=localization[u.language]['echo'][2],
+                    parse_mode='HTML',
+                    reply_markup=reply_markup)
+            else:
+                keyboard = [
+                    [
+                        InlineKeyboardButton(
+                            'Yes' if u.language == 'en' else 'Да', callback_data=f'echo{settings.SPLITTING_CHARACTER}{channel_id}{settings.SPLITTING_CHARACTER}yes'),
+                        InlineKeyboardButton(
+                            'No' if u.language == 'en' else 'Нет', callback_data=f'echo{settings.SPLITTING_CHARACTER}{channel_id}{settings.SPLITTING_CHARACTER}no')
+                    ]
+                ]
+
+                reply_markup = InlineKeyboardMarkup(keyboard)
+
+                update.message.reply_text(
+                    text=localization[u.language]['echo'][3],
+                    parse_mode='HTML',
+                    reply_markup=reply_markup)
+        else:
+            pass
 
 
 @log_errors
@@ -71,9 +117,9 @@ def do_start(update: Update, context: CallbackContext) -> None:
     keyboard = [
         [
             InlineKeyboardButton(
-                '🇬🇧', callback_data=f'lang‽en'),
+                '🇬🇧', callback_data=f'lang{settings.SPLITTING_CHARACTER}en'),
             InlineKeyboardButton(
-                '🇷🇺', callback_data=f'lang‽ru')
+                '🇷🇺', callback_data=f'lang{settings.SPLITTING_CHARACTER}ru')
         ]
     ]
 
@@ -152,9 +198,9 @@ def do_lang(update: Update, context: CallbackContext) -> None:
     keyboard = [
         [
             InlineKeyboardButton(
-                '🇬🇧', callback_data=f'lang‽en'),
+                '🇬🇧', callback_data=f'lang{settings.SPLITTING_CHARACTER}en'),
             InlineKeyboardButton(
-                '🇷🇺', callback_data=f'lang‽ru')
+                '🇷🇺', callback_data=f'lang{settings.SPLITTING_CHARACTER}ru')
         ]
     ]
 
