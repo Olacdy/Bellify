@@ -17,32 +17,30 @@ def inline_handler(update: Update, context: CallbackContext) -> None:
     u, _ = User.get_or_create_profile(
         query.message.chat_id, query.message.from_user)
 
-    mode = query.data.split('‽')[0]
+    mode, query_data = query.data.split('‽')[0], query.data.split('‽')[1:]
 
     if mode == 'lang':
-        u.language = query.data.split('‽')[1]
+        u.language = query_data[0]
         u.save()
 
         query.edit_message_text(
-            text=localization[query.data.split(
-                '‽')[1]]['lang_start_command'][1],
+            text=localization[query_data[0]]['lang_start_command'][1],
             parse_mode='HTML'
         )
 
     elif mode == 'add':
-        if query.data.split('‽')[-1] == 'yes':
+        if query_data[-1] == 'yes':
             query.edit_message_text(
                 text=localization[u.language]['add_command'][1],
                 parse_mode='HTML'
             )
-            User.set_menu_field(u, f"name‽{query.data.split('‽')[1]}")
+            User.set_menu_field(u, f"name‽{query_data[0]}")
         else:
             query.delete_message()
-            add(query.data.split('‽')[-1], update, u)
+            add(query_data[-1], update, u)
     elif mode == 'check':
-        if 'pagination' in query.data.split('‽'):
-            page_num = int(query.data.split(
-                '‽')[-1])
+        if 'pagination' in query_data:
+            page_num = int(query_data[-1])
 
             reply_markup = InlineKeyboardMarkup(
                 get_inline_keyboard(u, 'check', page_num))
@@ -52,7 +50,7 @@ def inline_handler(update: Update, context: CallbackContext) -> None:
                 parse_mode='HTML',
                 reply_markup=reply_markup)
         else:
-            channel_id = query.data.split('‽')[-1]
+            channel_id = query_data[-1]
             try:
                 channel_name = [channel.channel_title for channel in ChannelUserItem.objects.filter(
                     user=u) if channel.channel.channel_id == channel_id][0]
@@ -63,9 +61,8 @@ def inline_handler(update: Update, context: CallbackContext) -> None:
                     parse_mode='HTML'
                 )
     elif mode == 'remove':
-        if 'pagination' in query.data.split('‽'):
-            page_num = int(query.data.split(
-                '‽')[-1])
+        if 'pagination' in query_data:
+            page_num = int(query_data[-1])
 
             reply_markup = InlineKeyboardMarkup(
                 get_inline_keyboard(u, 'remove', page_num))
@@ -75,7 +72,7 @@ def inline_handler(update: Update, context: CallbackContext) -> None:
                 parse_mode='HTML',
                 reply_markup=reply_markup)
         else:
-            channel_id = query.data.split('‽')[-1]
+            channel_id = query_data[-1]
             try:
                 channel_name = [channel.channel_title for channel in ChannelUserItem.objects.filter(
                     user=u) if channel.channel.channel_id == channel_id][0]
@@ -86,9 +83,8 @@ def inline_handler(update: Update, context: CallbackContext) -> None:
                     parse_mode='HTML'
                 )
     elif mode == 'list':
-        if 'pagination' in query.data.split('‽'):
-            page_num = int(query.data.split(
-                '‽')[-1])
+        if 'pagination' in query_data:
+            page_num = int(query_data[-1])
 
             reply_markup = InlineKeyboardMarkup(
                 get_inline_keyboard(u, 'list', page_num, 'url'))
@@ -97,5 +93,26 @@ def inline_handler(update: Update, context: CallbackContext) -> None:
                 text=localization[u.language]['list_command'][0],
                 parse_mode='HTML',
                 reply_markup=reply_markup)
+    elif mode == 'echo':
+        channel_id = query_data[-2]
+        if any(command in query_data for command in ['check', 'remove']):
+            try:
+                print(channel_id)
+                print([channel.channel_title for channel in ChannelUserItem.objects.filter(
+                    user=u) if channel.channel.channel_id == channel_id])
+                channel_name = [channel.channel_title for channel in ChannelUserItem.objects.filter(
+                    user=u) if channel.channel.channel_id == channel_id][0]
+                check(update, u, channel_name) if 'check' in query_data else remove(
+                    update, u, channel_name)
+            except Exception as e:
+                print(str(e))
+                query.edit_message_text(
+                    text=localization[u.language]['echo'][4],
+                    parse_mode='HTML'
+                )
+        elif any(command in query_data for command in ['yes', 'no']):
+            query.delete_message() if 'yes' in query_data else query.edit_message_text(
+                text=localization[u.language]['echo'][5], parse_mode='HTML')
+            add(channel_id, update, u) if 'yes' in query_data else None
     else:
         pass

@@ -3,13 +3,13 @@ import sys
 
 from django.conf import settings
 from telegram import (Bot, BotCommand, InlineKeyboardButton,
-                      InlineKeyboardMarkup, Update)
+                      InlineKeyboardMarkup, Update, user)
 from telegram.error import Unauthorized
 from telegram.ext import (CallbackContext, CallbackQueryHandler,
                           CommandHandler, Dispatcher, Filters, MessageHandler,
                           Updater)
 from telegram_notification.celery import app
-from youtube.models import ChannelUserItem
+from youtube.models import ChannelUserItem, Channel
 
 from telegram_bot.inline_handler import inline_handler
 from telegram_bot.localization import localization
@@ -22,8 +22,9 @@ from telegram_bot.models import User, Message
 def do_echo(update: Update, context: CallbackContext) -> None:
     u, _ = User.get_or_create_profile(
         update.message.chat_id, update.message.from_user.username, False)
+    user_text = update.message.text
 
-    Message.get_or_create_message(u, update.message.text)
+    Message.get_or_create_message(u, user_text)
 
     try:
         echo_data = u.menu.split('‽')
@@ -31,7 +32,6 @@ def do_echo(update: Update, context: CallbackContext) -> None:
         echo_data = []
 
     if 'add' in echo_data:
-        user_text = update.message.text
         if is_channel_url(user_text):
             channel_id = scrape_id_by_url(user_text)
 
@@ -58,9 +58,46 @@ def do_echo(update: Update, context: CallbackContext) -> None:
                 parse_mode='HTML'
             )
     elif 'name' in echo_data:
-        user_text = update.message.text
         channel_id = u.menu.split('‽')[-1]
         add(channel_id, update, u, user_text)
+    else:
+        if is_channel_url(user_text):
+            channel_id = scrape_id_by_url(user_text)
+            channel = Channel.objects.filter(channel_url=user_text).first()
+            if ChannelUserItem.objects.filter(user=u, channel=channel).exists():
+                keyboard = [
+                    [
+                        InlineKeyboardButton(
+                            'Check' if u.language == 'en' else 'Проверить', callback_data=f'echo‽{channel_id}‽check'),
+                        InlineKeyboardButton(
+                            'Remove' if u.language == 'en' else 'Удалить', callback_data=f'echo‽{channel_id}‽remove')
+                    ]
+                ]
+
+                reply_markup = InlineKeyboardMarkup(keyboard)
+
+                update.message.reply_text(
+                    text=localization[u.language]['echo'][2],
+                    parse_mode='HTML',
+                    reply_markup=reply_markup)
+            else:
+                keyboard = [
+                    [
+                        InlineKeyboardButton(
+                            'Yes' if u.language == 'en' else 'Да', callback_data=f'echo‽{channel_id}‽yes'),
+                        InlineKeyboardButton(
+                            'No' if u.language == 'en' else 'Нет', callback_data=f'echo‽{channel_id}‽no')
+                    ]
+                ]
+
+                reply_markup = InlineKeyboardMarkup(keyboard)
+
+                update.message.reply_text(
+                    text=localization[u.language]['echo'][3],
+                    parse_mode='HTML',
+                    reply_markup=reply_markup)
+        else:
+            pass
 
 
 @log_errors
