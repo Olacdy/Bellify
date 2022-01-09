@@ -9,13 +9,14 @@ from telegram.ext import (CallbackContext, CallbackQueryHandler,
                           CommandHandler, Dispatcher, Filters, MessageHandler,
                           Updater)
 from telegram_notification.celery import app
-from youtube.models import ChannelUserItem, Channel
+from youtube.models import Channel, ChannelUserItem
+from youtube.utils import is_channel_url, scrape_id_by_url
 
+from telegram_bot.handlers.bot_handlers.utils import (add, get_inline_keyboard,
+                                                      log_errors)
 from telegram_bot.inline_handler import inline_handler
 from telegram_bot.localization import localization
-from youtube.utils import is_channel_url, scrape_id_by_url
-from telegram_bot.handlers.bot_handlers.utils import get_inline_keyboard, log_errors, add
-from telegram_bot.models import User, Message
+from telegram_bot.models import Message, User
 
 
 @log_errors
@@ -27,7 +28,7 @@ def do_echo(update: Update, context: CallbackContext) -> None:
     Message.get_or_create_message(u, user_text)
 
     try:
-        echo_data = u.menu.split('‽')
+        echo_data = u.menu.split(f'{settings.SPLITTING_CHARACTER}')
     except Exception as e:
         echo_data = []
 
@@ -47,9 +48,9 @@ def do_echo(update: Update, context: CallbackContext) -> None:
                 keyboard = [
                     [
                         InlineKeyboardButton(
-                            'Yes' if u.language == 'en' else 'Да', callback_data=f'add‽{channel_id}‽yes'),
+                            'Yes' if u.language == 'en' else 'Да', callback_data=f'add{settings.SPLITTING_CHARACTER}{channel_id}{settings.SPLITTING_CHARACTER}yes'),
                         InlineKeyboardButton(
-                            'No' if u.language == 'en' else 'Нет', callback_data=f'add‽{channel_id}')
+                            'No' if u.language == 'en' else 'Нет', callback_data=f'add{settings.SPLITTING_CHARACTER}{channel_id}')
                     ]
                 ]
 
@@ -66,7 +67,7 @@ def do_echo(update: Update, context: CallbackContext) -> None:
             )
     elif 'name' in echo_data:
         User.set_menu_field(u)
-        channel_id = u.menu.split('‽')[-1]
+        channel_id = u.menu.split(f'{settings.SPLITTING_CHARACTER}')[-1]
         add(channel_id, update, u, user_text.lstrip())
     else:
         if is_channel_url(user_text):
@@ -76,9 +77,9 @@ def do_echo(update: Update, context: CallbackContext) -> None:
                 keyboard = [
                     [
                         InlineKeyboardButton(
-                            'Check' if u.language == 'en' else 'Проверить', callback_data=f'echo‽{channel_id}‽check'),
+                            'Check' if u.language == 'en' else 'Проверить', callback_data=f'echo{settings.SPLITTING_CHARACTER}{channel_id}{settings.SPLITTING_CHARACTER}check'),
                         InlineKeyboardButton(
-                            'Remove' if u.language == 'en' else 'Удалить', callback_data=f'echo‽{channel_id}‽remove')
+                            'Remove' if u.language == 'en' else 'Удалить', callback_data=f'echo{settings.SPLITTING_CHARACTER}{channel_id}{settings.SPLITTING_CHARACTER}remove')
                     ]
                 ]
 
@@ -92,9 +93,9 @@ def do_echo(update: Update, context: CallbackContext) -> None:
                 keyboard = [
                     [
                         InlineKeyboardButton(
-                            'Yes' if u.language == 'en' else 'Да', callback_data=f'echo‽{channel_id}‽yes'),
+                            'Yes' if u.language == 'en' else 'Да', callback_data=f'echo{settings.SPLITTING_CHARACTER}{channel_id}{settings.SPLITTING_CHARACTER}yes'),
                         InlineKeyboardButton(
-                            'No' if u.language == 'en' else 'Нет', callback_data=f'echo‽{channel_id}‽no')
+                            'No' if u.language == 'en' else 'Нет', callback_data=f'echo{settings.SPLITTING_CHARACTER}{channel_id}{settings.SPLITTING_CHARACTER}no')
                     ]
                 ]
 
@@ -116,9 +117,9 @@ def do_start(update: Update, context: CallbackContext) -> None:
     keyboard = [
         [
             InlineKeyboardButton(
-                '🇬🇧', callback_data=f'lang‽en'),
+                '🇬🇧', callback_data=f'lang{settings.SPLITTING_CHARACTER}en'),
             InlineKeyboardButton(
-                '🇷🇺', callback_data=f'lang‽ru')
+                '🇷🇺', callback_data=f'lang{settings.SPLITTING_CHARACTER}ru')
         ]
     ]
 
@@ -197,9 +198,9 @@ def do_lang(update: Update, context: CallbackContext) -> None:
     keyboard = [
         [
             InlineKeyboardButton(
-                '🇬🇧', callback_data=f'lang‽en'),
+                '🇬🇧', callback_data=f'lang{settings.SPLITTING_CHARACTER}en'),
             InlineKeyboardButton(
-                '🇷🇺', callback_data=f'lang‽ru')
+                '🇷🇺', callback_data=f'lang{settings.SPLITTING_CHARACTER}ru')
         ]
     ]
 

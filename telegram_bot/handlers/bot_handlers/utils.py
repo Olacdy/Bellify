@@ -62,13 +62,13 @@ def get_inline_keyboard(u: User, command: str, page_num: int, buttons_mode: Opti
         for channel in channels[page_num]:
             keyboard.append([
                 InlineKeyboardButton(
-                    f'{channel.channel_title}', callback_data=f'{command}‽{channel.channel.channel_id}')
+                    f'{channel.channel_title}', callback_data=f'{command}{settings.SPLITTING_CHARACTER}{channel.channel.channel_id}')
             ])
 
     pagination_button_set.append(InlineKeyboardButton(
-        '❮', callback_data=f'{command}‽pagination‽{page_num - 1}')) if page_num - 1 >= 0 else None
+        '❮', callback_data=f'{command}{settings.SPLITTING_CHARACTER}pagination{settings.SPLITTING_CHARACTER}{page_num - 1}')) if page_num - 1 >= 0 else None
     pagination_button_set.append(InlineKeyboardButton(
-        '❯', callback_data=f'{command}‽pagination‽{page_num + 1}')) if page_num + 1 < len(channels) else None
+        '❯', callback_data=f'{command}{settings.SPLITTING_CHARACTER}pagination{settings.SPLITTING_CHARACTER}{page_num + 1}')) if page_num + 1 < len(channels) else None
     keyboard.append(
         pagination_button_set) if pagination_button_set else None
 

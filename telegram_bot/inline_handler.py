@@ -1,3 +1,4 @@
+from django.conf import settings
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import CallbackContext
 from youtube.models import ChannelUserItem
@@ -18,7 +19,8 @@ def inline_handler(update: Update, context: CallbackContext) -> None:
     u, _ = User.get_or_create_profile(
         query.message.chat_id, query.message.from_user)
 
-    mode, query_data = query.data.split('‽')[0], query.data.split('‽')[1:]
+    mode, query_data = query.data.split(f'{settings.SPLITTING_CHARACTER}')[
+        0], query.data.split(f'{settings.SPLITTING_CHARACTER}')[1:]
 
     if mode == 'lang':
         u.language = query_data[0]
@@ -35,7 +37,8 @@ def inline_handler(update: Update, context: CallbackContext) -> None:
                 text=localization[u.language]['add_command'][1],
                 parse_mode='HTML'
             )
-            User.set_menu_field(u, f"name‽{query_data[0]}")
+            User.set_menu_field(
+                u, f"name{settings.SPLITTING_CHARACTER}{query_data[0]}")
         else:
             query.delete_message()
             add(query_data[-1], update, u)
@@ -114,9 +117,9 @@ def inline_handler(update: Update, context: CallbackContext) -> None:
                 keyboard = [
                     [
                         InlineKeyboardButton(
-                            'Yes' if u.language == 'en' else 'Да', callback_data=f'add‽{channel_id}‽yes'),
+                            'Yes' if u.language == 'en' else 'Да', callback_data=f'add{settings.SPLITTING_CHARACTER}{channel_id}{settings.SPLITTING_CHARACTER}yes'),
                         InlineKeyboardButton(
-                            'No' if u.language == 'en' else 'Нет', callback_data=f'add‽{channel_id}')
+                            'No' if u.language == 'en' else 'Нет', callback_data=f'add{settings.SPLITTING_CHARACTER}{channel_id}')
                     ]
                 ]
 
