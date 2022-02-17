@@ -78,12 +78,14 @@ def get_inline_keyboard(u: User, command: str, page_num: int, buttons_mode: Opti
 @log_errors
 def add(channel_id: str, update: Update, u: User, name: Optional[str] = None) -> None:
     video_title, video_url, upload_time = get_last_video(channel_id)
+    channel_title = get_channel_title(
+        channel_id)
     channel_name = name if name else get_channel_title(
         channel_id)
     channel, _ = Channel.objects.get_or_create(
         channel_url=f'https://www.youtube.com/channel/{channel_id}',
         defaults={
-            'title': channel_name,
+            'title': channel_title,
             'channel_id': channel_id,
             'video_title': video_title,
             'video_url': video_url,
