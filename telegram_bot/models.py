@@ -79,7 +79,7 @@ class Message(CreateUpdateTracker):
     )
 
     def __str__(self):
-        return f'Message {self.pk} of {self.profile}'
+        return f'Message {self.pk} of {self.user}'
 
     class Meta:
         verbose_name = 'Message'
