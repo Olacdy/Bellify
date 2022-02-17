@@ -16,13 +16,13 @@ class AdminUserManager(Manager):
 
 class User(CreateUpdateTracker):
     user_id = models.PositiveBigIntegerField(primary_key=True)
-    username = models.CharField(max_length=32, **nb)
+    username = models.CharField(max_length=64, **nb)
     first_name = models.CharField(max_length=256, **nb)
     last_name = models.CharField(max_length=256, **nb)
     language = models.CharField(
         max_length=8, help_text="Telegram client's lang", **nb)
     deep_link = models.CharField(max_length=64, **nb)
-    menu = models.CharField(max_length=20, **nb)
+    menu = models.CharField(max_length=64, **nb)
 
     is_blocked_bot = models.BooleanField(default=False)
 

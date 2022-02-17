@@ -37,6 +37,7 @@ def inline_handler(update: Update, context: CallbackContext) -> None:
                 text=localization[u.language]['add_command'][1],
                 parse_mode='HTML'
             )
+            print(f"name{settings.SPLITTING_CHARACTER}{query_data[0]}")
             User.set_menu_field(
                 u, f"name{settings.SPLITTING_CHARACTER}{query_data[0]}")
         else:
