@@ -117,9 +117,9 @@ def do_start(update: Update, context: CallbackContext) -> None:
     keyboard = [
         [
             InlineKeyboardButton(
-                '🇬🇧', callback_data=f'lang{settings.SPLITTING_CHARACTER}en'),
+                '🇬🇧', callback_data=f'start{settings.SPLITTING_CHARACTER}en'),
             InlineKeyboardButton(
-                '🇷🇺', callback_data=f'lang{settings.SPLITTING_CHARACTER}ru')
+                '🇷🇺', callback_data=f'start{settings.SPLITTING_CHARACTER}ru')
         ]
     ]
 
