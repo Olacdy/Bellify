@@ -2,49 +2,66 @@ localization = {
     'en': {
         'add_command':
         [
-            'Now send channel\'s URL.',
+            'Now send the channel\'s URL.',
             'Send Your custom channel name.',
-            ['New channel added with name', '. \nLast video is'],
-            'Unable to add a new channel, because one with the same name already exists. \nTry to come up with a new name or leave the name parameter empty.',
-            'This channel is already added to Your profile! \nLast video is',
+            ['The new channel added with the name', ' .\nThe last video is'],
+            'Cannot add a new channel because a channel with the same name already exists.\nTry coming up with a new name, or leave the name parameter blank.',
+            'This channel is already added to Your profile!\nThe last video is',
         ],
         'remove_command':
         [
             'Select a channel that You would like to remove.',
-            'Sorry. There is no channels added right now, maybe try using /add command.',
-            'Your record was deleted successfully.',
-            'No channel with such name.',
+            'Sorry. There are no channels added right now maybe, try using /add command.',
+            'Your record has been deleted successfully.',
+            'No channel with such a name.',
         ],
         'check_command':
         [
             'Select a channel that You would like to check.',
-            'Sorry. There is no channels added right now, maybe try using /add command.',
-            'No channel with such name.',
-            'No new video on this channel. \nLast video is',
+            'Sorry. There are no channels added right now maybe, try using /add command.',
+            'No channel with such a name.',
+            'No new video on this channel.\nThe last video is',
             ['New video from', 'is out!'],
         ],
         'list_command':
         [
-            'List of Your added channels',
-            'Sorry. There is no channels added right now, maybe try using /add command.',
+            'List of Your added channels.',
+            'Sorry. There are no channels added right now maybe, try using /add command.',
         ],
         'help_command':
         [
-            'Notification Bot manual.\n\nTo start type /add command with some YouTube channel URL.\nNow, if everything went smoothly🤞, You should have this channel in our database.\nTry to check whether it is true and type /list command.\nTo check if there is a new video on this channel try to use /check + name of the channel command.\nThis way You can get fresh information about the latest video from this channel,\nbut don`t worry You`ll be getting notifications automatically if a new video is out there.\nTo remove some channels, just type /remove + name of the channel command.\n\nNow You are free to add any channel from YouTube and this bot will take care of notifying You about new videos.\n\nTo contact developer follow this link: https://t.me/golovakanta'
+"""
+Notification Bot manual. 
+
+To add a channel to the list and further receive notifications about the release of new videos, use the /add command, then send a link to the channel (You can also just send a link to the channel, without the /add command). 
+Specify the name under which You would like to save this channel, or skip this step. 
+
+Now that a channel has been added to Your list, You will be notified when a new video is posted on it. 
+
+If You would like to stop receiving notifications from this channel, use the /remove command and select the channel You want to remove.
+
+To immediately check the channel for a new video on it, use the /check command. The selected channel will be checked, and if a new video is released, You will receive an alert with a link to a new video.
+
+You can view the list of channels You have added using the /list command.
+
+You can change the language of the bot using the /lang command.
+
+To contact the developer: https://t.me/golovakanta.
+"""
         ],
         'lang_start_command':
         [
             'Please, select a language.',
-            'Thanks, You\'ll continue work on English.',
+            'Thank you, You will continue to work in English.',
         ],
         'echo':
         [
-            'Do You want to change channel\'s name?',
+            'Do You want to change the channel\'s name?',
             'This doesn\'t look like a URL 🤔. Try again.',
-            'This channel is already in Your list, what do You like to do with it?',
-            'This channel is not in Your list, do You like to add it?',
-            'No channel with such name.',
-            'Channel will not be added.',
+            'This channel is already in your list. What do you want to do with it?',
+            'This channel is not on Your list. Would You like to add it?',
+            'No channel with such a name.',
+            'The channel will not be added.',
         ]
     },
     'ru': {
@@ -54,31 +71,48 @@ localization = {
             'Можете прислать имя, под которым хотите сохранить канал.',
             ['Новый канал под именем', ' был добавлен.\nПоследнее видео'],
             'Невозможно добавить новый канал под этим именем.\nПопробуйте придумать новое имя или оставить параметр имени пустым.',
-            'Этот канал уже добавлен к вашему профилю!\nПоследнее видео',
+            'Этот канал уже добавлен к Вашему профилю!\nПоследнее видео',
         ],
         'remove_command': [
-            'Выберите канал, который вы хотите удалить.',
+            'Выберите канал, который Вы хотели бы удалить.',
             'Извините, пока у вас нет никаких каналов, попробуйте добавить новый с помощью /add.',
-            'Ваш канал успешно удален.',
+            'Ваш канал был успешно удален.',
             'Канала с таким именем не существует.',
         ],
         'check_command':
         [
-            'Выберите канал, который вы хотите проверить.',
-            'Извините, пока у вас нет никаких каналов, попробуйте добавить новый с помощью /add.',
+            'Выберите канал, который Вы хотели бы проверить.',
+            'Извините, пока у Вас нет никаких каналов, попробуйте добавить новый с помощью /add.',
             'Канала с таким именем не существует.',
-            'На этом канале еще нет нового видео. \nПоследнее видео',
+            'На этом канале еще нет нового видео.\nПоследнее видео',
             ['Новое видео от', 'уже вышло!'],
         ],
         'list_command':
         [
-            'Список добавленных вами каналов',
-            'Извините, пока у вас нет никаких каналов, попробуйте добавить новый с помощью /add.',
+            'Список добавленных Вами каналов',
+            'Извините, пока у Вас нет никаких каналов, попробуйте добавить новый с помощью /add.',
 
         ],
         'help_command':
         [
-            'Notification Bot мануал.\n\nЧтобы начать пользоваться ботом, воспользуйтесь коммандой /add плюс ссылка на ютуб канал.\nТеперь, если ничего не сломалось🤞, этот канал будет добавлен в нашу базу данных.\nПопробуйте проверить так ли это и напишите комманду /list.\nЧтобы проверить появилось ли новое видео, воспользуйтесь коммандой /check плюс имя канала, которое было в списке.\nТак вы можете получать последнюю информацию касательно последнего видео на канале,\nоднако не волнуйтесь, вы все еще будете получать сообщения от этого бота автоматически, как только мы заметим новое видео на одном из добавленных вами каналов.\nДля того чтобы удалить какой-либо канал, используйте комманду /remove плюс имя канала.\n\nТеперь, когда вы знаете основные функциональности бота, вы можете добавлять любой интересующий вас канал, а бот позаботится о том, чтобы снабжать вас актуальной информацией относительно последнего видео на канале.\nДля связи с разработчиком: https://t.me/golovakanta'
+"""
+Notification Bot мануал.
+
+Для добавления канала в список и дальнейшего получения уведомлений о выходе новых видео, воспользуйтесь командой /add, после чего пришлите ссылку на канал (можно также просто прислать ссылку на канал, без команды /add).
+Укажите имя, под которым Вы хотели бы сохранить этот канал, или пропустите этот шаг. 
+
+Теперь, когда канал добавлен в Ваш список, Вы будете получать оповещения о выходе нового видео на нем.
+
+В случае если Вы хотели бы перестать получать уведомления от этого канала, воспользуйтесь командой /remove и выберите канал, который хотите удалить.
+
+Для немедленной проверки канала на наличие нового видео на нем, воспользуйтесь командой /check. Выбранный канал будет проверен и, в случае выхода нового видео, Вы получите оповещение со ссылкой на новое видео.
+
+Просмотреть список добавленных Вами каналов можно с помощью команды /list.
+
+Сменить язык работы бота можно с помощью команды /lang.
+
+Для связи с разработчиком: https://t.me/golovakanta.
+"""
         ],
         'lang_start_command':
         [
@@ -87,10 +121,10 @@ localization = {
         ],
         'echo':
         [
-            'Хотите ли вы изменить имя канала?',
+            'Хотите ли Вы изменить имя канала?',
             'Что-то не похоже на URL 🤔. Попробуйте еще раз.',
-            'Этот канал уже есть в вашем списке, что бы вы хотели с ним сделать?',
-            'Этого канала еще нет в вашем списке, хотите его добавить?',
+            'Этот канал уже есть в Вашем списке, что бы Вы хотели с ним сделать?',
+            'Этого канала еще нет в Вашем списке, хотите его добавить?',
             'Канала с таким именем не существует.',
             'Канал не будет добавлено.',
         ]
