@@ -30,7 +30,14 @@ def inline_handler(update: Update, context: CallbackContext) -> None:
             text=localization[query_data[0]]['lang_start_command'][1],
             parse_mode='HTML'
         )
+    elif mode == 'start':
+        u.language = query_data[0]
+        u.save()
 
+        query.edit_message_text(
+            text=localization[u.language]['help_command'][0],
+            parse_mode='HTML'
+        )
     elif mode == 'add':
         if query_data[-1] == 'yes':
             query.edit_message_text(
