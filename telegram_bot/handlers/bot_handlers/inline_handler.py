@@ -1,13 +1,17 @@
-from django.conf import settings
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
-from telegram.ext import CallbackContext
-from youtube.models import ChannelUserItem
+import asyncio
 
-from telegram_bot.handlers.bot_handlers.utils import (add, check,
-                                                      get_inline_keyboard,
-                                                      log_errors, remove)
+from django.conf import settings
+from telegram import (InlineKeyboardButton, InlineKeyboardMarkup,
+                      KeyboardButton, ReplyKeyboardMarkup, Update)
+from telegram.ext import CallbackContext
+from telegram_bot.handlers.bot_handlers.echo_handler import (
+    help_command_text, language_command_text, manage_command_text,
+    upgrade_command_text)
+from telegram_bot.handlers.bot_handlers.utils import (
+    add, check, get_manage_inline_keyboard, log_errors, mute, remove)
 from telegram_bot.localization import localization
 from telegram_bot.models import User
+from youtube.models import ChannelUserItem
 
 
 @log_errors
@@ -34,10 +38,19 @@ def inline_handler(update: Update, context: CallbackContext) -> None:
         u.language = query_data[0]
         u.save()
 
-        query.edit_message_text(
-            text=localization[u.language]['help_command'][0],
-            parse_mode='HTML'
-        )
+        keyboard = [
+            [KeyboardButton(manage_command_text)],
+            [KeyboardButton(language_command_text)],
+            [KeyboardButton(help_command_text)],
+            [KeyboardButton(upgrade_command_text)]
+        ]
+
+        reply_markup = ReplyKeyboardMarkup(keyboard)
+
+        query.delete_message()
+        context.bot.send_message(chat_id=update.effective_chat.id, text=localization[u.language]['help_command'][0],
+                                 parse_mode='HTML',
+                                 reply_markup=reply_markup)
     elif mode == 'add':
         if query_data[-1] == 'yes':
             query.edit_message_text(
@@ -48,62 +61,29 @@ def inline_handler(update: Update, context: CallbackContext) -> None:
                 u, f"name{settings.SPLITTING_CHARACTER}{query_data[0]}")
         else:
             query.delete_message()
-            add(query_data[-1], update, u)
-    elif mode == 'check':
-        if 'pagination' in query_data:
-            page_num = int(query_data[-1])
-
-            reply_markup = InlineKeyboardMarkup(
-                get_inline_keyboard(u, 'check', page_num))
-
+            asyncio.run(add(query_data[-1], update, u))
+    elif mode == 'manage':
+        channel_id = query_data[-2]
+        try:
+            channel_name = [channel.channel_title for channel in ChannelUserItem.objects.filter(
+                user=u) if channel.channel.channel_id == channel_id][0]
+            remove(
+                update, u, channel_name) if query_data[-1] == 'remove' else mute(update, u, channel_name)
+        except:
             query.edit_message_text(
-                text=localization[u.language]['check_command'][0],
-                parse_mode='HTML',
-                reply_markup=reply_markup)
-        else:
-            channel_id = query_data[-1]
-            try:
-                channel_name = [channel.channel_title for channel in ChannelUserItem.objects.filter(
-                    user=u) if channel.channel.channel_id == channel_id][0]
-                check(update, u, channel_name)
-            except:
-                query.edit_message_text(
-                    text=localization[u.language]['check_command'][2],
-                    parse_mode='HTML'
-                )
-    elif mode == 'remove':
-        if 'pagination' in query_data:
-            page_num = int(query_data[-1])
+                text=localization[u.language]['remove_command'][3],
+                parse_mode='HTML'
+            )
+    elif mode == 'pagination':
+        page_num = int(query_data[-1])
 
-            reply_markup = InlineKeyboardMarkup(
-                get_inline_keyboard(u, 'remove', page_num))
+        reply_markup = InlineKeyboardMarkup(
+            get_manage_inline_keyboard(u, page_num))
 
-            query.edit_message_text(
-                text=localization[u.language]['remove_command'][0],
-                parse_mode='HTML',
-                reply_markup=reply_markup)
-        else:
-            channel_id = query_data[-1]
-            try:
-                channel_name = [channel.channel_title for channel in ChannelUserItem.objects.filter(
-                    user=u) if channel.channel.channel_id == channel_id][0]
-                remove(update, u, channel_name)
-            except:
-                query.edit_message_text(
-                    text=localization[u.language]['remove_command'][3],
-                    parse_mode='HTML'
-                )
-    elif mode == 'list':
-        if 'pagination' in query_data:
-            page_num = int(query_data[-1])
-
-            reply_markup = InlineKeyboardMarkup(
-                get_inline_keyboard(u, 'list', page_num, 'url'))
-
-            query.edit_message_text(
-                text=localization[u.language]['list_command'][0],
-                parse_mode='HTML',
-                reply_markup=reply_markup)
+        query.edit_message_text(
+            text=localization[u.language]['remove_command'][0],
+            parse_mode='HTML',
+            reply_markup=reply_markup)
     elif mode == 'echo':
         channel_id = query_data[-2]
         if any(command in query_data for command in ['check', 'remove']):

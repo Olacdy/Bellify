@@ -24,6 +24,8 @@ celery = "*"
 sqlalchemy = "*"
 scrapetube = "*"
 typing-extensions = "*"
+aiohttp = "*"
+fake-headers = "*"
 
 [requires]
 python_version = "3.9"

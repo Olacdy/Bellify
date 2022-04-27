@@ -1,112 +1,21 @@
-import logging
 import sys
 
 from django.conf import settings
-from telegram import (Bot, BotCommand, InlineKeyboardButton,
-                      InlineKeyboardMarkup, Update, user)
+from telegram import (Bot, InlineKeyboardButton,
+                      InlineKeyboardMarkup, Update)
 from telegram.error import Unauthorized
 from telegram.ext import (CallbackContext, CallbackQueryHandler,
                           CommandHandler, Dispatcher, Filters, MessageHandler,
                           Updater)
 from telegram_notification.celery import app
-from youtube.models import Channel, ChannelUserItem
-from youtube.utils import is_channel_url, scrape_id_by_url
+from youtube.models import ChannelUserItem
 
-from telegram_bot.handlers.bot_handlers.utils import (add, get_inline_keyboard,
+from telegram_bot.handlers.bot_handlers.utils import (get_manage_inline_keyboard, get_lang_inline_keyboard,
                                                       log_errors)
-from telegram_bot.inline_handler import inline_handler
+from telegram_bot.handlers.bot_handlers.echo_handler import echo_handler
+from telegram_bot.handlers.bot_handlers.inline_handler import inline_handler
 from telegram_bot.localization import localization
-from telegram_bot.models import Message, User
-
-
-@log_errors
-def do_echo(update: Update, context: CallbackContext) -> None:
-    u, _ = User.get_or_create_profile(
-        update.message.chat_id, update.message.from_user.username, False)
-    user_text = update.message.text
-
-    Message.get_or_create_message(u, user_text)
-
-    try:
-        echo_data = u.menu.split(f'{settings.SPLITTING_CHARACTER}')
-    except Exception as e:
-        echo_data = []
-
-    if 'add' in echo_data:
-        if is_channel_url(user_text):
-            User.set_menu_field(u)
-            channel_id = scrape_id_by_url(user_text)
-
-            if ChannelUserItem.objects.filter(user=u, channel=Channel.objects.filter(channel_id=channel_id).first()).exists():
-                channel = ChannelUserItem.objects.filter(
-                    user=u, channel=Channel.objects.filter(channel_id=channel_id).first()).first().channel
-                update.message.reply_text(
-                    text=f"{localization[u.language]['add_command'][4]} <a href=\"{channel.video_url}\">{channel.video_title}</a>",
-                    parse_mode='HTML'
-                )
-            else:
-                keyboard = [
-                    [
-                        InlineKeyboardButton(
-                            'Yes' if u.language == 'en' else 'Да', callback_data=f'add{settings.SPLITTING_CHARACTER}{channel_id}{settings.SPLITTING_CHARACTER}yes'),
-                        InlineKeyboardButton(
-                            'No' if u.language == 'en' else 'Нет', callback_data=f'add{settings.SPLITTING_CHARACTER}{channel_id}')
-                    ]
-                ]
-
-                reply_markup = InlineKeyboardMarkup(keyboard)
-
-                update.message.reply_text(
-                    text=localization[u.language]['echo'][0],
-                    parse_mode='HTML',
-                    reply_markup=reply_markup)
-        else:
-            update.message.reply_text(
-                text=localization[u.language]['echo'][1],
-                parse_mode='HTML'
-            )
-    elif 'name' in echo_data:
-        User.set_menu_field(u)
-        channel_id = u.menu.split(f'{settings.SPLITTING_CHARACTER}')[-1]
-        add(channel_id, update, u, user_text.lstrip())
-    else:
-        if is_channel_url(user_text):
-            channel_id = scrape_id_by_url(user_text)
-            channel = Channel.objects.filter(channel_url=user_text).first()
-            if ChannelUserItem.objects.filter(user=u, channel=channel).exists():
-                keyboard = [
-                    [
-                        InlineKeyboardButton(
-                            'Check' if u.language == 'en' else 'Проверить', callback_data=f'echo{settings.SPLITTING_CHARACTER}{channel_id}{settings.SPLITTING_CHARACTER}check'),
-                        InlineKeyboardButton(
-                            'Remove' if u.language == 'en' else 'Удалить', callback_data=f'echo{settings.SPLITTING_CHARACTER}{channel_id}{settings.SPLITTING_CHARACTER}remove')
-                    ]
-                ]
-
-                reply_markup = InlineKeyboardMarkup(keyboard)
-
-                update.message.reply_text(
-                    text=localization[u.language]['echo'][2],
-                    parse_mode='HTML',
-                    reply_markup=reply_markup)
-            else:
-                keyboard = [
-                    [
-                        InlineKeyboardButton(
-                            'Yes' if u.language == 'en' else 'Да', callback_data=f'echo{settings.SPLITTING_CHARACTER}{channel_id}{settings.SPLITTING_CHARACTER}yes'),
-                        InlineKeyboardButton(
-                            'No' if u.language == 'en' else 'Нет', callback_data=f'echo{settings.SPLITTING_CHARACTER}{channel_id}{settings.SPLITTING_CHARACTER}no')
-                    ]
-                ]
-
-                reply_markup = InlineKeyboardMarkup(keyboard)
-
-                update.message.reply_text(
-                    text=localization[u.language]['echo'][3],
-                    parse_mode='HTML',
-                    reply_markup=reply_markup)
-        else:
-            pass
+from telegram_bot.models import User
 
 
 @log_errors
@@ -114,16 +23,8 @@ def do_start(update: Update, context: CallbackContext) -> None:
     u, _ = User.get_or_create_profile(update.message.chat_id,
                                       update.message.from_user.username)
 
-    keyboard = [
-        [
-            InlineKeyboardButton(
-                '🇬🇧', callback_data=f'start{settings.SPLITTING_CHARACTER}en'),
-            InlineKeyboardButton(
-                '🇷🇺', callback_data=f'start{settings.SPLITTING_CHARACTER}ru')
-        ]
-    ]
-
-    reply_markup = InlineKeyboardMarkup(keyboard)
+    reply_markup = InlineKeyboardMarkup(
+        get_lang_inline_keyboard(command='start'))
 
     update.message.reply_text(
         text=localization[u.language]['lang_start_command'][0],
@@ -138,7 +39,7 @@ def do_remove(update: Update, context: CallbackContext) -> None:
 
     if ChannelUserItem.objects.filter(user=u):
         reply_markup = InlineKeyboardMarkup(
-            get_inline_keyboard(u, 'remove', 0))
+            get_manage_inline_keyboard(u, 'remove', 0))
 
         update.message.reply_text(
             text=localization[u.language]['remove_command'][0],
@@ -158,7 +59,7 @@ def do_list(update: Update, context: CallbackContext) -> None:
 
     if ChannelUserItem.objects.filter(user=u):
         reply_markup = InlineKeyboardMarkup(
-            get_inline_keyboard(u, 'list', 0, 'url'))
+            get_manage_inline_keyboard(u, 'list', 0, 'url'))
 
         update.message.reply_text(
             text=localization[u.language]['list_command'][0],
@@ -177,7 +78,8 @@ def do_check(update: Update, context: CallbackContext) -> None:
         update.message.chat_id, update.message.from_user.username)
 
     if ChannelUserItem.objects.filter(user=u):
-        reply_markup = InlineKeyboardMarkup(get_inline_keyboard(u, 'check', 0))
+        reply_markup = InlineKeyboardMarkup(
+            get_manage_inline_keyboard(u, 'check', 0))
 
         update.message.reply_text(
             text=localization[u.language]['check_command'][0],
@@ -188,39 +90,6 @@ def do_check(update: Update, context: CallbackContext) -> None:
             text=localization[u.language]['check_command'][1],
             parse_mode='HTML',
         )
-
-
-@log_errors
-def do_lang(update: Update, context: CallbackContext) -> None:
-    u, _ = User.get_or_create_profile(update.message.chat_id,
-                                      update.message.from_user.username)
-
-    keyboard = [
-        [
-            InlineKeyboardButton(
-                '🇬🇧', callback_data=f'lang{settings.SPLITTING_CHARACTER}en'),
-            InlineKeyboardButton(
-                '🇷🇺', callback_data=f'lang{settings.SPLITTING_CHARACTER}ru')
-        ]
-    ]
-
-    reply_markup = InlineKeyboardMarkup(keyboard)
-
-    update.message.reply_text(
-        text=localization[u.language]['lang_start_command'][0],
-        parse_mode='HTML',
-        reply_markup=reply_markup)
-
-
-@log_errors
-def do_help(update: Update, context: CallbackContext) -> None:
-    u, _ = User.get_or_create_profile(
-        update.message.chat_id, update.message.from_user.username)
-
-    update.message.reply_text(
-        text=localization[u.language]['help_command'][0],
-        parse_mode='HTML'
-    )
 
 
 @log_errors
@@ -237,47 +106,32 @@ def do_add(update: Update, context: CallbackContext) -> None:
 
 
 def set_up_commands(bot_instance: Bot) -> None:
-    langs_with_commands = {
-        'en': {
-            'start': 'Start notification bot 🚀',
-            'add': 'Add channel by it\'s URL',
-            'remove': 'Remove channel from list',
-            'check': 'Check channel from list',
-            'list': 'List of saved channels',
-            'help': 'Useguide for bot',
-            'lang': 'For language change'
-        },
-        'ru': {
-            'start': 'Запустить бота 🚀',
-            'add': 'Добавление канала с помощью URL',
-            'remove': 'Удалить канал из списка',
-            'check': 'Проверить канал из списка',
-            'list': 'Список сохраненных каналов',
-            'help': 'Справка',
-            'lang': 'Смена языка'
-        }
-    }
-
     bot_instance.delete_my_commands()
-    for language_code in langs_with_commands:
-        bot_instance.set_my_commands(
-            language_code=language_code,
-            commands=[
-                BotCommand(command, description) for command, description in langs_with_commands[language_code].items()
-            ]
-        )
+    # langs_with_commands = {
+    #     'en': {
+    #         'start': 'Start notification bot 🚀',
+    #     },
+    #     'ru': {
+    #         'start': 'Запустить бота 🚀',
+    #     }
+    # }
+
+    # for language_code in langs_with_commands:
+    #     bot_instance.set_my_commands(
+    #         language_code=language_code,
+    #         commands=[
+    #             BotCommand(command, description) for command, description in langs_with_commands[language_code].items()
+    #         ]
+    #     )
 
 
 def setup_dispatcher(dp):
     dp.add_handler(CommandHandler('add', do_add))
     dp.add_handler(CommandHandler('remove', do_remove))
     dp.add_handler(CommandHandler('check', do_check))
-    dp.add_handler(CommandHandler('list', do_list))
-    dp.add_handler(CommandHandler('help', do_help))
     dp.add_handler(CommandHandler('start', do_start))
-    dp.add_handler(CommandHandler('lang', do_lang))
     dp.add_handler(MessageHandler(
-        Filters.text & ~Filters.command, do_echo))
+        Filters.text & ~Filters.command, echo_handler))
     dp.add_handler(CallbackQueryHandler(inline_handler))
 
     return dp

@@ -24,6 +24,11 @@ class User(CreateUpdateTracker):
     deep_link = models.CharField(max_length=64, **nb)
     menu = models.CharField(max_length=64, **nb)
 
+    status = models.CharField(max_length=1, default='B', ** nb)
+
+    max_youtube_channels_number = models.PositiveIntegerField(default=3, **nb)
+    max_twitch_channels_number = models.PositiveIntegerField(default=0, **nb)
+
     is_blocked_bot = models.BooleanField(default=False)
 
     is_admin = models.BooleanField(default=False)
