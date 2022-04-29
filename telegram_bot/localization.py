@@ -1,36 +1,29 @@
+# TODO Clean Unused localization
+
 localization = {
     'en': {
-        'add_command':
+        'notification':
         [
-            'Now send the channel\'s URL.',
+            ['New video from', 'is out!'],
+            'is live now!',
+            'Go to the livestream.'
+        ],
+        'add':
+        [
             'Send Your custom channel name.',
-            ['The new channel added with the name', ' .\nThe last video is'],
+            ['The new channel added with the name', '.\nThe last video is'],
             'Cannot add a new channel because a channel with the same name already exists.\nTry coming up with a new name, or leave the name parameter blank.',
             'This channel is already added to Your profile!\nThe last video is',
         ],
-        'remove_command':
+        'manage':
         [
-            'Select a channel that You would like to remove.',
-            'Sorry. There are no channels added right now maybe, try using /add command.',
-            'Your record has been deleted successfully.',
-            'No channel with such a name.',
+            '⚙️Manage Channels⚙️',
+            'Sorry, but You have no added channels right now. Try to add one.',
+            'Looks like You have deleted all of Your channels.',
         ],
-        'check_command':
+        'help':
         [
-            'Select a channel that You would like to check.',
-            'Sorry. There are no channels added right now maybe, try using /add command.',
-            'No channel with such a name.',
-            'No new video on this channel.\nThe last video is',
-            ['New video from', 'is out!'],
-        ],
-        'list_command':
-        [
-            'List of Your added channels.',
-            'Sorry. There are no channels added right now maybe, try using /add command.',
-        ],
-        'help_command':
-        [
-"""
+            """
 Notification Bot manual. 
 
 To add a channel to the list and further receive notifications about the release of new videos, use the /add command, then send a link to the channel (You can also just send a link to the channel, without the /add command). 
@@ -57,45 +50,35 @@ To contact the developer: https://t.me/golovakanta.
         'echo':
         [
             'Do You want to change the channel\'s name?',
-            'This doesn\'t look like a URL 🤔. Try again.',
-            'This channel is already in your list. What do you want to do with it?',
+            'This channel is already in your list. What You like to delete it?',
             'This channel is not on Your list. Would You like to add it?',
             'No channel with such a name.',
-            'The channel will not be added.',
+            'Sorry, You have exceeded Your limit on the number of channels. Try to delete one of the channels You have already added.\n\nOr support the project and increase Your limit.',
         ]
     },
     'ru': {
-        'add_command':
+        'notification':
         [
-            'Теперь можете прислать URL канала.',
+            ['Новое видео от', 'уже вышло!'],
+            'сейчас стримит!',
+            'Перейти на стрим.'
+        ],
+        'add':
+        [
             'Можете прислать имя, под которым хотите сохранить канал.',
             ['Новый канал под именем', ' был добавлен.\nПоследнее видео'],
             'Невозможно добавить новый канал под этим именем.\nПопробуйте придумать новое имя или оставить параметр имени пустым.',
             'Этот канал уже добавлен к Вашему профилю!\nПоследнее видео',
         ],
-        'remove_command': [
-            'Выберите канал, который Вы хотели бы удалить.',
-            'Извините, пока у вас нет никаких каналов, попробуйте добавить новый с помощью /add.',
-            'Ваш канал был успешно удален.',
-            'Канала с таким именем не существует.',
-        ],
-        'check_command':
+        'manage':
         [
-            'Выберите канал, который Вы хотели бы проверить.',
-            'Извините, пока у Вас нет никаких каналов, попробуйте добавить новый с помощью /add.',
-            'Канала с таким именем не существует.',
-            'На этом канале еще нет нового видео.\nПоследнее видео',
-            ['Новое видео от', 'уже вышло!'],
+            '⚙️Управление Каналами⚙️',
+            'Извините, Вы удалили все ваши каналы.',
+            'У Вас пока нет каналов. Попробуйте добавить.'
         ],
-        'list_command':
+        'help':
         [
-            'Список добавленных Вами каналов',
-            'Извините, пока у Вас нет никаких каналов, попробуйте добавить новый с помощью /add.',
-
-        ],
-        'help_command':
-        [
-"""
+            """
 Notification Bot мануал.
 
 Для добавления канала в список и дальнейшего получения уведомлений о выходе новых видео, воспользуйтесь командой /add, после чего пришлите ссылку на канал (можно также просто прислать ссылку на канал, без команды /add).
@@ -121,12 +104,11 @@ Notification Bot мануал.
         ],
         'echo':
         [
-            'Хотите ли Вы изменить имя канала?',
-            'Что-то не похоже на URL 🤔. Попробуйте еще раз.',
-            'Этот канал уже есть в Вашем списке, что бы Вы хотели с ним сделать?',
+            'Хотите сохранить канал под Вашим именем?',
+            'Этот канал уже есть в Вашем списке. Хотите его удалить?',
             'Этого канала еще нет в Вашем списке, хотите его добавить?',
             'Канала с таким именем не существует.',
-            'Канал не будет добавлено.',
+            'Извините, Вы превысили Ваш лимит на количество каналов. Попробуйте удалить один из уже добавленных Вами каналов.\n\nИли поддержите проект и увеличьте Ваш лимит.',
         ]
     }
 }

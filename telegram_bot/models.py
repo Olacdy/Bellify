@@ -9,6 +9,12 @@ from django.db.models import QuerySet, Manager
 from utils.models import CreateUpdateTracker, nb, GetOrNoneManager
 
 
+PLAN_CHOICES = (
+    ('B', 'Basic'),
+    ('P', 'Premium')
+)
+
+
 class AdminUserManager(Manager):
     def get_queryset(self):
         return super().get_queryset().filter(is_admin=True)
@@ -24,7 +30,8 @@ class User(CreateUpdateTracker):
     deep_link = models.CharField(max_length=64, **nb)
     menu = models.CharField(max_length=64, **nb)
 
-    status = models.CharField(max_length=1, default='B', ** nb)
+    status = models.CharField(
+        max_length=1, choices=PLAN_CHOICES, default='B', **nb)
 
     max_youtube_channels_number = models.PositiveIntegerField(default=3, **nb)
     max_twitch_channels_number = models.PositiveIntegerField(default=0, **nb)

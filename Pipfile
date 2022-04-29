@@ -26,6 +26,7 @@ scrapetube = "*"
 typing-extensions = "*"
 aiohttp = "*"
 fake-headers = "*"
+streamlink = "*"
 
 [requires]
 python_version = "3.9"

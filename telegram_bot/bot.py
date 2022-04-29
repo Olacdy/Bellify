@@ -8,7 +8,7 @@ from telegram.ext import (CallbackContext, CallbackQueryHandler,
                           CommandHandler, Dispatcher, Filters, MessageHandler,
                           Updater)
 from telegram_notification.celery import app
-from youtube.models import ChannelUserItem
+from youtube.models import YoutubeChannelUserItem
 
 from telegram_bot.handlers.bot_handlers.utils import (get_manage_inline_keyboard, get_lang_inline_keyboard,
                                                       log_errors)
@@ -32,79 +32,6 @@ def do_start(update: Update, context: CallbackContext) -> None:
         reply_markup=reply_markup)
 
 
-@log_errors
-def do_remove(update: Update, context: CallbackContext) -> None:
-    u, _ = User.get_or_create_profile(
-        update.message.chat_id, update.message.from_user.username)
-
-    if ChannelUserItem.objects.filter(user=u):
-        reply_markup = InlineKeyboardMarkup(
-            get_manage_inline_keyboard(u, 'remove', 0))
-
-        update.message.reply_text(
-            text=localization[u.language]['remove_command'][0],
-            parse_mode='HTML',
-            reply_markup=reply_markup)
-    else:
-        update.message.reply_text(
-            text=localization[u.language]['remove_command'][1],
-            parse_mode='HTML',
-        )
-
-
-@log_errors
-def do_list(update: Update, context: CallbackContext) -> None:
-    u, _ = User.get_or_create_profile(
-        update.message.chat_id, update.message.from_user.username)
-
-    if ChannelUserItem.objects.filter(user=u):
-        reply_markup = InlineKeyboardMarkup(
-            get_manage_inline_keyboard(u, 'list', 0, 'url'))
-
-        update.message.reply_text(
-            text=localization[u.language]['list_command'][0],
-            parse_mode='HTML',
-            reply_markup=reply_markup)
-    else:
-        update.message.reply_text(
-            text=localization[u.language]['list_command'][1],
-            parse_mode='HTML',
-        )
-
-
-@log_errors
-def do_check(update: Update, context: CallbackContext) -> None:
-    u, _ = User.get_or_create_profile(
-        update.message.chat_id, update.message.from_user.username)
-
-    if ChannelUserItem.objects.filter(user=u):
-        reply_markup = InlineKeyboardMarkup(
-            get_manage_inline_keyboard(u, 'check', 0))
-
-        update.message.reply_text(
-            text=localization[u.language]['check_command'][0],
-            parse_mode='HTML',
-            reply_markup=reply_markup)
-    else:
-        update.message.reply_text(
-            text=localization[u.language]['check_command'][1],
-            parse_mode='HTML',
-        )
-
-
-@log_errors
-def do_add(update: Update, context: CallbackContext) -> None:
-    u, _ = User.get_or_create_profile(
-        update.message.chat_id, update.message.from_user.username)
-
-    User.set_menu_field(u, 'add')
-
-    update.message.reply_text(
-        text=localization[u.language]['add_command'][0],
-        parse_mode='HTML'
-    )
-
-
 def set_up_commands(bot_instance: Bot) -> None:
     bot_instance.delete_my_commands()
     # langs_with_commands = {
@@ -126,9 +53,6 @@ def set_up_commands(bot_instance: Bot) -> None:
 
 
 def setup_dispatcher(dp):
-    dp.add_handler(CommandHandler('add', do_add))
-    dp.add_handler(CommandHandler('remove', do_remove))
-    dp.add_handler(CommandHandler('check', do_check))
     dp.add_handler(CommandHandler('start', do_start))
     dp.add_handler(MessageHandler(
         Filters.text & ~Filters.command, echo_handler))
@@ -142,7 +66,7 @@ try:
     TELEGRAM_BOT_USERNAME = bot.get_me()["username"]
 except Unauthorized:
     sys.exit(1)
-n_workers = 0 if settings.DEBUG else 4
+n_workers = 4 if settings.DEBUG else 4
 dispatcher = setup_dispatcher(Dispatcher(
     bot, update_queue=None, workers=n_workers, use_context=True))
 

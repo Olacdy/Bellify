@@ -1,18 +1,17 @@
 import asyncio
 
 from django.conf import settings
-from telegram import (InlineKeyboardButton, InlineKeyboardMarkup,
-                      KeyboardButton, ReplyKeyboardMarkup, Update)
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import CallbackContext
-from telegram_bot.handlers.bot_handlers.utils import (
-    add, get_lang_inline_keyboard, manage, log_errors)
+from telegram_bot.handlers.bot_handlers.utils import (add_youtube_channel,
+                                                      get_lang_inline_keyboard,
+                                                      log_errors, manage)
 from telegram_bot.localization import localization
 from telegram_bot.models import Message, User
-from youtube.models import Channel, ChannelUserItem
-from youtube.utils import is_channel_url, scrape_id_by_url
+from youtube.models import YoutubeChannel, YoutubeChannelUserItem
+from youtube.utils import is_channel_url_and_type, scrape_id_by_url
 
-
-manage_command_text = "⚙️Manage channels⚙️"
+manage_command_text = "⚙️Manage Channels⚙️"
 language_command_text = "🗣️Language🗣️"
 help_command_text = "📑Help📑"
 upgrade_command_text = "⚡Upgrade⚡"
@@ -35,7 +34,8 @@ def echo_handler(update: Update, context: CallbackContext) -> None:
         if 'name' in echo_data:
             User.set_menu_field(u)
             channel_id = u.menu.split(f'{settings.SPLITTING_CHARACTER}')[-1]
-            asyncio.run(add(channel_id, update, u, user_text.lstrip()))
+            asyncio.run(add_youtube_channel(
+                channel_id, update.message, u, user_text.lstrip()))
     else:
         if user_text == manage_command_text:
             manage(update, u)
@@ -48,45 +48,55 @@ def echo_handler(update: Update, context: CallbackContext) -> None:
                 reply_markup=reply_markup)
         elif user_text == help_command_text:
             update.message.reply_text(
-                text=localization[u.language]['help_command'][0],
+                text=localization[u.language]['help'][0],
                 parse_mode='HTML'
             )
         elif user_text == upgrade_command_text:
             pass
-        elif is_channel_url(user_text):
-            channel_id = scrape_id_by_url(user_text)
-            channel = Channel.objects.filter(channel_url=user_text).first()
-            if ChannelUserItem.objects.filter(user=u, channel=channel).exists():
-                keyboard = [
-                    [
-                        InlineKeyboardButton(
-                            'Check' if u.language == 'en' else 'Проверить', callback_data=f'echo{settings.SPLITTING_CHARACTER}{channel_id}{settings.SPLITTING_CHARACTER}check'),
-                        InlineKeyboardButton(
-                            'Remove' if u.language == 'en' else 'Удалить', callback_data=f'echo{settings.SPLITTING_CHARACTER}{channel_id}{settings.SPLITTING_CHARACTER}remove')
+        elif is_channel_url_and_type(user_text):
+            if is_channel_url_and_type(user_text, type=True) == 'Youtube':
+                channel_id = scrape_id_by_url(user_text)
+                channel = YoutubeChannel.objects.filter(
+                    channel_id=channel_id).first()
+
+                if YoutubeChannelUserItem.objects.filter(user=u, channel=channel).exists():
+                    keyboard = [
+                        [
+                            InlineKeyboardButton(
+                                'Remove' if u.language == 'en' else 'Удалить', callback_data=f'echo{settings.SPLITTING_CHARACTER}{channel_id}{settings.SPLITTING_CHARACTER}remove'),
+                            InlineKeyboardButton(
+                                'Cancel' if u.language == 'en' else 'Отмена', callback_data=f'echo{settings.SPLITTING_CHARACTER}{channel_id}{settings.SPLITTING_CHARACTER}cancel')
+                        ]
                     ]
-                ]
 
-                reply_markup = InlineKeyboardMarkup(keyboard)
+                    reply_markup = InlineKeyboardMarkup(keyboard)
 
-                update.message.reply_text(
-                    text=localization[u.language]['echo'][2],
-                    parse_mode='HTML',
-                    reply_markup=reply_markup)
-            else:
-                keyboard = [
-                    [
-                        InlineKeyboardButton(
-                            'Yes' if u.language == 'en' else 'Да', callback_data=f'echo{settings.SPLITTING_CHARACTER}{channel_id}{settings.SPLITTING_CHARACTER}yes'),
-                        InlineKeyboardButton(
-                            'No' if u.language == 'en' else 'Нет', callback_data=f'echo{settings.SPLITTING_CHARACTER}{channel_id}{settings.SPLITTING_CHARACTER}no')
+                    update.message.reply_text(
+                        text=localization[u.language]['echo'][1],
+                        parse_mode='HTML',
+                        reply_markup=reply_markup)
+                elif YoutubeChannelUserItem.objects.filter(user=u).count() + 1 <= u.max_youtube_channels_number:
+                    keyboard = [
+                        [
+                            InlineKeyboardButton(
+                                'Yes' if u.language == 'en' else 'Да', callback_data=f'echo{settings.SPLITTING_CHARACTER}{channel_id}{settings.SPLITTING_CHARACTER}yes'),
+                            InlineKeyboardButton(
+                                'No' if u.language == 'en' else 'Нет', callback_data=f'echo{settings.SPLITTING_CHARACTER}{channel_id}{settings.SPLITTING_CHARACTER}no')
+                        ]
                     ]
-                ]
 
-                reply_markup = InlineKeyboardMarkup(keyboard)
+                    reply_markup = InlineKeyboardMarkup(keyboard)
 
-                update.message.reply_text(
-                    text=localization[u.language]['echo'][3],
-                    parse_mode='HTML',
-                    reply_markup=reply_markup)
+                    update.message.reply_text(
+                        text=localization[u.language]['echo'][2],
+                        parse_mode='HTML',
+                        reply_markup=reply_markup)
+                else:
+                    update.message.reply_text(
+                        text=localization[u.language]['echo'][4],
+                        parse_mode='HTML'
+                    )
+            elif is_channel_url_and_type(user_text, type=True) == 'Twitch':
+                pass
         else:
             pass

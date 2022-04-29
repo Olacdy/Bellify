@@ -2,24 +2,32 @@ import time
 from typing import Dict, List, Optional, Union
 
 import telegram_bot.handlers.bot_handlers.utils as utils
-from telegram_notification.celery import app
 from django.core.management import call_command
 from telegram_bot.localization import localization
-from youtube.models import ChannelUserItem
+from telegram_bot.models import User
+from youtube.models import YoutubeChannel, YoutubeChannelUserItem
 
 from celery.utils.log import get_task_logger
+from telegram_notification.celery import app
 
 logger = get_task_logger(__name__)
 
 
+# TODO Add Union YoutubeChannel and TwitchChannel
 @app.task(ignore_result=True)
-def notify_users(users, channel):
+def notify_users(users: List[User], channel: YoutubeChannel, live: Optional[bool] = False) -> None:
     for user in users:
-        user_title = ChannelUserItem.objects.get(
-            channel=channel, user=user) if ChannelUserItem.objects.get(
-            channel=channel, user=user) else channel.title
-        utils._send_message(
-            user.user_id, f"{localization[user.language]['check_command'][4][0]} {user_title} {localization[user.language]['check_command'][4][1]}\n<a href=\"{channel.video_url}\">{channel.video_title}</a>")
+        user_title = YoutubeChannelUserItem.objects.get(
+            channel=channel, user=user).channel_title
+        if not live:
+            utils._send_message(
+                user.user_id, f"{localization[user.language]['notification'][0][0]} {user_title} {localization[user.language]['notification'][0][1]}\n<a href=\"{channel.video_url}\">{channel.video_title}</a>",
+                reply_markup=utils._get_youtube_video_reply_markup(
+                    channel.video_title, channel.video_url))
+        else:
+            utils._send_message(
+                user.user_id, f"{user_title} <a href=\"https://www.youtube.com/channel/{channel.channel_id}/live\">{localization[user.language]['notification'][1]}</a>",
+                reply_markup=utils._get_youtube_live_markup(user, channel.channel_id))
 
 
 @app.task(ignore_result=True)
@@ -54,5 +62,10 @@ def broadcast_message(
 
 
 @app.task(ignore_result=True)
-def check_channels():
-    call_command("check_channels", )
+def check_channels_for_video_youtube():
+    call_command("check_channels_for_video_youtube", )
+
+
+@app.task(ignore_result=True)
+def check_channels_for_live_stream_youtube():
+    call_command("check_channels_for_live_stream_youtube", )

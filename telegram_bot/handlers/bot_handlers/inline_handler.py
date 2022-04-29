@@ -8,10 +8,10 @@ from telegram_bot.handlers.bot_handlers.echo_handler import (
     help_command_text, language_command_text, manage_command_text,
     upgrade_command_text)
 from telegram_bot.handlers.bot_handlers.utils import (
-    add, check, get_manage_inline_keyboard, log_errors, mute, remove)
+    add_youtube_channel, get_manage_inline_keyboard, log_errors, mute, remove)
 from telegram_bot.localization import localization
 from telegram_bot.models import User
-from youtube.models import ChannelUserItem
+from youtube.models import YoutubeChannelUserItem
 
 
 @log_errors
@@ -48,32 +48,27 @@ def inline_handler(update: Update, context: CallbackContext) -> None:
         reply_markup = ReplyKeyboardMarkup(keyboard)
 
         query.delete_message()
-        context.bot.send_message(chat_id=update.effective_chat.id, text=localization[u.language]['help_command'][0],
+        context.bot.send_message(chat_id=update.effective_chat.id, text=localization[u.language]['help'][0],
                                  parse_mode='HTML',
                                  reply_markup=reply_markup)
     elif mode == 'add':
         if query_data[-1] == 'yes':
             query.edit_message_text(
-                text=localization[u.language]['add_command'][1],
+                text=localization[u.language]['add'][0],
                 parse_mode='HTML'
             )
             User.set_menu_field(
                 u, f"name{settings.SPLITTING_CHARACTER}{query_data[0]}")
         else:
             query.delete_message()
-            asyncio.run(add(query_data[-1], update, u))
+            asyncio.run(add_youtube_channel(
+                query_data[-1], update.callback_query.message, u))
     elif mode == 'manage':
         channel_id = query_data[-2]
-        try:
-            channel_name = [channel.channel_title for channel in ChannelUserItem.objects.filter(
-                user=u) if channel.channel.channel_id == channel_id][0]
-            remove(
-                update, u, channel_name) if query_data[-1] == 'remove' else mute(update, u, channel_name)
-        except:
-            query.edit_message_text(
-                text=localization[u.language]['remove_command'][3],
-                parse_mode='HTML'
-            )
+        channel_name = [channel.channel_title for channel in YoutubeChannelUserItem.objects.filter(
+            user=u) if channel.channel.channel_id == channel_id][0]
+        remove(
+            update, u, channel_name) if query_data[-1] == 'remove' else mute(update, u, channel_name)
     elif mode == 'pagination':
         page_num = int(query_data[-1])
 
@@ -81,25 +76,25 @@ def inline_handler(update: Update, context: CallbackContext) -> None:
             get_manage_inline_keyboard(u, page_num))
 
         query.edit_message_text(
-            text=localization[u.language]['remove_command'][0],
+            text=localization[u.language]['manage'][0],
             parse_mode='HTML',
             reply_markup=reply_markup)
     elif mode == 'echo':
         channel_id = query_data[-2]
-        if any(command in query_data for command in ['check', 'remove']):
+        if 'remove' in query_data:
             try:
-                channel_name = [channel.channel_title for channel in ChannelUserItem.objects.filter(
+                channel_name = [channel.channel_title for channel in YoutubeChannelUserItem.objects.filter(
                     user=u) if channel.channel.channel_id == channel_id][0]
-                check(update, u, channel_name) if 'check' in query_data else remove(
-                    update, u, channel_name)
+                remove(update, u, channel_name)
             except Exception as e:
                 query.edit_message_text(
-                    text=localization[u.language]['echo'][4],
+                    text=localization[u.language]['echo'][3],
                     parse_mode='HTML'
                 )
+        elif 'cancel' in query_data:
+            query.delete_message()
         elif any(command in query_data for command in ['yes', 'no']):
-            query.delete_message() if 'yes' in query_data else query.edit_message_text(
-                text=localization[u.language]['echo'][5], parse_mode='HTML')
+            query.delete_message()
             if 'yes' in query_data:
                 keyboard = [
                     [
