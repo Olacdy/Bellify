@@ -22,11 +22,9 @@ python-telegram-bot = "*"
 django-celery-beat = "*"
 celery = "*"
 sqlalchemy = "*"
-scrapetube = "*"
 typing-extensions = "*"
 aiohttp = "*"
 fake-headers = "*"
-streamlink = "*"
 
 [requires]
 python_version = "3.9"

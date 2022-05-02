@@ -1,19 +1,16 @@
-# TODO Clean Unused localization
-
 localization = {
     'en': {
         'notification':
         [
             ['New video from', 'is out!'],
             'is live now!',
-            'Go to the livestream.'
         ],
         'add':
         [
             'Send Your custom channel name.',
-            ['The new channel added with the name', '.\nThe last video is'],
+            ['The new channel added with the name',
+                '.\nThe last video is', '.\nChannel is live now!'],
             'Cannot add a new channel because a channel with the same name already exists.\nTry coming up with a new name, or leave the name parameter blank.',
-            'This channel is already added to Your profile!\nThe last video is',
         ],
         'manage':
         [
@@ -61,14 +58,13 @@ To contact the developer: https://t.me/golovakanta.
         [
             ['Новое видео от', 'уже вышло!'],
             'сейчас стримит!',
-            'Перейти на стрим.'
         ],
         'add':
         [
             'Можете прислать имя, под которым хотите сохранить канал.',
-            ['Новый канал под именем', ' был добавлен.\nПоследнее видео'],
+            ['Новый канал под именем', ' был добавлен.\nПоследнее видео',
+                ' был добавлен.\nНа канале проходит трансляция!'],
             'Невозможно добавить новый канал под этим именем.\nПопробуйте придумать новое имя или оставить параметр имени пустым.',
-            'Этот канал уже добавлен к Вашему профилю!\nПоследнее видео',
         ],
         'manage':
         [

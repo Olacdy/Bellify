@@ -11,13 +11,14 @@ class YoutubeChannel(models.Model):
     title = models.CharField(max_length=200)
 
     channel_id = models.CharField(max_length=200)
-    channel_url = models.URLField()
+    channel_url = models.URLField(**nb)
 
     video_title = models.CharField(max_length=200, **nb)
     video_url = models.URLField(**nb)
     video_publication_date = models.DateTimeField(**nb)
 
     live_title = models.CharField(max_length=200, **nb)
+    live_url = models.URLField(**nb)
     is_live = models.BooleanField(default=False, **nb)
 
     users = models.ManyToManyField(User, through='YoutubeChannelUserItem')

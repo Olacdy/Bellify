@@ -1,21 +1,44 @@
-import imp
 import re
 from datetime import datetime
-
+import streamlink
 from typing import Optional
 import aiohttp
 import bs4 as soup
 import requests
 from dateutil import parser
+import time
 from fake_headers import Headers
 
 
 # Gets last video info and channels title from given channel id
-async def get_channel_and_video_info(headers: Headers, session: aiohttp.ClientSession, channel_id: str):
-    async with session.get(f'https://www.youtube.com/feeds/videos.xml?channel_id={channel_id}', headers=headers.generate()) as response:
+async def get_channel_and_video_info(session: aiohttp.ClientSession, channel_id: str, video_num: Optional[int] = 0):
+    async with session.get(f'https://www.youtube.com/feeds/videos.xml?channel_id={channel_id}', headers=Headers().generate()) as response:
         html = soup.BeautifulSoup(await response.text(), 'xml')
-        entry = html.find("entry")
+        entry = html.find_all("entry")[video_num]
         return entry.find("title").text, f"https://www.youtube.com/watch?v={entry.videoId.text}", datetime.strptime(parser.parse(entry.find("published").text).strftime("%m/%d/%Y, %H:%M:%S"), "%m/%d/%Y, %H:%M:%S"), entry.find("author").find("name").text
+
+
+# Checks if channels is live
+async def is_channel_live(session: aiohttp.ClientSession, channel_id: str):
+    async with session.get(f'https://www.youtube.com/channel/{channel_id}/live', headers=Headers().generate()) as response:
+        html = soup.BeautifulSoup(await response.text(), "lxml")
+        try:
+            html.select_one("meta[content][name='title']")['content']
+            return not any('add_upcoming_event_reminder' in script.get_text() for script in html.find_all("script"))
+        except:
+            return False
+
+
+# Gets live broadcast title from given channel id
+async def get_channel_live_title_and_url(session: aiohttp.ClientSession, channel_id: str):
+    async with session.get(f'https://www.youtube.com/channel/{channel_id}/live', headers=Headers().generate()) as response:
+        html = soup.BeautifulSoup(await response.text(), "lxml")
+        try:
+            live_id = re.findall(
+                r'\"liveStreamability\":{\"liveStreamabilityRenderer\":{\"videoId\":\"(\w+)\"', str(html))[0]
+            return html.select_one("meta[content][name='title']")['content'], f"https://www.youtube.com/watch?v={live_id}"
+        except:
+            return None, None
 
 
 # Checks if given string is youtube channel url
@@ -30,13 +53,13 @@ def _is_twitch_channel_url(string: str) -> bool:
 
 
 # Checks if given string is url
-def is_channel_url_and_type(string: str, type: Optional[bool] = False):
+def get_channel_url_type(string: str):
     if _is_youtube_channel_url(string):
-        return 'Youtube' if type else True
+        return 'Youtube'
     elif _is_twitch_channel_url(string):
-        return 'Twitch' if type else True
+        return 'Twitch'
     else:
-        return False
+        return None
 
 
 # Checks if channels identifier is channel id

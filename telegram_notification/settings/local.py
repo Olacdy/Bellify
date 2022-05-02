@@ -121,7 +121,7 @@ USE_I18N = True
 
 USE_L10N = True
 
-USE_TZ = True
+USE_TZ = False
 
 
 # Static files (CSS, JavaScript, Images)
@@ -163,4 +163,4 @@ SPLITTING_CHARACTER = 'ø'
 
 SESSION_CLIENT_COOKIES = {"CONSENT": "YES+cb"}
 
-REQUESTS_DELAY = 0.2
+REQUESTS_DELAY = 0.05

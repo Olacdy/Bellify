@@ -1,16 +1,16 @@
+import logging
 import sys
 
 from django.conf import settings
-from telegram import (Bot, InlineKeyboardButton,
+from telegram import (Bot,
                       InlineKeyboardMarkup, Update)
 from telegram.error import Unauthorized
 from telegram.ext import (CallbackContext, CallbackQueryHandler,
                           CommandHandler, Dispatcher, Filters, MessageHandler,
                           Updater)
 from telegram_notification.celery import app
-from youtube.models import YoutubeChannelUserItem
 
-from telegram_bot.handlers.bot_handlers.utils import (get_manage_inline_keyboard, get_lang_inline_keyboard,
+from telegram_bot.handlers.bot_handlers.utils import (get_lang_inline_keyboard,
                                                       log_errors)
 from telegram_bot.handlers.bot_handlers.echo_handler import echo_handler
 from telegram_bot.handlers.bot_handlers.inline_handler import inline_handler
@@ -62,6 +62,7 @@ def setup_dispatcher(dp):
 
 
 bot = Bot(settings.TOKEN)
+logging.getLogger("streamlink").setLevel('NONE')
 try:
     TELEGRAM_BOT_USERNAME = bot.get_me()["username"]
 except Unauthorized:
