@@ -10,12 +10,11 @@ from utils.models import nb
 class YoutubeChannel(models.Model):
     title = models.CharField(max_length=200)
 
-    channel_id = models.CharField(max_length=200)
-    channel_url = models.URLField(**nb)
+    channel_id = models.CharField(max_length=200, unique=True)
+    channel_url = models.URLField(unique=True, **nb)
 
     video_title = models.CharField(max_length=200, **nb)
     video_url = models.URLField(**nb)
-    video_publication_date = models.DateTimeField(**nb)
 
     live_title = models.CharField(max_length=200, **nb)
     live_url = models.URLField(**nb)

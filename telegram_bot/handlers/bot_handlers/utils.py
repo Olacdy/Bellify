@@ -1,19 +1,16 @@
-import asyncio
+import time
 from typing import Dict, List, Optional, Union
 
-import aiohttp
 import telegram
 import telegram_notification.tasks as tasks
-from asgiref.sync import sync_to_async
 from django.conf import settings
-import time
 from telegram import (InlineKeyboardButton, InlineKeyboardMarkup, Message,
                       MessageEntity, Update)
 from telegram_bot.localization import localization
 from telegram_bot.models import User
 from youtube.models import YoutubeChannel, YoutubeChannelUserItem
-from youtube.utils import (get_channel_and_video_info, get_channel_live_title_and_url,
-                           is_channel_live)
+from youtube.utils import (get_channels_and_videos_info,
+                           get_channels_live_title_and_url)
 
 
 def log_errors(f):
@@ -29,70 +26,65 @@ def log_errors(f):
 
 
 # Checks for streams and alerts every premium user if there is one
-async def check_for_live_stream_youtube() -> None:
-
-    def _get_premium_not_muted_users(channel: YoutubeChannel) -> List[User]:
-        return [item.user for item in YoutubeChannelUserItem.objects.filter(
-            channel=channel, is_muted=False, user__status='P')]
-
-    def _get_list_of_premium_channels() -> List[YoutubeChannel]:
-        return list(YoutubeChannel.objects.filter(users__status='P'))
-
-    async with aiohttp.ClientSession(cookies=settings.SESSION_CLIENT_COOKIES) as session:
-        channels = await sync_to_async(_get_list_of_premium_channels, thread_sensitive=True)()
-        for channel in channels:
-            start = time.time()
-            await is_channel_live(session, channel.channel_id)
-            await get_channel_live_title_and_url(session, channel.channel_id)
-            print(time.time() - start)
-            if await is_channel_live(session, channel.channel_id):
-                live_title, live_url = await get_channel_live_title_and_url(session, channel.channel_id)
-                if live_title != channel.live_title:
-                    channel.live_title = live_title
-                    channel.live_url = live_url
-                    channel.is_live = True
-                    await sync_to_async(tasks.notify_users, thread_sensitive=True)(await sync_to_async(
-                        _get_premium_not_muted_users, thread_sensitive=True)(channel), channel, True)
-            else:
-                channel.live_title = None
-                channel.live_url = None
-                channel.is_live = False
-            await sync_to_async(channel.save, thread_sensitive=True)()
-
-
-# Checks for new video and alerts every user if there is one
-async def check_for_new_video() -> None:
-
-    def _get_not_muted_users(channel: YoutubeChannel) -> List[User]:
-        return [item.user for item in YoutubeChannelUserItem.objects.filter(
-            channel=channel, is_muted=False)]
-
-    def _get_list_of_channels() -> List[YoutubeChannel]:
-        return list(YoutubeChannel.objects.all())
-
-    async with aiohttp.ClientSession(cookies=settings.SESSION_CLIENT_COOKIES) as session:
-        channels = await sync_to_async(_get_list_of_channels, thread_sensitive=True)()
-        for channel in channels:
-            await asyncio.sleep(settings.REQUESTS_DELAY)
-            if await is_channel_live(session, channel.channel_id):
-                live_title, live_url = get_channel_live_title_and_url(
-                    session, channel.channel_id)
+def check_for_live_stream_youtube() -> None:
+    channels = list(YoutubeChannel.objects.filter(users__status='P'))
+    channels_live_urls = [
+        f'https://www.youtube.com/channel/{channel.channel_id}/live' for channel in channels]
+    live_info = get_channels_live_title_and_url(channels_live_urls)
+    for channel, live_info_item, in zip(channels, live_info):
+        live_title, live_url, _ = live_info_item
+        if live_title and live_url:
+            if live_title != channel.live_title and live_url != channel.live_url:
                 channel.live_title = live_title
                 channel.live_url = live_url
                 channel.is_live = True
-            else:
-                channel.live_title = None
-                channel.live_url = None
-                channel.is_live = False
-            new_video_title, new_video_url, new_upload_time, _ = await get_channel_and_video_info(session, channel.channel_id)
-            if new_video_url != channel.video_url:
-                channel.video_title = new_video_title
-                channel.video_url = new_video_url
-                channel.video_publication_date = new_upload_time
-                await sync_to_async(channel.save, thread_sensitive=True)()
-                if channel.live_title != channel.video_title:
-                    await sync_to_async(tasks.notify_users, thread_sensitive=True)(await sync_to_async(
-                        _get_not_muted_users, thread_sensitive=True)(channel), channel)
+                tasks.notify_users([item.user for item in YoutubeChannelUserItem.objects.filter(
+                    channel=channel, is_muted=False, user__status='P')], channel, True)
+        else:
+            channel.live_title = None
+            channel.live_url = None
+            channel.is_live = False
+        channel.save()
+
+
+# Checks for new video and alerts every user if there is one
+def check_for_new_video() -> None:
+    channels_live_urls = []
+    channels_with_new_video = []
+
+    channels = list(YoutubeChannel.objects.all())
+    channels_urls = [
+        f'https://www.youtube.com/feeds/videos.xml?channel_id={channel.channel_id}' for channel in channels]
+
+    video_info = get_channels_and_videos_info(
+        channels_urls)
+
+    for channel, video_info_item in zip(channels, video_info):
+        video_title, video_url, _ = video_info_item
+        if video_url != channel.video_url:
+            channels_with_new_video.append(
+                (channel, video_title, video_url))
+            channels_live_urls.append(
+                f'https://www.youtube.com/channel/{channel.channel_id}/live')
+
+    live_info = get_channels_live_title_and_url(channels_live_urls)
+
+    for channel_with_new_video, live_info_item in zip(channels_with_new_video, live_info):
+        live_title, live_url, is_upcoming = live_info_item
+        channel, video_title, video_url = channel_with_new_video
+        if live_title and live_url:
+            if live_title != channel.live_title and live_url != channel.live_url:
+                channel.live_title = live_title
+                channel.live_url = live_url
+                channel.is_live = True
+                tasks.notify_users([item.user for item in YoutubeChannelUserItem.objects.filter(
+                    channel=channel, is_muted=False, user__status='P')], channel, True)
+        elif not is_upcoming:
+            channel.video_title = video_title
+            channel.video_url = video_url
+            tasks.notify_users([item.user for item in YoutubeChannelUserItem.objects.filter(
+                channel=channel, is_muted=False)], channel)
+        channel.save()
 
 
 # Returns Manage inline keyboard
@@ -141,61 +133,45 @@ def get_lang_inline_keyboard(command: Optional[str] = 'lang') -> List:
 
 # Adds Youtube channel to a given user
 @log_errors
-async def add_youtube_channel(channel_id: str, message: Message, u: User, name: Optional[str] = None) -> None:
-    def _is_user_subscribed(u: User, channel: YoutubeChannel):
-        return u in channel.users.all()
-
-    def _is_channel_item_with_same_name_exists(u: User, channel_title: str):
-        return YoutubeChannelUserItem.objects.filter(user=u, channel_title=channel_title).exists()
-
-    def _is_channel_exists(channel_id: str):
-        return YoutubeChannel.objects.filter(channel_id=channel_id).exists()
-
-    def _get_channel_essentials(channel_id: str):
-        channel = YoutubeChannel.objects.get(channel_id=channel_id)
-        return channel.video_title, channel.video_url, channel.video_publication_date, channel.title, channel.live_title, channel.live_url
-
-    def _get_video_reply_markup(video_title: str, video_url: str):
-        return InlineKeyboardMarkup([
-            [InlineKeyboardButton(text=video_title, url=video_url)]
-        ])
-
-    if not await sync_to_async(_is_channel_exists, thread_sensitive=True)(channel_id):
-        async with aiohttp.ClientSession(cookies=settings.SESSION_CLIENT_COOKIES) as session:
-            video_title, video_url, upload_time, channel_title = await get_channel_and_video_info(session, channel_id)
-            live_title, live_url = await get_channel_live_title_and_url(session, channel_id)
-            if not await is_channel_live(session, channel_id) and video_url == live_url:
-                video_title, video_url, upload_time, channel_title = await get_channel_and_video_info(session, channel_id, 1)
-                live_title, live_url = None, None
+def add_youtube_channel(channel_id: str, message: Message, u: User, name: Optional[str] = None) -> None:
+    if not YoutubeChannel.objects.filter(channel_id=channel_id).exists():
+        video_title, video_url, channel_title = get_channels_and_videos_info(
+            [f'https://www.youtube.com/feeds/videos.xml?channel_id={channel_id}'])[0]
+        live_title, live_url = get_channels_live_title_and_url(
+            [f'https://www.youtube.com/channel/{channel_id}/live'])[0]
+        if video_url == live_url:
+            video_title, video_url, channel_title = get_channels_and_videos_info(
+                [f'https://www.youtube.com/feeds/videos.xml?channel_id={channel_id}'], 1)[0]
+            live_title, live_url = None, None
 
     else:
-        video_title, video_url, upload_time, channel_title, live_title, live_url = await sync_to_async(_get_channel_essentials, thread_sensitive=True)(channel_id)
+        channel = YoutubeChannel.objects.get(channel_id=channel_id)
+        video_title, video_url, channel_title, live_title, live_url = channel.video_title, channel.video_url, channel.title, channel.live_title, channel.live_url
 
     channel_name = name if name else channel_title
-    channel, _ = await sync_to_async(YoutubeChannel.objects.get_or_create, thread_sensitive=True)(
+    channel, _ = YoutubeChannel.objects.get_or_create(
         channel_url=f'https://www.youtube.com/channel/{channel_id}',
         defaults={
             'title': channel_title,
             'channel_id': channel_id,
             'video_title': video_title,
             'video_url': video_url,
-            'video_publication_date': upload_time,
             'live_title': live_title,
             'live_url': live_url,
             'is_live': True if live_title else False
         }
     )
 
-    if not await sync_to_async(_is_user_subscribed, thread_sensitive=True)(u, channel):
-        if not await sync_to_async(_is_channel_item_with_same_name_exists, thread_sensitive=True)(u, channel_name):
-            await sync_to_async(YoutubeChannelUserItem.objects.create,  thread_sensitive=True)(
+    if not u in channel.users.all():
+        if not YoutubeChannelUserItem.objects.filter(user=u, channel_title=channel_title).exists():
+            YoutubeChannelUserItem.objects.create(
                 user=u, channel=channel, channel_title=channel_name)
 
             if not live_title:
                 message.reply_text(
                     text=f"{localization[u.language]['add'][1][0]} {channel_name}{localization[u.language]['add'][1][1]} <a href=\"{video_url}\">{video_title}</a>",
                     parse_mode='HTML',
-                    reply_markup=_get_video_reply_markup(
+                    reply_markup=_get_notification_reply_markup(
                         video_title, video_url)
                 )
             else:

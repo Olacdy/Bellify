@@ -61,8 +61,8 @@ def inline_handler(update: Update, context: CallbackContext) -> None:
                 u, f"name{settings.SPLITTING_CHARACTER}{query_data[0]}")
         else:
             query.delete_message()
-            asyncio.run(add_youtube_channel(
-                query_data[-1], update.callback_query.message, u))
+            add_youtube_channel(
+                query_data[-1], update.callback_query.message, u)
     elif mode == 'manage':
         channel_id = query_data[-2]
         channel_name = [channel.channel_title for channel in YoutubeChannelUserItem.objects.filter(

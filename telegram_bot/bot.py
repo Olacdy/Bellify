@@ -1,19 +1,19 @@
-import logging
+import asyncio
+import platform
 import sys
 
 from django.conf import settings
-from telegram import (Bot,
-                      InlineKeyboardMarkup, Update)
+from telegram import Bot, InlineKeyboardMarkup, Update
 from telegram.error import Unauthorized
 from telegram.ext import (CallbackContext, CallbackQueryHandler,
                           CommandHandler, Dispatcher, Filters, MessageHandler,
                           Updater)
 from telegram_notification.celery import app
 
-from telegram_bot.handlers.bot_handlers.utils import (get_lang_inline_keyboard,
-                                                      log_errors)
 from telegram_bot.handlers.bot_handlers.echo_handler import echo_handler
 from telegram_bot.handlers.bot_handlers.inline_handler import inline_handler
+from telegram_bot.handlers.bot_handlers.utils import (get_lang_inline_keyboard,
+                                                      log_errors)
 from telegram_bot.localization import localization
 from telegram_bot.models import User
 
@@ -62,7 +62,9 @@ def setup_dispatcher(dp):
 
 
 bot = Bot(settings.TOKEN)
-logging.getLogger("streamlink").setLevel('NONE')
+if platform.system() == 'Windows':
+    asyncio.set_event_loop_policy(
+        asyncio.WindowsSelectorEventLoopPolicy())
 try:
     TELEGRAM_BOT_USERNAME = bot.get_me()["username"]
 except Unauthorized:

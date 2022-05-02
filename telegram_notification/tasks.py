@@ -22,8 +22,7 @@ def notify_users(users: List[User], channel: YoutubeChannel, live: Optional[bool
         if not live:
             utils._send_message(
                 user.user_id, f"{localization[user.language]['notification'][0][0]} {user_title} {localization[user.language]['notification'][0][1]}\n<a href=\"{channel.video_url}\">{channel.video_title}</a>",
-                reply_markup=utils._get_notification_reply_markup(
-                    channel.video_title, channel.video_url))
+                reply_markup=utils._get_notification_reply_markup(channel.video_title, channel.video_url))
         else:
             utils._send_message(
                 user.user_id, f"{user_title} {localization[user.language]['notification'][1]}\n<a href=\"{channel.live_url}\">{channel.live_title}</a>",

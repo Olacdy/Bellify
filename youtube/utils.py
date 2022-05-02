@@ -1,44 +1,51 @@
 import re
-from datetime import datetime
-import streamlink
-from typing import Optional
+import asyncio
+from asgiref import sync
+from typing import Optional, List
 import aiohttp
 import bs4 as soup
+from django.conf import settings
 import requests
-from dateutil import parser
 import time
 from fake_headers import Headers
 
 
-# Gets last video info and channels title from given channel id
-async def get_channel_and_video_info(session: aiohttp.ClientSession, channel_id: str, video_num: Optional[int] = 0):
-    async with session.get(f'https://www.youtube.com/feeds/videos.xml?channel_id={channel_id}', headers=Headers().generate()) as response:
-        html = soup.BeautifulSoup(await response.text(), 'xml')
-        entry = html.find_all("entry")[video_num]
-        return entry.find("title").text, f"https://www.youtube.com/watch?v={entry.videoId.text}", datetime.strptime(parser.parse(entry.find("published").text).strftime("%m/%d/%Y, %H:%M:%S"), "%m/%d/%Y, %H:%M:%S"), entry.find("author").find("name").text
+# Gets videos info and channels title from given channel feeds urls
+def get_channels_and_videos_info(urls: List[str], video_num: Optional[int] = 0):
+    async def get_all(urls):
+        async with aiohttp.ClientSession(cookies=settings.SESSION_CLIENT_COOKIES) as session:
+            async def fetch(url):
+                async with session.get(url, headers=Headers().generate()) as response:
+                    html = soup.BeautifulSoup(await response.text(), 'xml')
+                    entry = html.find_all("entry")[video_num]
+                    return entry.find("title").text, f"https://www.youtube.com/watch?v={entry.videoId.text}", entry.find("author").find("name").text
+            return await asyncio.gather(*[
+                fetch(url) for url in urls
+            ])
+    return sync.async_to_sync(get_all)(urls)
 
 
-# Checks if channels is live
-async def is_channel_live(session: aiohttp.ClientSession, channel_id: str):
-    async with session.get(f'https://www.youtube.com/channel/{channel_id}/live', headers=Headers().generate()) as response:
-        html = soup.BeautifulSoup(await response.text(), "lxml")
-        try:
-            html.select_one("meta[content][name='title']")['content']
-            return not any('add_upcoming_event_reminder' in script.get_text() for script in html.find_all("script"))
-        except:
-            return False
-
-
-# Gets live broadcast title from given channel id
-async def get_channel_live_title_and_url(session: aiohttp.ClientSession, channel_id: str):
-    async with session.get(f'https://www.youtube.com/channel/{channel_id}/live', headers=Headers().generate()) as response:
-        html = soup.BeautifulSoup(await response.text(), "lxml")
-        try:
-            live_id = re.findall(
-                r'\"liveStreamability\":{\"liveStreamabilityRenderer\":{\"videoId\":\"(\w+)\"', str(html))[0]
-            return html.select_one("meta[content][name='title']")['content'], f"https://www.youtube.com/watch?v={live_id}"
-        except:
-            return None, None
+# Get channels live title and urls
+def get_channels_live_title_and_url(urls: List[str]):
+    async def get_all(urls):
+        async with aiohttp.ClientSession(cookies=settings.SESSION_CLIENT_COOKIES) as session:
+            async def fetch(url):
+                async with session.get(url, headers=Headers().generate()) as response:
+                    text = await response.text()
+                    try:
+                        if not any(re.findall(r'(add_upcoming_event_reminder)', text)):
+                            live_id = re.findall(
+                                r'\"liveStreamability\":{\"liveStreamabilityRenderer\":{\"videoId\":\"(\w+)\"', text)[0]
+                            return re.findall(
+                                r'<meta name=\"title\" content=\"(.*?)\"><meta', text)[0], f"https://www.youtube.com/watch?v={live_id}", False
+                        else:
+                            return None, None, True
+                    except:
+                        return None, None, None
+            return await asyncio.gather(*[
+                fetch(url) for url in urls
+            ])
+    return sync.async_to_sync(get_all)(urls)
 
 
 # Checks if given string is youtube channel url

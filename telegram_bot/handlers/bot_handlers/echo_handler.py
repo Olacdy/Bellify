@@ -34,8 +34,8 @@ def echo_handler(update: Update, context: CallbackContext) -> None:
         if 'name' in echo_data:
             User.set_menu_field(u)
             channel_id = u.menu.split(f'{settings.SPLITTING_CHARACTER}')[-1]
-            asyncio.run(add_youtube_channel(
-                channel_id, update.message, u, user_text.lstrip()))
+            add_youtube_channel(channel_id, update.message,
+                                u, user_text.lstrip())
     else:
         if user_text == manage_command_text:
             manage(update, u)

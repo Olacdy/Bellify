@@ -17,8 +17,7 @@ class YoutubeChannelUserItemInline(admin.TabularInline):
 @admin.register(YoutubeChannel)
 class YoutubeChannelAdmin(admin.ModelAdmin):
     inlines = (YoutubeChannelUserItemInline,)
-    list_display = ('title', 'channel_id', 'video_title',
-                    'video_publication_date', 'is_live')
+    list_display = ('title', 'video_title', 'is_live')
 
 
 admin.site.unregister(SolarSchedule)
