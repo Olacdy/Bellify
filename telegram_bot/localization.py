@@ -51,6 +51,7 @@ To contact the developer: https://t.me/golovakanta.
             'This channel is not on Your list. Would You like to add it?',
             'No channel with such a name.',
             'Sorry, You have exceeded Your limit on the number of channels. Try to delete one of the channels You have already added.\n\nOr support the project and increase Your limit.',
+            'Doesn\'t look like a real channel URL, please try again.'
         ]
     },
     'ru': {
@@ -105,6 +106,7 @@ Notification Bot мануал.
             'Этого канала еще нет в Вашем списке, хотите его добавить?',
             'Канала с таким именем не существует.',
             'Извините, Вы превысили Ваш лимит на количество каналов. Попробуйте удалить один из уже добавленных Вами каналов.\n\nИли поддержите проект и увеличьте Ваш лимит.',
+            'URL-адрес не похож на реальный URL канала. Повторите попытку.',
         ]
     }
 }

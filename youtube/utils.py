@@ -33,7 +33,7 @@ def get_channels_live_title_and_url(urls: List[str]):
                 async with session.get(url, headers=Headers().generate()) as response:
                     text = await response.text()
                     try:
-                        if not any(re.findall(r'(add_upcoming_event_reminder)', text)):
+                        if not any(re.findall(r'(\"isUpcoming\":true)', text)):
                             live_id = re.findall(
                                 r'\"liveStreamability\":{\"liveStreamabilityRenderer\":{\"videoId\":\"(\w+)\"', text)[0]
                             return re.findall(

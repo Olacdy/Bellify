@@ -137,11 +137,12 @@ def add_youtube_channel(channel_id: str, message: Message, u: User, name: Option
     if not YoutubeChannel.objects.filter(channel_id=channel_id).exists():
         video_title, video_url, channel_title = get_channels_and_videos_info(
             [f'https://www.youtube.com/feeds/videos.xml?channel_id={channel_id}'])[0]
-        live_title, live_url = get_channels_live_title_and_url(
+        live_title, live_url, is_upcoming = get_channels_live_title_and_url(
             [f'https://www.youtube.com/channel/{channel_id}/live'])[0]
         if video_url == live_url:
             video_title, video_url, channel_title = get_channels_and_videos_info(
                 [f'https://www.youtube.com/feeds/videos.xml?channel_id={channel_id}'], 1)[0]
+        if is_upcoming:
             live_title, live_url = None, None
 
     else:
