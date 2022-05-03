@@ -1,13 +1,10 @@
 from __future__ import annotations
-from django.db import models
 
 from typing import Optional
 
 from django.db import models
-from django.db.models import QuerySet, Manager
-
-from utils.models import CreateUpdateTracker, nb, GetOrNoneManager
-
+from django.db.models import Manager, QuerySet
+from utils.models import CreateUpdateTracker, GetOrNoneManager, nb
 
 PLAN_CHOICES = (
     ('B', 'Basic'),
@@ -26,7 +23,7 @@ class User(CreateUpdateTracker):
     first_name = models.CharField(max_length=256, **nb)
     last_name = models.CharField(max_length=256, **nb)
     language = models.CharField(
-        max_length=8, help_text="Telegram client's lang", **nb)
+        max_length=8, default="en", help_text="Telegram client's lang", **nb)
     deep_link = models.CharField(max_length=64, **nb)
     menu = models.CharField(max_length=64, **nb)
 

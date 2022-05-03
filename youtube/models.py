@@ -1,5 +1,3 @@
-from typing import Optional
-
 from django.db import models
 from telegram_bot.models import User
 

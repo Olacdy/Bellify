@@ -34,22 +34,6 @@ def do_start(update: Update, context: CallbackContext) -> None:
 
 def set_up_commands(bot_instance: Bot) -> None:
     bot_instance.delete_my_commands()
-    # langs_with_commands = {
-    #     'en': {
-    #         'start': 'Start notification bot 🚀',
-    #     },
-    #     'ru': {
-    #         'start': 'Запустить бота 🚀',
-    #     }
-    # }
-
-    # for language_code in langs_with_commands:
-    #     bot_instance.set_my_commands(
-    #         language_code=language_code,
-    #         commands=[
-    #             BotCommand(command, description) for command, description in langs_with_commands[language_code].items()
-    #         ]
-    #     )
 
 
 def setup_dispatcher(dp):

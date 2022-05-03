@@ -1,5 +1,3 @@
-import asyncio
-
 from django.conf import settings
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import CallbackContext
@@ -14,7 +12,7 @@ from youtube.utils import get_channel_url_type, scrape_id_by_url
 manage_command_text = "⚙️Manage Channels⚙️"
 language_command_text = "🗣️Language🗣️"
 help_command_text = "📑Help📑"
-upgrade_command_text = "⚡Upgrade⚡"
+upgrade_command_text = "⭐Upgrade⭐"
 
 
 @log_errors

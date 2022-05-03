@@ -1,5 +1,3 @@
-import asyncio
-
 from django.conf import settings
 from telegram import (InlineKeyboardButton, InlineKeyboardMarkup,
                       KeyboardButton, ReplyKeyboardMarkup, Update)

@@ -137,8 +137,6 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-YOUTUBE_API_KEY = env.str('YOUTUBE_API_KEY')
-
 TOKEN = env.str('TELEGRAM_TOKEN')
 
 CELERY_BROKER_URL = os.environ.get("REDIS_URL", "") + "/1"
