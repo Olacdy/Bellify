@@ -9,11 +9,6 @@ from telegram_bot.models import Message, User
 from youtube.models import YoutubeChannel, YoutubeChannelUserItem
 from youtube.utils import get_channel_url_type, scrape_id_by_url
 
-manage_command_text = "⚙️Manage Channels⚙️"
-language_command_text = "🗣️Language🗣️"
-help_command_text = "📑Help📑"
-upgrade_command_text = "⭐Upgrade⭐"
-
 
 @log_errors
 def echo_handler(update: Update, context: CallbackContext) -> None:
@@ -35,21 +30,21 @@ def echo_handler(update: Update, context: CallbackContext) -> None:
             add_youtube_channel(channel_id, update.message,
                                 u, user_text.lstrip())
     else:
-        if user_text == manage_command_text:
+        if user_text == localization[u.language]['commands']['manage_command_text']:
             manage(update, u)
-        elif user_text == language_command_text:
+        elif user_text == localization[u.language]['commands']['language_command_text']:
             reply_markup = InlineKeyboardMarkup(get_lang_inline_keyboard())
 
             update.message.reply_text(
                 text=localization[u.language]['lang_start_command'][0],
                 parse_mode='HTML',
                 reply_markup=reply_markup)
-        elif user_text == help_command_text:
+        elif user_text == localization[u.language]['commands']['help_command_text']:
             update.message.reply_text(
                 text=localization[u.language]['help'][0],
                 parse_mode='HTML'
             )
-        elif user_text == upgrade_command_text:
+        elif user_text == localization[u.language]['commands']['upgrade_command_text']:
             pass
         elif get_channel_url_type(user_text) == 'Youtube':
             try:
@@ -66,9 +61,9 @@ def echo_handler(update: Update, context: CallbackContext) -> None:
                     keyboard = [
                         [
                             InlineKeyboardButton(
-                                'Remove' if u.language == 'en' else 'Удалить', callback_data=f'echo{settings.SPLITTING_CHARACTER}{channel_id}{settings.SPLITTING_CHARACTER}remove'),
+                                '🗑️', callback_data=f'echo{settings.SPLITTING_CHARACTER}{channel_id}{settings.SPLITTING_CHARACTER}remove'),
                             InlineKeyboardButton(
-                                'Cancel' if u.language == 'en' else 'Отмена', callback_data=f'echo{settings.SPLITTING_CHARACTER}{channel_id}{settings.SPLITTING_CHARACTER}cancel')
+                                '❌', callback_data=f'echo{settings.SPLITTING_CHARACTER}{channel_id}{settings.SPLITTING_CHARACTER}cancel')
                         ]
                     ]
 
@@ -82,9 +77,9 @@ def echo_handler(update: Update, context: CallbackContext) -> None:
                     keyboard = [
                         [
                             InlineKeyboardButton(
-                                'Yes' if u.language == 'en' else 'Да', callback_data=f'echo{settings.SPLITTING_CHARACTER}{channel_id}{settings.SPLITTING_CHARACTER}yes'),
+                                '✔️', callback_data=f'echo{settings.SPLITTING_CHARACTER}{channel_id}{settings.SPLITTING_CHARACTER}yes'),
                             InlineKeyboardButton(
-                                'No' if u.language == 'en' else 'Нет', callback_data=f'echo{settings.SPLITTING_CHARACTER}{channel_id}{settings.SPLITTING_CHARACTER}no')
+                                '❌', callback_data=f'echo{settings.SPLITTING_CHARACTER}{channel_id}{settings.SPLITTING_CHARACTER}no')
                         ]
                     ]
 

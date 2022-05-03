@@ -1,5 +1,9 @@
 localization = {
     'en': {
+        'commands': {'manage_command_text': "⚙️Manage Channels⚙️",
+                     'language_command_text': "🗣️Language🗣️",
+                     'help_command_text': "📑Help📑",
+                     'upgrade_command_text': "⭐Upgrade⭐"},
         'notification':
         [
             ['New video from', 'is out!'],
@@ -15,7 +19,7 @@ localization = {
         'manage':
         [
             '⚙️Manage Channels⚙️',
-            'Sorry, but You have no added channels right now. Try to add one.',
+            'Sorry, but You have no added channels right now. Try to send a link.',
             'Looks like You have deleted all of Your channels.',
         ],
         'help':
@@ -42,7 +46,11 @@ To contact the developer: https://t.me/golovakanta.
         'lang_start_command':
         [
             'Please, select a language.',
-            'Thank you, You will continue to work in English.',
+            'Thanks, You will continue to work in 🇬🇧.',
+        ],
+        'keyboard_command':
+        [
+            'Sending a keyboard...'
         ],
         'echo':
         [
@@ -55,6 +63,10 @@ To contact the developer: https://t.me/golovakanta.
         ]
     },
     'ru': {
+        'commands': {'manage_command_text': "⚙️Управление Каналами⚙️",
+                     'language_command_text': "🗣️Язык🗣️",
+                     'help_command_text': "📑Помощь📑",
+                     'upgrade_command_text': "⭐Прокачать⭐"},
         'notification':
         [
             ['Новое видео от', 'уже вышло!'],
@@ -70,8 +82,8 @@ To contact the developer: https://t.me/golovakanta.
         'manage':
         [
             '⚙️Управление Каналами⚙️',
-            'Извините, Вы удалили все ваши каналы.',
-            'У Вас пока нет каналов. Попробуйте добавить.'
+            'Пока у Вас нет добавленных каналов. Поробуйте прислать ссылку.',
+            'Похоже, Вы удалили все Ваши каналы.',
         ],
         'help':
         [
@@ -97,7 +109,11 @@ Notification Bot мануал.
         'lang_start_command':
         [
             'Пожалуйста, выберите язык.',
-            'Спасибо, теперь работа будет продолжена на русском.',
+            'Спасибо, теперь работа будет продолжена на 🇷🇺.',
+        ],
+        'keyboard_command':
+        [
+            'Присылаем клавиатуру...'
         ],
         'echo':
         [

@@ -1,9 +1,11 @@
 import asyncio
 import platform
 import sys
+from typing import Dict
 
 from django.conf import settings
-from telegram import Bot, InlineKeyboardMarkup, Update
+from telegram import (Bot, BotCommand, InlineKeyboardMarkup,
+                      ReplyKeyboardMarkup, Update)
 from telegram.error import Unauthorized
 from telegram.ext import (CallbackContext, CallbackQueryHandler,
                           CommandHandler, Dispatcher, Filters, MessageHandler,
@@ -12,7 +14,8 @@ from telegram_notification.celery import app
 
 from telegram_bot.handlers.bot_handlers.echo_handler import echo_handler
 from telegram_bot.handlers.bot_handlers.inline_handler import inline_handler
-from telegram_bot.handlers.bot_handlers.utils import (get_lang_inline_keyboard,
+from telegram_bot.handlers.bot_handlers.utils import (_get_keyboard,
+                                                      get_lang_inline_keyboard,
                                                       log_errors)
 from telegram_bot.localization import localization
 from telegram_bot.models import User
@@ -32,12 +35,43 @@ def do_start(update: Update, context: CallbackContext) -> None:
         reply_markup=reply_markup)
 
 
+@log_errors
+def do_keyboard(update: Update, context: CallbackContext) -> None:
+    u, _ = User.get_or_create_profile(update.message.chat_id,
+                                      update.message.from_user.username)
+
+    reply_markup = ReplyKeyboardMarkup(_get_keyboard(u))
+
+    update.message.reply_text(
+        text=localization[u.language]['keyboard_command'][0],
+        parse_mode='HTML',
+        reply_markup=reply_markup
+    )
+
+
 def set_up_commands(bot_instance: Bot) -> None:
+    langs_with_commands: Dict[str, Dict[str, str]] = {
+        'en': {
+            'keyboard': 'Get the keyboard ⌨️',
+        },
+        'ru': {
+            'keyboard': 'Получить клавиатуру ⌨️',
+        }
+    }
+
     bot_instance.delete_my_commands()
+    for language_code in langs_with_commands:
+        bot_instance.set_my_commands(
+            language_code=language_code,
+            commands=[
+                BotCommand(command, description) for command, description in langs_with_commands[language_code].items()
+            ]
+        )
 
 
 def setup_dispatcher(dp):
     dp.add_handler(CommandHandler('start', do_start))
+    dp.add_handler(CommandHandler('keyboard', do_keyboard))
     dp.add_handler(MessageHandler(
         Filters.text & ~Filters.command, echo_handler))
     dp.add_handler(CallbackQueryHandler(inline_handler))

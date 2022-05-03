@@ -1,12 +1,9 @@
 from django.conf import settings
-from telegram import (InlineKeyboardButton, InlineKeyboardMarkup,
-                      KeyboardButton, ReplyKeyboardMarkup, Update)
+from telegram import (InlineKeyboardButton,
+                      InlineKeyboardMarkup, ReplyKeyboardMarkup, Update)
 from telegram.ext import CallbackContext
-from telegram_bot.handlers.bot_handlers.echo_handler import (
-    help_command_text, language_command_text, manage_command_text,
-    upgrade_command_text)
 from telegram_bot.handlers.bot_handlers.utils import (
-    add_youtube_channel, get_manage_inline_keyboard, log_errors, mute, remove)
+    add_youtube_channel, get_manage_inline_keyboard, log_errors, mute, remove, _get_keyboard)
 from telegram_bot.localization import localization
 from telegram_bot.models import User
 from youtube.models import YoutubeChannelUserItem
@@ -24,29 +21,14 @@ def inline_handler(update: Update, context: CallbackContext) -> None:
     mode, query_data = query.data.split(f'{settings.SPLITTING_CHARACTER}')[
         0], query.data.split(f'{settings.SPLITTING_CHARACTER}')[1:]
 
-    if mode == 'lang':
+    if mode == 'lang' or mode == 'start':
         u.language = query_data[0]
         u.save()
 
-        query.edit_message_text(
-            text=localization[query_data[0]]['lang_start_command'][1],
-            parse_mode='HTML'
-        )
-    elif mode == 'start':
-        u.language = query_data[0]
-        u.save()
-
-        keyboard = [
-            [KeyboardButton(manage_command_text)],
-            [KeyboardButton(language_command_text)],
-            [KeyboardButton(help_command_text)],
-            [KeyboardButton(upgrade_command_text)]
-        ]
-
-        reply_markup = ReplyKeyboardMarkup(keyboard)
+        reply_markup = ReplyKeyboardMarkup(_get_keyboard(u))
 
         query.delete_message()
-        context.bot.send_message(chat_id=update.effective_chat.id, text=localization[u.language]['help'][0],
+        context.bot.send_message(chat_id=update.effective_chat.id, text=localization[query_data[0]]['lang_start_command' if mode == 'lang' else 'help'][1],
                                  parse_mode='HTML',
                                  reply_markup=reply_markup)
     elif mode == 'add':
@@ -97,9 +79,9 @@ def inline_handler(update: Update, context: CallbackContext) -> None:
                 keyboard = [
                     [
                         InlineKeyboardButton(
-                            'Yes' if u.language == 'en' else 'Да', callback_data=f'add{settings.SPLITTING_CHARACTER}{channel_id}{settings.SPLITTING_CHARACTER}yes'),
+                            '✔️', callback_data=f'add{settings.SPLITTING_CHARACTER}{channel_id}{settings.SPLITTING_CHARACTER}yes'),
                         InlineKeyboardButton(
-                            'No' if u.language == 'en' else 'Нет', callback_data=f'add{settings.SPLITTING_CHARACTER}{channel_id}')
+                            '❌', callback_data=f'add{settings.SPLITTING_CHARACTER}{channel_id}')
                     ]
                 ]
 

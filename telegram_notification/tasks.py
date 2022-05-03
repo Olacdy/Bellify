@@ -17,16 +17,21 @@ logger = get_task_logger(__name__)
 @app.task(ignore_result=True)
 def notify_users(users: List[User], channel: YoutubeChannel, live: Optional[bool] = False) -> None:
     for user in users:
-        user_title = YoutubeChannelUserItem.objects.get(
-            channel=channel, user=user).channel_title
+        item = YoutubeChannelUserItem.objects.get(
+            channel=channel, user=user)
+        user_title, is_muted = item.channel_title, item.is_muted
         if not live:
             utils._send_message(
                 user.user_id, f"{localization[user.language]['notification'][0][0]} {user_title} {localization[user.language]['notification'][0][1]}\n<a href=\"{channel.video_url}\">{channel.video_title}</a>",
-                reply_markup=utils._get_notification_reply_markup(channel.video_title, channel.video_url))
+                reply_markup=utils._get_notification_reply_markup(
+                    channel.video_title, channel.video_url),
+                disable_notification=not is_muted)
         else:
             utils._send_message(
                 user.user_id, f"{user_title} {localization[user.language]['notification'][1]}\n<a href=\"{channel.live_url}\">{channel.live_title}</a>",
-                reply_markup=utils._get_notification_reply_markup(channel.live_title, channel.live_url))
+                reply_markup=utils._get_notification_reply_markup(
+                    channel.live_title, channel.live_url),
+                disable_notification=not is_muted)
 
 
 @app.task(ignore_result=True)
@@ -35,7 +40,7 @@ def broadcast_message(
     text: str,
     entities: Optional[List[Dict]] = None,
     reply_markup: Optional[List[List[Dict]]] = None,
-    sleep_between: float = 0.4,
+    sleep_between: float = 0.2,
     parse_mode='HTML',
 ) -> None:
     """ It's used to broadcast message to big amount of users """

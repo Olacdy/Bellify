@@ -3,7 +3,7 @@ from typing import Dict, List, Optional, Union
 import telegram
 import telegram_notification.tasks as tasks
 from django.conf import settings
-from telegram import (InlineKeyboardButton, InlineKeyboardMarkup, Message,
+from telegram import (InlineKeyboardButton, KeyboardButton, InlineKeyboardMarkup, Message,
                       MessageEntity, Update)
 from telegram_bot.localization import localization
 from telegram_bot.models import User
@@ -38,7 +38,7 @@ def check_for_live_stream_youtube() -> None:
                 channel.live_url = live_url
                 channel.is_live = True
                 tasks.notify_users([item.user for item in YoutubeChannelUserItem.objects.filter(
-                    channel=channel, is_muted=False, user__status='P')], channel, True)
+                    channel=channel, user__status='P')], channel, True)
         else:
             channel.live_title = None
             channel.live_url = None
@@ -77,12 +77,12 @@ def check_for_new_video() -> None:
                 channel.live_url = live_url
                 channel.is_live = True
                 tasks.notify_users([item.user for item in YoutubeChannelUserItem.objects.filter(
-                    channel=channel, is_muted=False, user__status='P')], channel, True)
+                    channel=channel, user__status='P')], channel, True)
         elif not is_upcoming:
             channel.video_title = video_title
             channel.video_url = video_url
             tasks.notify_users([item.user for item in YoutubeChannelUserItem.objects.filter(
-                channel=channel, is_muted=False)], channel)
+                channel=channel)], channel)
         channel.save()
 
 
@@ -241,6 +241,7 @@ def _send_message(
     reply_markup: Optional[List[List[Dict]]] = None,
     reply_to_message_id: Optional[int] = None,
     disable_web_page_preview: Optional[bool] = None,
+    disable_notification: Optional[bool] = None,
     entities: Optional[List[MessageEntity]] = None,
     tg_token: str = settings.TOKEN,
 ) -> bool:
@@ -253,6 +254,7 @@ def _send_message(
             reply_markup=reply_markup,
             reply_to_message_id=reply_to_message_id,
             disable_web_page_preview=disable_web_page_preview,
+            disable_notification=disable_notification,
             entities=entities,
         )
     except telegram.error.Unauthorized:
@@ -269,3 +271,18 @@ def _get_notification_reply_markup(title: str, url: str):
     return InlineKeyboardMarkup([
         [InlineKeyboardButton(text=title, url=url)]
     ])
+
+
+def _get_keyboard(u: User):
+    keyboard = [
+        [KeyboardButton(localization[u.language]['commands']
+                        ['manage_command_text'])],
+        [KeyboardButton(localization[u.language]['commands']
+                        ['language_command_text'])],
+        [KeyboardButton(localization[u.language]
+                        ['commands']['help_command_text'])],
+        [KeyboardButton(localization[u.language]['commands']
+                        ['upgrade_command_text'])]
+    ]
+
+    return keyboard
