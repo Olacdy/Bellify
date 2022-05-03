@@ -6,19 +6,18 @@ from django_celery_beat.models import (
     PeriodicTask,
 )
 from django.contrib import admin
-from youtube.models import Channel, ChannelUserItem
+from youtube.models import YoutubeChannel, YoutubeChannelUserItem
 
 
-class ChannelUserItemInline(admin.TabularInline):
-    model = ChannelUserItem
+class YoutubeChannelUserItemInline(admin.TabularInline):
+    model = YoutubeChannelUserItem
     extra = 1
 
 
-@admin.register(Channel)
-class ChannelAdmin(admin.ModelAdmin):
-    inlines = (ChannelUserItemInline,)
-    list_display = ('title', 'channel_id', 'video_title',
-                    'video_publication_date')
+@admin.register(YoutubeChannel)
+class YoutubeChannelAdmin(admin.ModelAdmin):
+    inlines = (YoutubeChannelUserItemInline,)
+    list_display = ('title', 'video_title', 'is_live')
 
 
 admin.site.unregister(SolarSchedule)

@@ -121,7 +121,7 @@ USE_I18N = True
 
 USE_L10N = True
 
-USE_TZ = True
+USE_TZ = False
 
 
 # Static files (CSS, JavaScript, Images)
@@ -147,12 +147,20 @@ CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 
 CELERY_BEAT_SCHEDULE = {
-    "check_channels": {
-        "task": "telegram_notification.tasks.check_channels",
+    "check_channels_for_video_youtube": {
+        "task": "telegram_notification.tasks.check_channels_for_video_youtube",
         "schedule": crontab(minute="*/5"),
+    },
+    "check_channels_for_live_stream_youtube": {
+        "task": "telegram_notification.tasks.check_channels_for_live_stream_youtube",
+        "schedule": crontab(minute="*/1"),
     },
 }
 
 PAGINATION_SIZE = 5
 
 SPLITTING_CHARACTER = 'ø'
+
+SESSION_CLIENT_COOKIES = {"CONSENT": "YES+cb"}
+
+REQUESTS_DELAY = 0.05
