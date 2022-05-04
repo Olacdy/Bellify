@@ -24,7 +24,7 @@ localization = {
         ],
         'upgrade':
         [
-            'Select the product that You would like to purchase.',
+            'Select the product that You would like to purchase.\n\nBy clicking on the button, a payment form will be generated to pay with 💳 credit card.\n\nBy choosing/approving the payment/purchase you accept the 📃 Terms and Conditions (/terms).',
             'Upgrade to Premium (YouTube will notify when channel goes live)',
             'Increase max YouTube channels (+5)',
             'Increase max Twitch channels (+3)',
@@ -37,6 +37,10 @@ localization = {
             'Back',
             'Oops, something went wrong...',
             'Thank You! The payment was successful.'
+        ],
+        'terms':
+        [
+            'Terms'
         ],
         'help':
         [
@@ -86,7 +90,7 @@ localization = {
         ],
         'upgrade':
         [
-            'Выберите товар, который Вы бы хотели приобрести.',
+            'Выберите товар, который Вы хотите приобрести.\n\nПосле нажатия на кнопку будет сгенерирована платежная форма для оплаты 💳 кредитной картой.\n\nПродолжив процесс оплаты вы соглашаетесь с 📃 Правилами и Условиями (/terms)',
             'Перейти на Премиум (YouTube будет уведомлять, если канал начал стрим)',
             'Увеличить максимальное количество YouTube каналов (+5)',
             'Увеличить максимальное количество Twitch каналов (+3)',
@@ -99,6 +103,10 @@ localization = {
             'Назад',
             'Ой, что-то пошло не по плану...',
             'Спасибо! Оплата прошла успешно.'
+        ],
+        'terms':
+        [
+            'Terms'
         ],
         'help':
         [

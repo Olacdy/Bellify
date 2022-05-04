@@ -56,6 +56,17 @@ def keyboard_callback(update: Update, context: CallbackContext) -> None:
 
 
 @log_errors
+def terms_callback(update: Update, context: CallbackContext) -> None:
+    u, _ = User.get_or_create_profile(update.message.chat_id,
+                                      update.message.from_user.username)
+
+    update.message.reply_text(
+        text=localization[u.language]['terms'][0],
+        parse_mode='HTML',
+    )
+
+
+@log_errors
 def precheckout_callback(update: Update, context: CallbackContext) -> None:
     u, _ = User.get_or_create_profile(update.pre_checkout_query.from_user.id,
                                       update.pre_checkout_query.from_user.username)
@@ -93,9 +104,11 @@ def set_up_commands(bot_instance: Bot) -> None:
     langs_with_commands: Dict[str, Dict[str, str]] = {
         'en': {
             'keyboard': 'Get the keyboard ⌨️',
+            'terms': 'Read 📃 Terms and Conditions'
         },
         'ru': {
             'keyboard': 'Получить клавиатуру ⌨️',
+            'terms': 'Прочитать 📃 Правила и Условия'
         }
     }
 
@@ -112,6 +125,7 @@ def set_up_commands(bot_instance: Bot) -> None:
 def setup_dispatcher(dp):
     dp.add_handler(CommandHandler('start', start_callback))
     dp.add_handler(CommandHandler('keyboard', keyboard_callback))
+    dp.add_handler(CommandHandler('terms', terms_callback))
     dp.add_handler(MessageHandler(
         Filters.text & ~Filters.command, echo_handler))
     dp.add_handler(CallbackQueryHandler(inline_handler))
