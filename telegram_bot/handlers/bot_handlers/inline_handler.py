@@ -28,7 +28,7 @@ def inline_handler(update: Update, context: CallbackContext) -> None:
         reply_markup = ReplyKeyboardMarkup(_get_keyboard(u))
 
         query.delete_message()
-        context.bot.send_message(chat_id=update.effective_chat.id, text=localization[query_data[0]]['lang_start_command' if mode == 'lang' else 'help'][1],
+        context.bot.send_message(chat_id=update.effective_chat.id, text=localization[query_data[0]]['lang_start_command'][1] if mode == 'lang' else localization[query_data[0]]['help'][0],
                                  parse_mode='HTML',
                                  reply_markup=reply_markup)
     elif mode == 'add':

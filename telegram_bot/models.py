@@ -23,7 +23,7 @@ class User(CreateUpdateTracker):
     first_name = models.CharField(max_length=256, **nb)
     last_name = models.CharField(max_length=256, **nb)
     language = models.CharField(
-        max_length=8, default="en", help_text="Telegram client's lang", **nb)
+        max_length=8, default=None, help_text="Telegram client's lang", **nb)
     deep_link = models.CharField(max_length=64, **nb)
     menu = models.CharField(max_length=64, **nb)
 

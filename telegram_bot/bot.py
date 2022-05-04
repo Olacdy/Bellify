@@ -29,10 +29,16 @@ def do_start(update: Update, context: CallbackContext) -> None:
     reply_markup = InlineKeyboardMarkup(
         get_lang_inline_keyboard(command='start'))
 
-    update.message.reply_text(
-        text=localization[u.language]['lang_start_command'][0],
-        parse_mode='HTML',
-        reply_markup=reply_markup)
+    if u.language:
+        update.message.reply_text(
+            text=localization[u.language]['lang_start_command'][0],
+            parse_mode='HTML',
+            reply_markup=reply_markup)
+    else:
+        update.message.reply_text(
+            text=f"{localization['en']['lang_start_command'][0]}\n{localization['ru']['lang_start_command'][0]}",
+            parse_mode='HTML',
+            reply_markup=reply_markup)
 
 
 @log_errors

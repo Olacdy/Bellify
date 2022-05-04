@@ -1,7 +1,7 @@
 localization = {
     'en': {
         'commands': {'manage_command_text': "⚙️Manage Channels⚙️",
-                     'language_command_text': "🗣️Language🗣️",
+                     'language_command_text': "🌐Language🌐",
                      'help_command_text': "📑Help📑",
                      'upgrade_command_text': "⭐Upgrade⭐"},
         'notification':
@@ -24,29 +24,12 @@ localization = {
         ],
         'help':
         [
-            """
-Notification Bot manual. 
-
-To add a channel to the list and further receive notifications about the release of new videos, use the /add command, then send a link to the channel (You can also just send a link to the channel, without the /add command). 
-Specify the name under which You would like to save this channel, or skip this step. 
-
-Now that a channel has been added to Your list, You will be notified when a new video is posted on it. 
-
-If You would like to stop receiving notifications from this channel, use the /remove command and select the channel You want to remove.
-
-To immediately check the channel for a new video on it, use the /check command. The selected channel will be checked, and if a new video is released, You will receive an alert with a link to a new video.
-
-You can view the list of channels You have added using the /list command.
-
-You can change the language of the bot using the /lang command.
-
-To contact the developer: https://t.me/golovakanta.
-"""
+            'Help'
         ],
         'lang_start_command':
         [
             'Please, select a language.',
-            'Thanks, You will continue to work in 🇬🇧.',
+            'Thanks, You will continue to work in 🇬🇧English.',
         ],
         'keyboard_command':
         [
@@ -64,7 +47,7 @@ To contact the developer: https://t.me/golovakanta.
     },
     'ru': {
         'commands': {'manage_command_text': "⚙️Управление Каналами⚙️",
-                     'language_command_text': "🗣️Язык🗣️",
+                     'language_command_text': "🌐Смена языка🌐",
                      'help_command_text': "📑Помощь📑",
                      'upgrade_command_text': "⭐Прокачать⭐"},
         'notification':
@@ -87,29 +70,12 @@ To contact the developer: https://t.me/golovakanta.
         ],
         'help':
         [
-            """
-Notification Bot мануал.
-
-Для добавления канала в список и дальнейшего получения уведомлений о выходе новых видео, воспользуйтесь командой /add, после чего пришлите ссылку на канал (можно также просто прислать ссылку на канал, без команды /add).
-Укажите имя, под которым Вы хотели бы сохранить этот канал, или пропустите этот шаг. 
-
-Теперь, когда канал добавлен в Ваш список, Вы будете получать оповещения о выходе нового видео на нем.
-
-В случае если Вы хотели бы перестать получать уведомления от этого канала, воспользуйтесь командой /remove и выберите канал, который хотите удалить.
-
-Для немедленной проверки канала на наличие нового видео на нем, воспользуйтесь командой /check. Выбранный канал будет проверен и, в случае выхода нового видео, Вы получите оповещение со ссылкой на новое видео.
-
-Просмотреть список добавленных Вами каналов можно с помощью команды /list.
-
-Сменить язык работы бота можно с помощью команды /lang.
-
-Для связи с разработчиком: https://t.me/golovakanta.
-"""
+            'Помощь'
         ],
         'lang_start_command':
         [
             'Пожалуйста, выберите язык.',
-            'Спасибо, теперь работа будет продолжена на 🇷🇺.',
+            'Спасибо, теперь работа будет продолжена на 🇷🇺Русском.',
         ],
         'keyboard_command':
         [

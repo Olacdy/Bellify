@@ -100,7 +100,7 @@ def get_manage_inline_keyboard(u: User, page_num: Optional[int] = 0) -> List:
                 InlineKeyboardButton(
                     f'{channel.channel_title}', url=channel.channel.channel_url),
                 InlineKeyboardButton(
-                    f'🔈' if channel.is_muted else f'🔊', callback_data=f'manage{settings.SPLITTING_CHARACTER}{channel.channel.channel_id}{settings.SPLITTING_CHARACTER}mute'),
+                    f'🔕' if channel.is_muted else f'🔔', callback_data=f'manage{settings.SPLITTING_CHARACTER}{channel.channel.channel_id}{settings.SPLITTING_CHARACTER}mute'),
                 InlineKeyboardButton(
                     f'❌', callback_data=f'manage{settings.SPLITTING_CHARACTER}{channel.channel.channel_id}{settings.SPLITTING_CHARACTER}remove')
             ])
@@ -121,9 +121,9 @@ def get_lang_inline_keyboard(command: Optional[str] = 'lang') -> List:
     keyboard = [
         [
             InlineKeyboardButton(
-                '🇬🇧', callback_data=f'{command}{settings.SPLITTING_CHARACTER}en'),
+                '🇬🇧English', callback_data=f'{command}{settings.SPLITTING_CHARACTER}en'),
             InlineKeyboardButton(
-                '🇷🇺', callback_data=f'{command}{settings.SPLITTING_CHARACTER}ru')
+                '🇷🇺Русский', callback_data=f'{command}{settings.SPLITTING_CHARACTER}ru')
         ]
     ]
 
