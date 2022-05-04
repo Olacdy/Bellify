@@ -7,7 +7,7 @@ from django.conf import settings
 from telegram import (Bot, BotCommand, InlineKeyboardMarkup,
                       ReplyKeyboardMarkup, Update)
 from telegram.error import Unauthorized
-from telegram.ext import (CallbackContext, CallbackQueryHandler,
+from telegram.ext import (CallbackContext, CallbackQueryHandler, PreCheckoutQueryHandler,
                           CommandHandler, Dispatcher, Filters, MessageHandler,
                           Updater)
 from telegram_notification.celery import app
@@ -22,7 +22,7 @@ from telegram_bot.models import User
 
 
 @log_errors
-def do_start(update: Update, context: CallbackContext) -> None:
+def start_callback(update: Update, context: CallbackContext) -> None:
     u, _ = User.get_or_create_profile(update.message.chat_id,
                                       update.message.from_user.username)
 
@@ -42,7 +42,7 @@ def do_start(update: Update, context: CallbackContext) -> None:
 
 
 @log_errors
-def do_keyboard(update: Update, context: CallbackContext) -> None:
+def keyboard_callback(update: Update, context: CallbackContext) -> None:
     u, _ = User.get_or_create_profile(update.message.chat_id,
                                       update.message.from_user.username)
 
@@ -53,6 +53,40 @@ def do_keyboard(update: Update, context: CallbackContext) -> None:
         parse_mode='HTML',
         reply_markup=reply_markup
     )
+
+
+@log_errors
+def precheckout_callback(update: Update, context: CallbackContext) -> None:
+    u, _ = User.get_or_create_profile(update.pre_checkout_query.from_user.id,
+                                      update.pre_checkout_query.from_user.username)
+
+    query = update.pre_checkout_query
+
+    payload_data = query.invoice_payload.split(
+        f'{settings.SPLITTING_CHARACTER}')
+
+    if payload_data[0] == 'youtube':
+        if payload_data[-1] == 'premium':
+            u.status = 'P'
+        elif payload_data[-1].isdigit():
+            u.max_youtube_channels_number += int(payload_data[-1])
+        u.save()
+        query.answer(ok=True)
+    elif payload_data[0] == 'twitch':
+        u.max_twitch_channels_number += int(payload_data[-1])
+        u.save()
+        query.answer(ok=True)
+    else:
+        query.answer(
+            ok=False, error_message=localization[u.language]['upgrade'][8])
+
+
+@log_errors
+def successful_payment_callback(update: Update, context: CallbackContext) -> None:
+    u, _ = User.get_or_create_profile(update.message.chat_id,
+                                      update.message.from_user.username)
+
+    update.message.reply_text(localization[u.language]['upgrade'][9])
 
 
 def set_up_commands(bot_instance: Bot) -> None:
@@ -76,11 +110,14 @@ def set_up_commands(bot_instance: Bot) -> None:
 
 
 def setup_dispatcher(dp):
-    dp.add_handler(CommandHandler('start', do_start))
-    dp.add_handler(CommandHandler('keyboard', do_keyboard))
+    dp.add_handler(CommandHandler('start', start_callback))
+    dp.add_handler(CommandHandler('keyboard', keyboard_callback))
     dp.add_handler(MessageHandler(
         Filters.text & ~Filters.command, echo_handler))
     dp.add_handler(CallbackQueryHandler(inline_handler))
+    dp.add_handler(PreCheckoutQueryHandler(precheckout_callback))
+    dp.add_handler(MessageHandler(
+        Filters.successful_payment, successful_payment_callback))
 
     return dp
 

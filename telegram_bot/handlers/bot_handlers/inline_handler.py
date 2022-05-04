@@ -3,7 +3,7 @@ from telegram import (InlineKeyboardButton,
                       InlineKeyboardMarkup, ReplyKeyboardMarkup, Update)
 from telegram.ext import CallbackContext
 from telegram_bot.handlers.bot_handlers.utils import (
-    add_youtube_channel, get_manage_inline_keyboard, log_errors, mute, remove, _get_keyboard)
+    add_youtube_channel, get_manage_inline_keyboard, log_errors, mute, remove, reply_invoice, _get_keyboard, upgrade)
 from telegram_bot.localization import localization
 from telegram_bot.models import User
 from youtube.models import YoutubeChannelUserItem
@@ -49,6 +49,19 @@ def inline_handler(update: Update, context: CallbackContext) -> None:
             user=u) if channel.channel.channel_id == channel_id][0]
         remove(
             update, u, channel_name) if query_data[-1] == 'remove' else mute(update, u, channel_name)
+    elif mode == 'upgrade':
+        if query_data[-1] == 'back':
+            query.delete_message()
+        elif query_data[-2] == 'youtube':
+            if query_data[-1] == 'premium':
+                reply_invoice(update, u, localization[u.language]['upgrade'][4][0], localization[u.language]
+                              ['upgrade'][4][1], f'youtube{settings.SPLITTING_CHARACTER}premium', localization[u.language]['upgrade'][4][2], settings.PREMIUM_PRICE)
+            elif query_data[-1].isdigit():
+                reply_invoice(update, u, localization[u.language]['upgrade'][5][0], localization[u.language]
+                              ['upgrade'][5][1], f'youtube{settings.SPLITTING_CHARACTER}5', localization[u.language]['upgrade'][5][2], settings.YOUTUBE_INCREASE_PRICE)
+        elif query_data[-2] == 'twitch':
+            reply_invoice(update, u, localization[u.language]['upgrade'][6][0], localization[u.language]
+                          ['upgrade'][6][1], f'twitch{settings.SPLITTING_CHARACTER}3', localization[u.language]['upgrade'][6][2], settings.TWITCH_INCREASE_PRICE)
     elif mode == 'pagination':
         page_num = int(query_data[-1])
 

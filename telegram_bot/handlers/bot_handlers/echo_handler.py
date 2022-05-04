@@ -3,7 +3,7 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import CallbackContext
 from telegram_bot.handlers.bot_handlers.utils import (add_youtube_channel,
                                                       get_lang_inline_keyboard,
-                                                      log_errors, manage)
+                                                      log_errors, manage, upgrade)
 from telegram_bot.localization import localization
 from telegram_bot.models import Message, User
 from youtube.models import YoutubeChannel, YoutubeChannelUserItem
@@ -45,7 +45,7 @@ def echo_handler(update: Update, context: CallbackContext) -> None:
                 parse_mode='HTML'
             )
         elif user_text == localization[u.language]['commands']['upgrade_command_text']:
-            pass
+            upgrade(update, u)
         elif get_channel_url_type(user_text) == 'Youtube':
             try:
                 channel_id = scrape_id_by_url(user_text)

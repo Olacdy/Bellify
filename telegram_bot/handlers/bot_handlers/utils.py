@@ -3,7 +3,7 @@ from typing import Dict, List, Optional, Union
 import telegram
 import telegram_notification.tasks as tasks
 from django.conf import settings
-from telegram import (InlineKeyboardButton, KeyboardButton, InlineKeyboardMarkup, Message,
+from telegram import (InlineKeyboardButton, LabeledPrice, KeyboardButton, InlineKeyboardMarkup, Message,
                       MessageEntity, Update)
 from telegram_bot.localization import localization
 from telegram_bot.models import User
@@ -115,9 +115,38 @@ def get_manage_inline_keyboard(u: User, page_num: Optional[int] = 0) -> List:
     return keyboard
 
 
-# Returns Language inline keyboard
+# Returns Upgrade inline keyboard
 @log_errors
-def get_lang_inline_keyboard(command: Optional[str] = 'lang') -> List:
+def get_upgrade_inline_keyboard(u: User) -> List[List[InlineKeyboardButton]]:
+    keyboard = [[]]
+
+    keyboard.append(
+        [
+            InlineKeyboardButton(
+                localization[u.language]['upgrade'][1], callback_data=f'upgrade{settings.SPLITTING_CHARACTER}youtube{settings.SPLITTING_CHARACTER}premium')
+        ]
+    ) if u.status == 'B' else None
+
+    keyboard.append(
+        [
+            InlineKeyboardButton(
+                localization[u.language]['upgrade'][2], callback_data=f'upgrade{settings.SPLITTING_CHARACTER}youtube{settings.SPLITTING_CHARACTER}5')
+        ]
+    )
+
+    keyboard.append(
+        [
+            InlineKeyboardButton(
+                localization[u.language]['upgrade'][3], callback_data=f'upgrade{settings.SPLITTING_CHARACTER}twitch{settings.SPLITTING_CHARACTER}3')
+        ]
+    )
+
+    return keyboard
+
+
+# Returns Language inline keyboard
+@ log_errors
+def get_lang_inline_keyboard(command: Optional[str] = 'lang') -> List[List[InlineKeyboardButton]]:
     keyboard = [
         [
             InlineKeyboardButton(
@@ -131,7 +160,7 @@ def get_lang_inline_keyboard(command: Optional[str] = 'lang') -> List:
 
 
 # Adds Youtube channel to a given user
-@log_errors
+@ log_errors
 def add_youtube_channel(channel_id: str, message: Message, u: User, name: Optional[str] = None) -> None:
     if not YoutubeChannel.objects.filter(channel_id=channel_id).exists():
         video_title, video_url, channel_title = get_channels_and_videos_info(
@@ -188,20 +217,20 @@ def add_youtube_channel(channel_id: str, message: Message, u: User, name: Option
             )
 
 
-@log_errors
+@ log_errors
 def remove(update: Update, u: User, name: str) -> None:
     item = YoutubeChannelUserItem.objects.get(user=u, channel_title=name)
     item.delete()
     manage(update, u, mode="remove")
 
 
-@log_errors
+@ log_errors
 def mute(update: Update, u: User, name: str) -> None:
     YoutubeChannelUserItem.set_muted(u, name)
     manage(update, u, mode="mute")
 
 
-@log_errors
+@ log_errors
 def manage(update: Update, u: User, mode: Optional[str] = "echo") -> None:
     keyboard = get_manage_inline_keyboard(u)
 
@@ -231,6 +260,39 @@ def manage(update: Update, u: User, mode: Optional[str] = "echo") -> None:
                 text=localization[u.language]["manage"][2],
                 parse_mode='HTML'
             )
+
+
+@log_errors
+def upgrade(update: Update, u: User):
+    update.message.reply_text(
+        text=localization[u.language]["upgrade"][0],
+        reply_markup=InlineKeyboardMarkup(get_upgrade_inline_keyboard(u)),
+        parse_mode='HTML'
+    )
+
+
+@log_errors
+def reply_invoice(update: Update, u: User, title: str, description: str, payload: str, buy_button_label: str, price: int):
+    keyboard = [
+        [
+            InlineKeyboardButton(buy_button_label, pay=True)
+        ],
+        [
+            InlineKeyboardButton(
+                localization[u.language]['upgrade'][7], callback_data=f"upgrade{settings.SPLITTING_CHARACTER}back")
+        ]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+
+    update.callback_query.message.reply_invoice(
+        title=title,
+        description=description,
+        payload=payload,
+        provider_token=settings.PROVIDER_TOKEN,
+        currency=settings.CURRENCY,
+        prices=[LabeledPrice(description[:-1], price)],
+        reply_markup=reply_markup
+    )
 
 
 # Sends message to user

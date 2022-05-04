@@ -22,6 +22,22 @@ localization = {
             'Sorry, but You have no added channels right now. Try to send a link.',
             'Looks like You have deleted all of Your channels.',
         ],
+        'upgrade':
+        [
+            'Select the product that You would like to purchase.',
+            'Upgrade to Premium (YouTube will notify when channel goes live)',
+            'Increase max YouTube channels (+5)',
+            'Increase max Twitch channels (+3)',
+            ['Upgrade to Premium',
+                'Notifies You when YouTube channel goes live. Increases max YouTube channels (+3).', 'Upgrade'],
+            ['Increase YouTube',
+                'Increases max amount of YouTube channels (+5).', 'Increase'],
+            ['Increase Twitch',
+                'Increase max amount of Twitch channels (+3).', 'Increase'],
+            'Back',
+            'Oops, something went wrong...',
+            'Thank You! The payment was successful.'
+        ],
         'help':
         [
             'Help'
@@ -67,6 +83,22 @@ localization = {
             '⚙️Управление Каналами⚙️',
             'Пока у Вас нет добавленных каналов. Поробуйте прислать ссылку.',
             'Похоже, Вы удалили все Ваши каналы.',
+        ],
+        'upgrade':
+        [
+            'Выберите товар, который Вы бы хотели приобрести.',
+            'Перейти на Премиум (YouTube будет уведомлять, если канал начал стрим)',
+            'Увеличить максимальное количество YouTube каналов (+5)',
+            'Увеличить максимальное количество Twitch каналов (+3)',
+            ['Переход на Премиум',
+                'Уведомляет Вас, когда канал начинает стрим. Увеличить максимальное количество YouTube каналов (+3).', 'Перейти'],
+            ['Увеличить YouTube',
+                'Увеличивает максимальное количество YouTube каналов (+5).', 'Увеличить'],
+            ['Увеличить Twitch',
+                'Увеличивает максимальное количество Twitch каналов (+3).', 'Увеличить'],
+            'Назад',
+            'Ой, что-то пошло не по плану...',
+            'Спасибо! Оплата прошла успешно.'
         ],
         'help':
         [
