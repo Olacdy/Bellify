@@ -1,14 +1,9 @@
-import asyncio
-
 from django.conf import settings
-from telegram import (InlineKeyboardButton, InlineKeyboardMarkup,
-                      KeyboardButton, ReplyKeyboardMarkup, Update)
+from telegram import (InlineKeyboardButton,
+                      InlineKeyboardMarkup, ReplyKeyboardMarkup, Update)
 from telegram.ext import CallbackContext
-from telegram_bot.handlers.bot_handlers.echo_handler import (
-    help_command_text, language_command_text, manage_command_text,
-    upgrade_command_text)
 from telegram_bot.handlers.bot_handlers.utils import (
-    add_youtube_channel, get_manage_inline_keyboard, log_errors, mute, remove)
+    add_youtube_channel, get_manage_inline_keyboard, log_errors, mute, remove, reply_invoice, _get_keyboard, upgrade)
 from telegram_bot.localization import localization
 from telegram_bot.models import User
 from youtube.models import YoutubeChannelUserItem
@@ -26,29 +21,14 @@ def inline_handler(update: Update, context: CallbackContext) -> None:
     mode, query_data = query.data.split(f'{settings.SPLITTING_CHARACTER}')[
         0], query.data.split(f'{settings.SPLITTING_CHARACTER}')[1:]
 
-    if mode == 'lang':
+    if mode == 'lang' or mode == 'start':
         u.language = query_data[0]
         u.save()
 
-        query.edit_message_text(
-            text=localization[query_data[0]]['lang_start_command'][1],
-            parse_mode='HTML'
-        )
-    elif mode == 'start':
-        u.language = query_data[0]
-        u.save()
-
-        keyboard = [
-            [KeyboardButton(manage_command_text)],
-            [KeyboardButton(language_command_text)],
-            [KeyboardButton(help_command_text)],
-            [KeyboardButton(upgrade_command_text)]
-        ]
-
-        reply_markup = ReplyKeyboardMarkup(keyboard)
+        reply_markup = ReplyKeyboardMarkup(_get_keyboard(u))
 
         query.delete_message()
-        context.bot.send_message(chat_id=update.effective_chat.id, text=localization[u.language]['help'][0],
+        context.bot.send_message(chat_id=update.effective_chat.id, text=localization[query_data[0]]['lang_start_command'][1] if mode == 'lang' else localization[query_data[0]]['help'][0],
                                  parse_mode='HTML',
                                  reply_markup=reply_markup)
     elif mode == 'add':
@@ -69,6 +49,19 @@ def inline_handler(update: Update, context: CallbackContext) -> None:
             user=u) if channel.channel.channel_id == channel_id][0]
         remove(
             update, u, channel_name) if query_data[-1] == 'remove' else mute(update, u, channel_name)
+    elif mode == 'upgrade':
+        if query_data[-1] == 'back':
+            query.delete_message()
+        elif query_data[-2] == 'youtube':
+            if query_data[-1] == 'premium':
+                reply_invoice(update, u, localization[u.language]['upgrade'][4][0], localization[u.language]
+                              ['upgrade'][4][1], f'youtube{settings.SPLITTING_CHARACTER}premium', localization[u.language]['upgrade'][4][2], settings.PREMIUM_PRICE)
+            elif query_data[-1].isdigit():
+                reply_invoice(update, u, localization[u.language]['upgrade'][5][0], localization[u.language]
+                              ['upgrade'][5][1], f'youtube{settings.SPLITTING_CHARACTER}5', localization[u.language]['upgrade'][5][2], settings.YOUTUBE_INCREASE_PRICE)
+        elif query_data[-2] == 'twitch':
+            reply_invoice(update, u, localization[u.language]['upgrade'][6][0], localization[u.language]
+                          ['upgrade'][6][1], f'twitch{settings.SPLITTING_CHARACTER}3', localization[u.language]['upgrade'][6][2], settings.TWITCH_INCREASE_PRICE)
     elif mode == 'pagination':
         page_num = int(query_data[-1])
 
@@ -99,9 +92,9 @@ def inline_handler(update: Update, context: CallbackContext) -> None:
                 keyboard = [
                     [
                         InlineKeyboardButton(
-                            'Yes' if u.language == 'en' else 'Да', callback_data=f'add{settings.SPLITTING_CHARACTER}{channel_id}{settings.SPLITTING_CHARACTER}yes'),
+                            '✔️', callback_data=f'add{settings.SPLITTING_CHARACTER}{channel_id}{settings.SPLITTING_CHARACTER}yes'),
                         InlineKeyboardButton(
-                            'No' if u.language == 'en' else 'Нет', callback_data=f'add{settings.SPLITTING_CHARACTER}{channel_id}')
+                            '❌', callback_data=f'add{settings.SPLITTING_CHARACTER}{channel_id}')
                     ]
                 ]
 

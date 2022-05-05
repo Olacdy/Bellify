@@ -1,12 +1,12 @@
-import re
 import asyncio
-from asgiref import sync
-from typing import Optional, List
+import re
+from typing import List, Optional
+
 import aiohttp
 import bs4 as soup
-from django.conf import settings
 import requests
-import time
+from asgiref import sync
+from django.conf import settings
 from fake_headers import Headers
 
 

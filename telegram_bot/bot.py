@@ -1,62 +1,137 @@
 import asyncio
 import platform
 import sys
+from typing import Dict
 
 from django.conf import settings
-from telegram import Bot, InlineKeyboardMarkup, Update
+from telegram import (Bot, BotCommand, InlineKeyboardMarkup,
+                      ReplyKeyboardMarkup, Update)
 from telegram.error import Unauthorized
-from telegram.ext import (CallbackContext, CallbackQueryHandler,
+from telegram.ext import (CallbackContext, CallbackQueryHandler, PreCheckoutQueryHandler,
                           CommandHandler, Dispatcher, Filters, MessageHandler,
                           Updater)
 from telegram_notification.celery import app
 
 from telegram_bot.handlers.bot_handlers.echo_handler import echo_handler
 from telegram_bot.handlers.bot_handlers.inline_handler import inline_handler
-from telegram_bot.handlers.bot_handlers.utils import (get_lang_inline_keyboard,
+from telegram_bot.handlers.bot_handlers.utils import (_get_keyboard,
+                                                      get_lang_inline_keyboard,
                                                       log_errors)
 from telegram_bot.localization import localization
 from telegram_bot.models import User
 
 
 @log_errors
-def do_start(update: Update, context: CallbackContext) -> None:
+def start_callback(update: Update, context: CallbackContext) -> None:
     u, _ = User.get_or_create_profile(update.message.chat_id,
                                       update.message.from_user.username)
 
     reply_markup = InlineKeyboardMarkup(
         get_lang_inline_keyboard(command='start'))
 
+    if u.language:
+        update.message.reply_text(
+            text=localization[u.language]['lang_start_command'][0],
+            parse_mode='HTML',
+            reply_markup=reply_markup)
+    else:
+        update.message.reply_text(
+            text=f"{localization['en']['lang_start_command'][0]}\n{localization['ru']['lang_start_command'][0]}",
+            parse_mode='HTML',
+            reply_markup=reply_markup)
+
+
+@log_errors
+def keyboard_callback(update: Update, context: CallbackContext) -> None:
+    u, _ = User.get_or_create_profile(update.message.chat_id,
+                                      update.message.from_user.username)
+
+    reply_markup = ReplyKeyboardMarkup(_get_keyboard(u))
+
     update.message.reply_text(
-        text=localization[u.language]['lang_start_command'][0],
+        text=localization[u.language]['keyboard_command'][0],
         parse_mode='HTML',
-        reply_markup=reply_markup)
+        reply_markup=reply_markup
+    )
+
+
+@log_errors
+def terms_callback(update: Update, context: CallbackContext) -> None:
+    u, _ = User.get_or_create_profile(update.message.chat_id,
+                                      update.message.from_user.username)
+
+    update.message.reply_text(
+        text=localization[u.language]['terms'][0],
+        parse_mode='HTML',
+    )
+
+
+@log_errors
+def precheckout_callback(update: Update, context: CallbackContext) -> None:
+    u, _ = User.get_or_create_profile(update.pre_checkout_query.from_user.id,
+                                      update.pre_checkout_query.from_user.username)
+
+    query = update.pre_checkout_query
+
+    payload_data = query.invoice_payload.split(
+        f'{settings.SPLITTING_CHARACTER}')
+
+    if payload_data[0] == 'youtube':
+        if payload_data[-1] == 'premium':
+            u.status = 'P'
+        elif payload_data[-1].isdigit():
+            u.max_youtube_channels_number += int(payload_data[-1])
+        u.save()
+        query.answer(ok=True)
+    elif payload_data[0] == 'twitch':
+        u.max_twitch_channels_number += int(payload_data[-1])
+        u.save()
+        query.answer(ok=True)
+    else:
+        query.answer(
+            ok=False, error_message=localization[u.language]['upgrade'][8])
+
+
+@log_errors
+def successful_payment_callback(update: Update, context: CallbackContext) -> None:
+    u, _ = User.get_or_create_profile(update.message.chat_id,
+                                      update.message.from_user.username)
+
+    update.message.reply_text(localization[u.language]['upgrade'][9])
 
 
 def set_up_commands(bot_instance: Bot) -> None:
-    bot_instance.delete_my_commands()
-    # langs_with_commands = {
-    #     'en': {
-    #         'start': 'Start notification bot 🚀',
-    #     },
-    #     'ru': {
-    #         'start': 'Запустить бота 🚀',
-    #     }
-    # }
+    langs_with_commands: Dict[str, Dict[str, str]] = {
+        'en': {
+            'keyboard': 'Get the keyboard ⌨️',
+            'terms': 'Read 📃 Terms and Conditions'
+        },
+        'ru': {
+            'keyboard': 'Получить клавиатуру ⌨️',
+            'terms': 'Прочитать 📃 Правила и Условия'
+        }
+    }
 
-    # for language_code in langs_with_commands:
-    #     bot_instance.set_my_commands(
-    #         language_code=language_code,
-    #         commands=[
-    #             BotCommand(command, description) for command, description in langs_with_commands[language_code].items()
-    #         ]
-    #     )
+    bot_instance.delete_my_commands()
+    for language_code in langs_with_commands:
+        bot_instance.set_my_commands(
+            language_code=language_code,
+            commands=[
+                BotCommand(command, description) for command, description in langs_with_commands[language_code].items()
+            ]
+        )
 
 
 def setup_dispatcher(dp):
-    dp.add_handler(CommandHandler('start', do_start))
+    dp.add_handler(CommandHandler('start', start_callback))
+    dp.add_handler(CommandHandler('keyboard', keyboard_callback))
+    dp.add_handler(CommandHandler('terms', terms_callback))
     dp.add_handler(MessageHandler(
         Filters.text & ~Filters.command, echo_handler))
     dp.add_handler(CallbackQueryHandler(inline_handler))
+    dp.add_handler(PreCheckoutQueryHandler(precheckout_callback))
+    dp.add_handler(MessageHandler(
+        Filters.successful_payment, successful_payment_callback))
 
     return dp
 

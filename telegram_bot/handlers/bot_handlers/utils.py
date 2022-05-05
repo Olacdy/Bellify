@@ -1,10 +1,9 @@
-import time
 from typing import Dict, List, Optional, Union
 
 import telegram
 import telegram_notification.tasks as tasks
 from django.conf import settings
-from telegram import (InlineKeyboardButton, InlineKeyboardMarkup, Message,
+from telegram import (InlineKeyboardButton, LabeledPrice, KeyboardButton, InlineKeyboardMarkup, Message,
                       MessageEntity, Update)
 from telegram_bot.localization import localization
 from telegram_bot.models import User
@@ -39,7 +38,7 @@ def check_for_live_stream_youtube() -> None:
                 channel.live_url = live_url
                 channel.is_live = True
                 tasks.notify_users([item.user for item in YoutubeChannelUserItem.objects.filter(
-                    channel=channel, is_muted=False, user__status='P')], channel, True)
+                    channel=channel, user__status='P')], channel, True)
         else:
             channel.live_title = None
             channel.live_url = None
@@ -78,12 +77,12 @@ def check_for_new_video() -> None:
                 channel.live_url = live_url
                 channel.is_live = True
                 tasks.notify_users([item.user for item in YoutubeChannelUserItem.objects.filter(
-                    channel=channel, is_muted=False, user__status='P')], channel, True)
+                    channel=channel, user__status='P')], channel, True)
         elif not is_upcoming:
             channel.video_title = video_title
             channel.video_url = video_url
             tasks.notify_users([item.user for item in YoutubeChannelUserItem.objects.filter(
-                channel=channel, is_muted=False)], channel)
+                channel=channel)], channel)
         channel.save()
 
 
@@ -101,7 +100,7 @@ def get_manage_inline_keyboard(u: User, page_num: Optional[int] = 0) -> List:
                 InlineKeyboardButton(
                     f'{channel.channel_title}', url=channel.channel.channel_url),
                 InlineKeyboardButton(
-                    f'🔈' if channel.is_muted else f'🔊', callback_data=f'manage{settings.SPLITTING_CHARACTER}{channel.channel.channel_id}{settings.SPLITTING_CHARACTER}mute'),
+                    f'🔕' if channel.is_muted else f'🔔', callback_data=f'manage{settings.SPLITTING_CHARACTER}{channel.channel.channel_id}{settings.SPLITTING_CHARACTER}mute'),
                 InlineKeyboardButton(
                     f'❌', callback_data=f'manage{settings.SPLITTING_CHARACTER}{channel.channel.channel_id}{settings.SPLITTING_CHARACTER}remove')
             ])
@@ -116,15 +115,44 @@ def get_manage_inline_keyboard(u: User, page_num: Optional[int] = 0) -> List:
     return keyboard
 
 
-# Returns Language inline keyboard
+# Returns Upgrade inline keyboard
 @log_errors
-def get_lang_inline_keyboard(command: Optional[str] = 'lang') -> List:
+def get_upgrade_inline_keyboard(u: User) -> List[List[InlineKeyboardButton]]:
+    keyboard = [[]]
+
+    keyboard.append(
+        [
+            InlineKeyboardButton(
+                localization[u.language]['upgrade'][1], callback_data=f'upgrade{settings.SPLITTING_CHARACTER}youtube{settings.SPLITTING_CHARACTER}premium')
+        ]
+    ) if u.status == 'B' else None
+
+    keyboard.append(
+        [
+            InlineKeyboardButton(
+                localization[u.language]['upgrade'][2], callback_data=f'upgrade{settings.SPLITTING_CHARACTER}youtube{settings.SPLITTING_CHARACTER}5')
+        ]
+    )
+
+    keyboard.append(
+        [
+            InlineKeyboardButton(
+                localization[u.language]['upgrade'][3], callback_data=f'upgrade{settings.SPLITTING_CHARACTER}twitch{settings.SPLITTING_CHARACTER}3')
+        ]
+    )
+
+    return keyboard
+
+
+# Returns Language inline keyboard
+@ log_errors
+def get_lang_inline_keyboard(command: Optional[str] = 'lang') -> List[List[InlineKeyboardButton]]:
     keyboard = [
         [
             InlineKeyboardButton(
-                '🇬🇧', callback_data=f'{command}{settings.SPLITTING_CHARACTER}en'),
+                '🇬🇧English', callback_data=f'{command}{settings.SPLITTING_CHARACTER}en'),
             InlineKeyboardButton(
-                '🇷🇺', callback_data=f'{command}{settings.SPLITTING_CHARACTER}ru')
+                '🇷🇺Русский', callback_data=f'{command}{settings.SPLITTING_CHARACTER}ru')
         ]
     ]
 
@@ -132,7 +160,7 @@ def get_lang_inline_keyboard(command: Optional[str] = 'lang') -> List:
 
 
 # Adds Youtube channel to a given user
-@log_errors
+@ log_errors
 def add_youtube_channel(channel_id: str, message: Message, u: User, name: Optional[str] = None) -> None:
     if not YoutubeChannel.objects.filter(channel_id=channel_id).exists():
         video_title, video_url, channel_title = get_channels_and_videos_info(
@@ -189,20 +217,20 @@ def add_youtube_channel(channel_id: str, message: Message, u: User, name: Option
             )
 
 
-@log_errors
+@ log_errors
 def remove(update: Update, u: User, name: str) -> None:
     item = YoutubeChannelUserItem.objects.get(user=u, channel_title=name)
     item.delete()
     manage(update, u, mode="remove")
 
 
-@log_errors
+@ log_errors
 def mute(update: Update, u: User, name: str) -> None:
     YoutubeChannelUserItem.set_muted(u, name)
     manage(update, u, mode="mute")
 
 
-@log_errors
+@ log_errors
 def manage(update: Update, u: User, mode: Optional[str] = "echo") -> None:
     keyboard = get_manage_inline_keyboard(u)
 
@@ -234,6 +262,39 @@ def manage(update: Update, u: User, mode: Optional[str] = "echo") -> None:
             )
 
 
+@log_errors
+def upgrade(update: Update, u: User):
+    update.message.reply_text(
+        text=localization[u.language]["upgrade"][0],
+        reply_markup=InlineKeyboardMarkup(get_upgrade_inline_keyboard(u)),
+        parse_mode='HTML'
+    )
+
+
+@log_errors
+def reply_invoice(update: Update, u: User, title: str, description: str, payload: str, buy_button_label: str, price: int):
+    keyboard = [
+        [
+            InlineKeyboardButton(buy_button_label, pay=True)
+        ],
+        [
+            InlineKeyboardButton(
+                localization[u.language]['upgrade'][7], callback_data=f"upgrade{settings.SPLITTING_CHARACTER}back")
+        ]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+
+    update.callback_query.message.reply_invoice(
+        title=title,
+        description=description,
+        payload=payload,
+        provider_token=settings.PROVIDER_TOKEN,
+        currency=settings.CURRENCY,
+        prices=[LabeledPrice(description[:-1], price)],
+        reply_markup=reply_markup
+    )
+
+
 # Sends message to user
 def _send_message(
     user_id: Union[str, int],
@@ -242,6 +303,7 @@ def _send_message(
     reply_markup: Optional[List[List[Dict]]] = None,
     reply_to_message_id: Optional[int] = None,
     disable_web_page_preview: Optional[bool] = None,
+    disable_notification: Optional[bool] = None,
     entities: Optional[List[MessageEntity]] = None,
     tg_token: str = settings.TOKEN,
 ) -> bool:
@@ -254,6 +316,7 @@ def _send_message(
             reply_markup=reply_markup,
             reply_to_message_id=reply_to_message_id,
             disable_web_page_preview=disable_web_page_preview,
+            disable_notification=disable_notification,
             entities=entities,
         )
     except telegram.error.Unauthorized:
@@ -270,3 +333,18 @@ def _get_notification_reply_markup(title: str, url: str):
     return InlineKeyboardMarkup([
         [InlineKeyboardButton(text=title, url=url)]
     ])
+
+
+def _get_keyboard(u: User):
+    keyboard = [
+        [KeyboardButton(localization[u.language]['commands']
+                        ['manage_command_text'])],
+        [KeyboardButton(localization[u.language]['commands']
+                        ['language_command_text'])],
+        [KeyboardButton(localization[u.language]
+                        ['commands']['help_command_text'])],
+        [KeyboardButton(localization[u.language]['commands']
+                        ['upgrade_command_text'])]
+    ]
+
+    return keyboard

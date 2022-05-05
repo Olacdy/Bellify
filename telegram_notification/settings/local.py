@@ -121,7 +121,7 @@ USE_I18N = True
 
 USE_L10N = True
 
-USE_TZ = False
+USE_TZ = True
 
 
 # Static files (CSS, JavaScript, Images)
@@ -137,9 +137,13 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-YOUTUBE_API_KEY = env.str('YOUTUBE_API_KEY')
-
 TOKEN = env.str('TELEGRAM_TOKEN')
+
+PROVIDER_TOKEN = env.str('PROVIDER_TOKEN')
+CURRENCY = 'USD'
+PREMIUM_PRICE = 399
+YOUTUBE_INCREASE_PRICE = 199
+TWITCH_INCREASE_PRICE = 199
 
 CELERY_BROKER_URL = os.environ.get("REDIS_URL", "") + "/1"
 CELERY_RESULT_BACKEND = os.environ.get("REDIS_URL", "") + "/1"

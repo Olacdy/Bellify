@@ -1,11 +1,12 @@
+from django.conf import settings
 from django.contrib import admin
-from telegram_bot.models import User, Message
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
-from django.conf import settings
 from telegram_notification.tasks import broadcast_message
-from telegram_bot.handlers.bot_handlers.utils import _send_message
+
 from telegram_bot.forms import BroadcastForm
+from telegram_bot.handlers.bot_handlers.utils import _send_message
+from telegram_bot.models import Message, User
 
 
 @admin.register(User)

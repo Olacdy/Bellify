@@ -1,5 +1,9 @@
 localization = {
     'en': {
+        'commands': {'manage_command_text': "⚙️Manage Channels⚙️",
+                     'language_command_text': "🌐Language🌐",
+                     'help_command_text': "📑Help📑",
+                     'upgrade_command_text': "⭐Upgrade⭐"},
         'notification':
         [
             ['New video from', 'is out!'],
@@ -15,34 +19,41 @@ localization = {
         'manage':
         [
             '⚙️Manage Channels⚙️',
-            'Sorry, but You have no added channels right now. Try to add one.',
+            'Sorry, but You have no added channels right now. Try to send a link.',
             'Looks like You have deleted all of Your channels.',
+        ],
+        'upgrade':
+        [
+            'Select the product that You would like to purchase.\n\nBy clicking on the button, a payment form will be generated to pay with 💳 credit card.\n\nBy choosing/approving the payment/purchase you accept the 📃 Terms and Conditions (/terms).',
+            'Upgrade to Premium (YouTube will notify when channel goes live)',
+            'Increase max YouTube channels (+5)',
+            'Increase max Twitch channels (+3)',
+            ['Upgrade to Premium',
+                'Notifies You when YouTube channel goes live. Increases max YouTube channels (+3).', 'Upgrade'],
+            ['Increase YouTube',
+                'Increases max amount of YouTube channels (+5).', 'Increase'],
+            ['Increase Twitch',
+                'Increase max amount of Twitch channels (+3).', 'Increase'],
+            'Back',
+            'Oops, something went wrong...',
+            'Thank You! The payment was successful.'
+        ],
+        'terms':
+        [
+            'Terms'
         ],
         'help':
         [
-            """
-Notification Bot manual. 
-
-To add a channel to the list and further receive notifications about the release of new videos, use the /add command, then send a link to the channel (You can also just send a link to the channel, without the /add command). 
-Specify the name under which You would like to save this channel, or skip this step. 
-
-Now that a channel has been added to Your list, You will be notified when a new video is posted on it. 
-
-If You would like to stop receiving notifications from this channel, use the /remove command and select the channel You want to remove.
-
-To immediately check the channel for a new video on it, use the /check command. The selected channel will be checked, and if a new video is released, You will receive an alert with a link to a new video.
-
-You can view the list of channels You have added using the /list command.
-
-You can change the language of the bot using the /lang command.
-
-To contact the developer: https://t.me/golovakanta.
-"""
+            'Help'
         ],
         'lang_start_command':
         [
             'Please, select a language.',
-            'Thank you, You will continue to work in English.',
+            'Thanks, You will continue to work in 🇬🇧English.',
+        ],
+        'keyboard_command':
+        [
+            'Sending a keyboard...'
         ],
         'echo':
         [
@@ -55,6 +66,10 @@ To contact the developer: https://t.me/golovakanta.
         ]
     },
     'ru': {
+        'commands': {'manage_command_text': "⚙️Управление Каналами⚙️",
+                     'language_command_text': "🌐Смена языка🌐",
+                     'help_command_text': "📑Помощь📑",
+                     'upgrade_command_text': "⭐Прокачать⭐"},
         'notification':
         [
             ['Новое видео от', 'уже вышло!'],
@@ -70,34 +85,41 @@ To contact the developer: https://t.me/golovakanta.
         'manage':
         [
             '⚙️Управление Каналами⚙️',
-            'Извините, Вы удалили все ваши каналы.',
-            'У Вас пока нет каналов. Попробуйте добавить.'
+            'Пока у Вас нет добавленных каналов. Поробуйте прислать ссылку.',
+            'Похоже, Вы удалили все Ваши каналы.',
+        ],
+        'upgrade':
+        [
+            'Выберите товар, который Вы хотите приобрести.\n\nПосле нажатия на кнопку будет сгенерирована платежная форма для оплаты 💳 кредитной картой.\n\nПродолжив процесс оплаты вы соглашаетесь с 📃 Правилами и Условиями (/terms)',
+            'Перейти на Премиум (YouTube будет уведомлять, если канал начал стрим)',
+            'Увеличить максимальное количество YouTube каналов (+5)',
+            'Увеличить максимальное количество Twitch каналов (+3)',
+            ['Переход на Премиум',
+                'Уведомляет Вас, когда канал начинает стрим. Увеличить максимальное количество YouTube каналов (+3).', 'Перейти'],
+            ['Увеличить YouTube',
+                'Увеличивает максимальное количество YouTube каналов (+5).', 'Увеличить'],
+            ['Увеличить Twitch',
+                'Увеличивает максимальное количество Twitch каналов (+3).', 'Увеличить'],
+            'Назад',
+            'Ой, что-то пошло не по плану...',
+            'Спасибо! Оплата прошла успешно.'
+        ],
+        'terms':
+        [
+            'Terms'
         ],
         'help':
         [
-            """
-Notification Bot мануал.
-
-Для добавления канала в список и дальнейшего получения уведомлений о выходе новых видео, воспользуйтесь командой /add, после чего пришлите ссылку на канал (можно также просто прислать ссылку на канал, без команды /add).
-Укажите имя, под которым Вы хотели бы сохранить этот канал, или пропустите этот шаг. 
-
-Теперь, когда канал добавлен в Ваш список, Вы будете получать оповещения о выходе нового видео на нем.
-
-В случае если Вы хотели бы перестать получать уведомления от этого канала, воспользуйтесь командой /remove и выберите канал, который хотите удалить.
-
-Для немедленной проверки канала на наличие нового видео на нем, воспользуйтесь командой /check. Выбранный канал будет проверен и, в случае выхода нового видео, Вы получите оповещение со ссылкой на новое видео.
-
-Просмотреть список добавленных Вами каналов можно с помощью команды /list.
-
-Сменить язык работы бота можно с помощью команды /lang.
-
-Для связи с разработчиком: https://t.me/golovakanta.
-"""
+            'Помощь'
         ],
         'lang_start_command':
         [
             'Пожалуйста, выберите язык.',
-            'Спасибо, теперь работа будет продолжена на русском.',
+            'Спасибо, теперь работа будет продолжена на 🇷🇺Русском.',
+        ],
+        'keyboard_command':
+        [
+            'Присылаем клавиатуру...'
         ],
         'echo':
         [
