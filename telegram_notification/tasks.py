@@ -4,8 +4,7 @@ from typing import Dict, List, Optional, Union
 import telegram_bot.handlers.bot_handlers.utils as utils
 from django.core.management import call_command
 from telegram_bot.localization import localization
-from telegram_bot.models import User
-from youtube.models import YoutubeChannel, YoutubeChannelUserItem
+from telegram_bot.models import User, Channel, ChannelUserItem
 
 from celery.utils.log import get_task_logger
 from telegram_notification.celery import app
@@ -13,12 +12,10 @@ from telegram_notification.celery import app
 logger = get_task_logger(__name__)
 
 
-# TODO Add Union YoutubeChannel and TwitchChannel
 @app.task(ignore_result=True)
-def notify_users(users: List[User], channel: YoutubeChannel, live: Optional[bool] = False) -> None:
+def notify_users(users: List[User], channel: Channel, live: Optional[bool] = False) -> None:
     for user in users:
-        item = YoutubeChannelUserItem.objects.get(
-            channel=channel, user=user)
+        item = ChannelUserItem.get_user_channel_by_id(user, channel.channel_id)
         user_title, is_muted = item.channel_title, item.is_muted
         if not live:
             utils._send_message(

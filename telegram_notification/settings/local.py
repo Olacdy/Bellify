@@ -44,8 +44,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_celery_beat',
+    'polymorphic',
     'telegram_bot',
-    'youtube'
+    'youtube',
+    'twitch',
 ]
 
 MIDDLEWARE = [

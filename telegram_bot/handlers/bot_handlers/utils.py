@@ -1,15 +1,19 @@
+import re
 from typing import Dict, List, Optional, Union
 
 import telegram
 import telegram_notification.tasks as tasks
 from django.conf import settings
-from telegram import (InlineKeyboardButton, LabeledPrice, KeyboardButton, InlineKeyboardMarkup, Message,
-                      MessageEntity, Update)
+from telegram import (InlineKeyboardButton, InlineKeyboardMarkup,
+                      KeyboardButton, LabeledPrice, Message, MessageEntity,
+                      Update)
 from telegram_bot.localization import localization
-from telegram_bot.models import User
-from youtube.models import YoutubeChannel, YoutubeChannelUserItem
-from youtube.utils import (get_channels_and_videos_info,
-                           get_channels_live_title_and_url)
+from telegram_bot.models import ChannelUserItem, User
+from twitch.utils import _is_twitch_channel_url
+from youtube.models import YouTubeChannel, YouTubeChannelUserItem
+from youtube.utils import (_is_youtube_channel_url,
+                           get_channels_and_videos_info,
+                           get_channels_live_title_and_url, get_url_from_id)
 
 
 def log_errors(f):
@@ -26,7 +30,7 @@ def log_errors(f):
 
 # Checks for streams and alerts every premium user if there is one
 def check_for_live_stream_youtube() -> None:
-    channels = list(YoutubeChannel.objects.filter(users__status='P'))
+    channels = list(YouTubeChannel.objects.filter(users__status='P'))
     channels_live_urls = [
         f'https://www.youtube.com/channel/{channel.channel_id}/live' for channel in channels]
     live_info = get_channels_live_title_and_url(channels_live_urls)
@@ -37,7 +41,7 @@ def check_for_live_stream_youtube() -> None:
                 channel.live_title = live_title
                 channel.live_url = live_url
                 channel.is_live = True
-                tasks.notify_users([item.user for item in YoutubeChannelUserItem.objects.filter(
+                tasks.notify_users([item.user for item in YouTubeChannelUserItem.objects.filter(
                     channel=channel, user__status='P')], channel, True)
         else:
             channel.live_title = None
@@ -51,7 +55,7 @@ def check_for_new_video() -> None:
     channels_live_urls = []
     channels_with_new_video = []
 
-    channels = list(YoutubeChannel.objects.all())
+    channels = list(YouTubeChannel.objects.all())
     channels_urls = [
         f'https://www.youtube.com/feeds/videos.xml?channel_id={channel.channel_id}' for channel in channels]
 
@@ -76,12 +80,12 @@ def check_for_new_video() -> None:
                 channel.live_title = live_title
                 channel.live_url = live_url
                 channel.is_live = True
-                tasks.notify_users([item.user for item in YoutubeChannelUserItem.objects.filter(
+                tasks.notify_users([item.user for item in YouTubeChannelUserItem.objects.filter(
                     channel=channel, user__status='P')], channel, True)
         elif not is_upcoming:
             channel.video_title = video_title
             channel.video_url = video_url
-            tasks.notify_users([item.user for item in YoutubeChannelUserItem.objects.filter(
+            tasks.notify_users([item.user for item in YouTubeChannelUserItem.objects.filter(
                 channel=channel)], channel)
         channel.save()
 
@@ -91,8 +95,10 @@ def get_manage_inline_keyboard(u: User, page_num: Optional[int] = 0) -> List:
     keyboard = []
     pagination_button_set = []
 
-    channels = [YoutubeChannelUserItem.objects.filter(
-        user=u)[i:i + settings.PAGINATION_SIZE] for i in range(0, len(YoutubeChannelUserItem.objects.filter(user=u)), settings.PAGINATION_SIZE)]
+    all_channels = ChannelUserItem.objects.filter(user=u).all()
+
+    channels = [all_channels[i:i + settings.PAGINATION_SIZE]
+                for i in range(0, len(all_channels), settings.PAGINATION_SIZE)]
 
     if channels:
         for channel in channels[page_num]:
@@ -116,7 +122,7 @@ def get_manage_inline_keyboard(u: User, page_num: Optional[int] = 0) -> List:
 
 
 # Returns Upgrade inline keyboard
-@log_errors
+@ log_errors
 def get_upgrade_inline_keyboard(u: User) -> List[List[InlineKeyboardButton]]:
     keyboard = [[]]
 
@@ -159,10 +165,26 @@ def get_lang_inline_keyboard(command: Optional[str] = 'lang') -> List[List[Inlin
     return keyboard
 
 
-# Adds Youtube channel to a given user
+# Checks channel url type and call add function accordingly
+@log_errors
+def add(channel_id: str, channel_type: str, message: Message, u: User, name: Optional[str] = None) -> None:
+    if channel_type == 'YouTube':
+        _add_youtube_channel(channel_id, message, u, name)
+    elif channel_type == 'Twitch':
+        _add_twitch_channel(channel_id, message, u, name)
+
+
+# Adds Twitch channel to a given user
 @ log_errors
-def add_youtube_channel(channel_id: str, message: Message, u: User, name: Optional[str] = None) -> None:
-    if not YoutubeChannel.objects.filter(channel_id=channel_id).exists():
+def _add_twitch_channel(channel_id: str, message: Message, u: User, name: Optional[str] = None) -> None:
+    print(channel_id)
+    pass
+
+
+# Adds YouTube channel to a given user
+@ log_errors
+def _add_youtube_channel(channel_id: str, message: Message, u: User, name: Optional[str] = None) -> None:
+    if not YouTubeChannel.objects.filter(channel_id=channel_id).exists():
         video_title, video_url, channel_title = get_channels_and_videos_info(
             [f'https://www.youtube.com/feeds/videos.xml?channel_id={channel_id}'])[0]
         live_title, live_url, is_upcoming = get_channels_live_title_and_url(
@@ -174,12 +196,12 @@ def add_youtube_channel(channel_id: str, message: Message, u: User, name: Option
             live_title, live_url = None, None
 
     else:
-        channel = YoutubeChannel.objects.get(channel_id=channel_id)
+        channel = YouTubeChannel.objects.get(channel_id=channel_id)
         video_title, video_url, channel_title, live_title, live_url = channel.video_title, channel.video_url, channel.title, channel.live_title, channel.live_url
 
     channel_name = name if name else channel_title
-    channel, _ = YoutubeChannel.objects.get_or_create(
-        channel_url=f'https://www.youtube.com/channel/{channel_id}',
+    channel, _ = YouTubeChannel.objects.get_or_create(
+        channel_url=get_url_from_id(channel_id),
         defaults={
             'title': channel_title,
             'channel_id': channel_id,
@@ -192,8 +214,8 @@ def add_youtube_channel(channel_id: str, message: Message, u: User, name: Option
     )
 
     if not u in channel.users.all():
-        if not YoutubeChannelUserItem.objects.filter(user=u, channel_title=channel_title).exists():
-            YoutubeChannelUserItem.objects.create(
+        if not YouTubeChannelUserItem.objects.filter(user=u, channel_title=channel_title).exists():
+            YouTubeChannelUserItem.objects.create(
                 user=u, channel=channel, channel_title=channel_name)
 
             if not live_title:
@@ -217,19 +239,21 @@ def add_youtube_channel(channel_id: str, message: Message, u: User, name: Option
             )
 
 
+# Removes given channel user item
 @ log_errors
-def remove(update: Update, u: User, name: str) -> None:
-    item = YoutubeChannelUserItem.objects.get(user=u, channel_title=name)
-    item.delete()
+def remove(update: Update, u: User, channel: ChannelUserItem) -> None:
+    channel.delete()
     manage(update, u, mode="remove")
 
 
+# Mutes given channel user item
 @ log_errors
-def mute(update: Update, u: User, name: str) -> None:
-    YoutubeChannelUserItem.set_muted(u, name)
+def mute(update: Update, u: User, channel: ChannelUserItem) -> None:
+    ChannelUserItem.mute_channel(u, channel)
     manage(update, u, mode="mute")
 
 
+# Returns Manage replies according to call situation
 @ log_errors
 def manage(update: Update, u: User, mode: Optional[str] = "echo") -> None:
     keyboard = get_manage_inline_keyboard(u)
@@ -262,7 +286,8 @@ def manage(update: Update, u: User, mode: Optional[str] = "echo") -> None:
             )
 
 
-@log_errors
+# First reply on Upgrade command
+@ log_errors
 def upgrade(update: Update, u: User):
     update.message.reply_text(
         text=localization[u.language]["upgrade"][0],
@@ -271,7 +296,8 @@ def upgrade(update: Update, u: User):
     )
 
 
-@log_errors
+# Reply on user invoice
+@ log_errors
 def reply_invoice(update: Update, u: User, title: str, description: str, payload: str, buy_button_label: str, price: int):
     keyboard = [
         [
@@ -293,6 +319,39 @@ def reply_invoice(update: Update, u: User, title: str, description: str, payload
         prices=[LabeledPrice(description[:-1], price)],
         reply_markup=reply_markup
     )
+
+
+# Checks if given string is url
+def get_channel_url_type(string: str) -> Union[str, None]:
+    if _is_youtube_channel_url(string):
+        return 'YouTube'
+    elif _is_twitch_channel_url(string):
+        return 'Twitch'
+    else:
+        return None
+
+
+# Returns Inline Keyboard with given title and url
+def _get_notification_reply_markup(title: str, url: str):
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton(text=title, url=url)]
+    ])
+
+
+# Returns keyboard with all basic commands
+def _get_keyboard(u: User):
+    keyboard = [
+        [KeyboardButton(localization[u.language]['commands']
+                        ['manage_command_text'])],
+        [KeyboardButton(localization[u.language]['commands']
+                        ['language_command_text'])],
+        [KeyboardButton(localization[u.language]
+                        ['commands']['help_command_text'])],
+        [KeyboardButton(localization[u.language]['commands']
+                        ['upgrade_command_text'])]
+    ]
+
+    return keyboard
 
 
 # Sends message to user
@@ -327,24 +386,3 @@ def _send_message(
         success = True
         User.objects.filter(user_id=user_id).update(is_blocked_bot=False)
     return success
-
-
-def _get_notification_reply_markup(title: str, url: str):
-    return InlineKeyboardMarkup([
-        [InlineKeyboardButton(text=title, url=url)]
-    ])
-
-
-def _get_keyboard(u: User):
-    keyboard = [
-        [KeyboardButton(localization[u.language]['commands']
-                        ['manage_command_text'])],
-        [KeyboardButton(localization[u.language]['commands']
-                        ['language_command_text'])],
-        [KeyboardButton(localization[u.language]
-                        ['commands']['help_command_text'])],
-        [KeyboardButton(localization[u.language]['commands']
-                        ['upgrade_command_text'])]
-    ]
-
-    return keyboard

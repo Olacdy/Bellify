@@ -1,12 +1,13 @@
 from django.conf import settings
-from telegram import (InlineKeyboardButton,
-                      InlineKeyboardMarkup, ReplyKeyboardMarkup, Update)
+from telegram import (InlineKeyboardButton, InlineKeyboardMarkup,
+                      ReplyKeyboardMarkup, Update)
 from telegram.ext import CallbackContext
 from telegram_bot.handlers.bot_handlers.utils import (
-    add_youtube_channel, get_manage_inline_keyboard, log_errors, mute, remove, reply_invoice, _get_keyboard, upgrade)
+    _get_keyboard, add, get_manage_inline_keyboard, log_errors, mute, remove,
+    reply_invoice)
 from telegram_bot.localization import localization
 from telegram_bot.models import User
-from youtube.models import YoutubeChannelUserItem
+from twitch.models import ChannelUserItem
 
 
 @log_errors
@@ -38,17 +39,16 @@ def inline_handler(update: Update, context: CallbackContext) -> None:
                 parse_mode='HTML'
             )
             User.set_menu_field(
-                u, f"name{settings.SPLITTING_CHARACTER}{query_data[0]}")
+                u, f"name{settings.SPLITTING_CHARACTER}{query_data[0]}{settings.SPLITTING_CHARACTER}{query_data[1]}")
         else:
+            channel_id, channel_type = query_data[-2], query_data[-1]
             query.delete_message()
-            add_youtube_channel(
-                query_data[-1], update.callback_query.message, u)
+            add(channel_id, channel_type, update.callback_query.message, u)
     elif mode == 'manage':
         channel_id = query_data[-2]
-        channel_name = [channel.channel_title for channel in YoutubeChannelUserItem.objects.filter(
-            user=u) if channel.channel.channel_id == channel_id][0]
+        channel = ChannelUserItem.get_user_channel_by_id(u, channel_id)
         remove(
-            update, u, channel_name) if query_data[-1] == 'remove' else mute(update, u, channel_name)
+            update, u, channel) if query_data[-1] == 'remove' else mute(update, u, channel)
     elif mode == 'upgrade':
         if query_data[-1] == 'back':
             query.delete_message()
@@ -73,12 +73,11 @@ def inline_handler(update: Update, context: CallbackContext) -> None:
             parse_mode='HTML',
             reply_markup=reply_markup)
     elif mode == 'echo':
-        channel_id = query_data[-2]
+        channel_id, channel_type = query_data[-3], query_data[-2]
         if 'remove' in query_data:
             try:
-                channel_name = [channel.channel_title for channel in YoutubeChannelUserItem.objects.filter(
-                    user=u) if channel.channel.channel_id == channel_id][0]
-                remove(update, u, channel_name)
+                channel = ChannelUserItem.get_user_channel_by_id(u, channel_id)
+                remove(update, u, channel)
             except Exception as e:
                 query.edit_message_text(
                     text=localization[u.language]['echo'][3],
@@ -92,9 +91,9 @@ def inline_handler(update: Update, context: CallbackContext) -> None:
                 keyboard = [
                     [
                         InlineKeyboardButton(
-                            '✔️', callback_data=f'add{settings.SPLITTING_CHARACTER}{channel_id}{settings.SPLITTING_CHARACTER}yes'),
+                            '✔️', callback_data=f'add{settings.SPLITTING_CHARACTER}{channel_id}{settings.SPLITTING_CHARACTER}{channel_type}{settings.SPLITTING_CHARACTER}yes'),
                         InlineKeyboardButton(
-                            '❌', callback_data=f'add{settings.SPLITTING_CHARACTER}{channel_id}')
+                            '❌', callback_data=f'add{settings.SPLITTING_CHARACTER}{channel_id}{settings.SPLITTING_CHARACTER}{channel_type}')
                     ]
                 ]
 
