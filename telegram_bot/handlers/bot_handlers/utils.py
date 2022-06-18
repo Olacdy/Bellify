@@ -1,4 +1,3 @@
-import re
 from typing import Dict, List, Optional, Union
 
 import telegram
@@ -14,6 +13,12 @@ from youtube.models import YouTubeChannel, YouTubeChannelUserItem
 from youtube.utils import (_is_youtube_channel_url,
                            get_channels_and_videos_info,
                            get_channels_live_title_and_url, get_url_from_id)
+
+
+channels_type_name = {
+    'youtube': "Youtube",
+    'twitch': "Twitch"
+}
 
 
 def log_errors(f):
@@ -123,29 +128,44 @@ def get_manage_inline_keyboard(u: User, page_num: Optional[int] = 0) -> List:
 
 # Returns Upgrade inline keyboard
 @ log_errors
-def get_upgrade_inline_keyboard(u: User) -> List[List[InlineKeyboardButton]]:
+def get_upgrade_inline_keyboard(u: User, mode: Optional[str] = 'command', channel_type: Optional[str] = 'youtube') -> List[List[InlineKeyboardButton]]:
     keyboard = [[]]
 
-    keyboard.append(
-        [
-            InlineKeyboardButton(
-                localization[u.language]['upgrade'][1], callback_data=f'upgrade{settings.SPLITTING_CHARACTER}youtube{settings.SPLITTING_CHARACTER}premium')
-        ]
-    ) if u.status == 'B' else None
+    if mode == 'command':
+        keyboard.append(
+            [
+                InlineKeyboardButton(
+                    localization[u.language]['upgrade'][1], callback_data=f'upgrade{settings.SPLITTING_CHARACTER}premium')
+            ]
+        ) if u.status == 'B' else None
 
-    keyboard.append(
-        [
-            InlineKeyboardButton(
-                localization[u.language]['upgrade'][2], callback_data=f'upgrade{settings.SPLITTING_CHARACTER}youtube{settings.SPLITTING_CHARACTER}5')
-        ]
-    )
+        keyboard.append(
+            [
+                InlineKeyboardButton(
+                    f"{localization[u.language]['upgrade'][2][0]} {channels_type_name['youtube']} {localization[u.language]['upgrade'][2][1]}", callback_data=f'upgrade{settings.SPLITTING_CHARACTER}youtube')
+            ]
+        )
 
-    keyboard.append(
-        [
-            InlineKeyboardButton(
-                localization[u.language]['upgrade'][3], callback_data=f'upgrade{settings.SPLITTING_CHARACTER}twitch{settings.SPLITTING_CHARACTER}3')
-        ]
-    )
+        keyboard.append(
+            [
+                InlineKeyboardButton(
+                    f"{localization[u.language]['upgrade'][2][0]} {channels_type_name['twitch']} {localization[u.language]['upgrade'][2][1]}", callback_data=f'upgrade{settings.SPLITTING_CHARACTER}twitch')
+            ]
+        ) if u.status == 'P' else None
+    elif mode == 'quota':
+        for amount in settings.INCREASE_CHANNELS_AMOUNT:
+            keyboard.append(
+                [
+                    InlineKeyboardButton(
+                        f"▶️ {amount}", callback_data=f'upgrade{settings.SPLITTING_CHARACTER}quota{settings.SPLITTING_CHARACTER}{channel_type}{settings.SPLITTING_CHARACTER}{amount}')
+                ]
+            )
+        keyboard.append(
+            [
+                InlineKeyboardButton(
+                    localization[u.language]['upgrade'][6], callback_data=f"upgrade{settings.SPLITTING_CHARACTER}back{settings.SPLITTING_CHARACTER}upgrade")
+            ]
+        )
 
     return keyboard
 
@@ -288,8 +308,8 @@ def manage(update: Update, u: User, mode: Optional[str] = "echo") -> None:
 
 # First reply on Upgrade command
 @ log_errors
-def upgrade(update: Update, u: User):
-    update.message.reply_text(
+def upgrade(message: Message, u: User):
+    message.reply_text(
         text=localization[u.language]["upgrade"][0],
         reply_markup=InlineKeyboardMarkup(get_upgrade_inline_keyboard(u)),
         parse_mode='HTML'
@@ -298,14 +318,14 @@ def upgrade(update: Update, u: User):
 
 # Reply on user invoice
 @ log_errors
-def reply_invoice(update: Update, u: User, title: str, description: str, payload: str, buy_button_label: str, price: int):
+def reply_invoice(update: Update, u: User, title: str, description: str, payload: str, buy_button_label: str, price: int, mode: Optional[str] = 'upgrade'):
     keyboard = [
         [
             InlineKeyboardButton(buy_button_label, pay=True)
         ],
         [
             InlineKeyboardButton(
-                localization[u.language]['upgrade'][7], callback_data=f"upgrade{settings.SPLITTING_CHARACTER}back")
+                localization[u.language]['upgrade'][6], callback_data=f"upgrade{settings.SPLITTING_CHARACTER}back{settings.SPLITTING_CHARACTER}{mode}")
         ]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)

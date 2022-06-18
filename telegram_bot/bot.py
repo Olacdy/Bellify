@@ -89,7 +89,7 @@ def precheckout_callback(update: Update, context: CallbackContext) -> None:
         query.answer(ok=True)
     else:
         query.answer(
-            ok=False, error_message=localization[u.language]['upgrade'][8])
+            ok=False, error_message=localization[u.language]['upgrade'][7])
 
 
 @log_errors
@@ -97,7 +97,7 @@ def successful_payment_callback(update: Update, context: CallbackContext) -> Non
     u, _ = User.get_or_create_profile(update.message.chat_id,
                                       update.message.from_user.username)
 
-    update.message.reply_text(localization[u.language]['upgrade'][9])
+    update.message.reply_text(localization[u.language]['upgrade'][8])
 
 
 def set_up_commands(bot_instance: Bot) -> None:
