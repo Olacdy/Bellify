@@ -14,23 +14,21 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='YouTubeChannel',
+            name='TwitchChannel',
             fields=[
                 ('channel_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='telegram_bot.channel')),
-                ('video_title', models.CharField(blank=True, max_length=256, null=True)),
-                ('video_url', models.URLField(blank=True, null=True)),
             ],
             options={
-                'verbose_name': 'YouTube Channel',
-                'verbose_name_plural': 'YouTube Channels',
+                'verbose_name': 'Twitch Channel',
+                'verbose_name_plural': 'Twitch Channels',
             },
             bases=('telegram_bot.channel',),
         ),
         migrations.CreateModel(
-            name='YouTubeChannelUserItem',
+            name='TwitchChannelUserItem',
             fields=[
                 ('channeluseritem_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='telegram_bot.channeluseritem')),
-                ('channel', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='youtube.youtubechannel')),
+                ('channel', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='twitch.twitchchannel')),
             ],
             options={
                 'ordering': ('-created_at',),
@@ -39,8 +37,8 @@ class Migration(migrations.Migration):
             bases=('telegram_bot.channeluseritem',),
         ),
         migrations.AddField(
-            model_name='youtubechannel',
+            model_name='twitchchannel',
             name='users',
-            field=models.ManyToManyField(through='youtube.YouTubeChannelUserItem', to='telegram_bot.User'),
+            field=models.ManyToManyField(through='twitch.TwitchChannelUserItem', to='telegram_bot.User'),
         ),
     ]

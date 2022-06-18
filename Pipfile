@@ -25,6 +25,7 @@ sqlalchemy = "*"
 typing-extensions = "*"
 aiohttp = "*"
 fake-headers = "*"
+django-polymorphic = "*"
 
 [requires]
 python_version = "3.9"

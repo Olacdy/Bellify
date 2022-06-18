@@ -1,6 +1,6 @@
 import asyncio
 import re
-from typing import List, Optional
+from typing import List, Optional, Union
 
 import aiohttp
 import bs4 as soup
@@ -53,38 +53,18 @@ def _is_youtube_channel_url(string: str) -> bool:
     return bool(re.search(r'http[s]*://(?:www\.)?youtube.com/(?:c|user|channel)/([\%\w-]+)(?:[/]*)', string))
 
 
-# Checks if given string is twitch channel url
-def _is_twitch_channel_url(string: str) -> bool:
-    # TODO Twitch url checker
-    return False
-
-
-# Checks if given string is url
-def get_channel_url_type(string: str):
-    if _is_youtube_channel_url(string):
-        return 'Youtube'
-    elif _is_twitch_channel_url(string):
-        return 'Twitch'
-    else:
-        return None
-
-
-# Checks if channels identifier is channel id
-def is_id_in_url(string: str):
-    try:
-        ident = get_identifier_from_url(string)
-    except:
-        return False
-    return bool(re.search(r'UC[\w-]+', ident))
+# Returns channel url from channel id
+def get_url_from_id(channel_id: str) -> Union[str, None]:
+    return f'https://www.youtube.com/channel/{channel_id}' if channel_id else None
 
 
 # Gets identifier from url
-def get_identifier_from_url(string: str):
+def get_identifier_from_url(string: str) -> str:
     return re.findall(r'http[s]*://(?:www\.)?youtube.com/(?:c|user|channel)/([\%\w-]+)(?:[/]*)', string)[0]
 
 
 # Scrapes channel id from url
-def scrape_id_by_url(url: str):
+def scrape_id_by_url(url: str) -> Union[str, bool]:
     session = requests.Session()
     response = session.get(url)
     if "uxe=" in response.request.url:
@@ -93,4 +73,7 @@ def scrape_id_by_url(url: str):
     session.close()
 
     html = soup.BeautifulSoup(response.text, 'lxml')
-    return html.find('meta', {'itemprop': 'channelId'})['content']
+    try:
+        return html.find('meta', {'itemprop': 'channelId'})['content']
+    except:
+        return False

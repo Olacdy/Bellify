@@ -2,6 +2,9 @@ from django.conf import settings
 from django.contrib import admin
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
+from django_celery_beat.models import (ClockedSchedule, CrontabSchedule,
+                                       IntervalSchedule, PeriodicTask,
+                                       SolarSchedule)
 from telegram_notification.tasks import broadcast_message
 
 from telegram_bot.forms import BroadcastForm
@@ -56,3 +59,10 @@ class UserAdmin(admin.ModelAdmin):
 class MessageAdmin(admin.ModelAdmin):
     list_display = ('id', 'user', 'text', 'created_at')
     search_fields = ('user__username', 'text')
+
+
+admin.site.unregister(SolarSchedule)
+admin.site.unregister(ClockedSchedule)
+admin.site.unregister(PeriodicTask)
+admin.site.unregister(IntervalSchedule)
+admin.site.unregister(CrontabSchedule)

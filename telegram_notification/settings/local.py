@@ -44,8 +44,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_celery_beat',
+    'polymorphic',
     'telegram_bot',
-    'youtube'
+    'youtube',
+    'twitch',
 ]
 
 MIDDLEWARE = [
@@ -142,8 +144,13 @@ TOKEN = env.str('TELEGRAM_TOKEN')
 PROVIDER_TOKEN = env.str('PROVIDER_TOKEN')
 CURRENCY = 'USD'
 PREMIUM_PRICE = 399
-YOUTUBE_INCREASE_PRICE = 199
-TWITCH_INCREASE_PRICE = 199
+
+INCREASE_PRICES = {
+    'youtube': 199,
+    'twitch': 199
+}
+
+INCREASE_CHANNELS_AMOUNT = [1, 2, 3, 4, 5, 10]
 
 CELERY_BROKER_URL = os.environ.get("REDIS_URL", "") + "/1"
 CELERY_RESULT_BACKEND = os.environ.get("REDIS_URL", "") + "/1"
