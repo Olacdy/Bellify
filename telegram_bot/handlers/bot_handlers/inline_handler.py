@@ -45,7 +45,7 @@ def inline_handler(update: Update, context: CallbackContext) -> None:
             for channel_id in settings.SAMPLE_CHANNELS_IDS:
                 if not ChannelUserItem.is_user_subscribed_to_channel(u, channel_id):
                     query.message.reply_text(
-                        text=f'https://www.youtube.com/c/{channel_id}',
+                        text=f'https://www.youtube.com/channel/{channel_id}',
                         parse_mode='HTML',
                     )
                     break
