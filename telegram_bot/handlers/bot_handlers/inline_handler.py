@@ -22,16 +22,33 @@ def inline_handler(update: Update, context: CallbackContext) -> None:
     mode, query_data = query.data.split(f'{settings.SPLITTING_CHARACTER}')[
         0], query.data.split(f'{settings.SPLITTING_CHARACTER}')[1:]
 
-    if mode == 'lang' or mode == 'start':
-        u.language = query_data[0]
-        u.save()
+    if mode in ['lang', 'start', 'tutorial']:
+        if mode == 'tutorial':
+            User.change_tutorial_state(u, False)
+        if mode == 'lang' or u.is_tutorial_finished:
+            u.language = query_data[0]
+            u.save()
 
-        reply_markup = ReplyKeyboardMarkup(_get_keyboard(u))
+            reply_markup = ReplyKeyboardMarkup(_get_keyboard(u))
 
-        query.delete_message()
-        context.bot.send_message(chat_id=update.effective_chat.id, text=localization[query_data[0]]['lang_start_command'][1] if mode == 'lang' else localization[query_data[0]]['help'][0],
-                                 parse_mode='HTML',
-                                 reply_markup=reply_markup)
+            query.delete_message()
+            query.message.reply_text(
+                text=localization[query_data[0]]['lang_start_command'][1],
+                parse_mode='HTML',
+                reply_markup=reply_markup
+            )
+        else:
+            query.message.reply_text(
+                text=localization[u.language]['help'][1],
+                parse_mode='HTML',
+            )
+            for channel_id in settings.SAMPLE_CHANNELS_IDS:
+                if not ChannelUserItem.is_user_subscribed_to_channel(u, channel_id):
+                    query.message.reply_text(
+                        text=f'https://www.youtube.com/c/{channel_id}',
+                        parse_mode='HTML',
+                    )
+                    break
     elif mode == 'add':
         if query_data[-1] == 'yes':
             query.edit_message_text(

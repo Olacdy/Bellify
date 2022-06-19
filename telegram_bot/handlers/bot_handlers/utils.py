@@ -4,7 +4,7 @@ import telegram
 import telegram_notification.tasks as tasks
 from django.conf import settings
 from telegram import (InlineKeyboardButton, InlineKeyboardMarkup,
-                      KeyboardButton, LabeledPrice, Message, MessageEntity,
+                      KeyboardButton, ReplyKeyboardMarkup, LabeledPrice, Message, MessageEntity,
                       Update)
 from telegram_bot.localization import localization
 from telegram_bot.models import ChannelUserItem, User
@@ -252,6 +252,12 @@ def _add_youtube_channel(channel_id: str, message: Message, u: User, name: Optio
                     reply_markup=_get_notification_reply_markup(
                         live_title, live_url)
                 )
+            if not u.is_tutorial_finished:
+                message.reply_text(
+                    text=localization[u.language]['help'][3],
+                    parse_mode='HTML',
+                    reply_markup=ReplyKeyboardMarkup(_get_keyboard(u))
+                )
         else:
             message.reply_text(
                 text=localization[u.language]['add'][2],
@@ -283,16 +289,18 @@ def manage(update: Update, u: User, mode: Optional[str] = "echo") -> None:
 
         if mode == "echo":
             update.message.reply_text(
-                text=localization[u.language]["manage"][0],
+                text=localization[u.language]["manage"][0] if u.is_tutorial_finished else localization[u.language]["help"][4],
                 reply_markup=reply_markup,
                 parse_mode='HTML'
             )
         else:
             update.callback_query.edit_message_text(
-                text=localization[u.language]["manage"][0],
+                text=localization[u.language]["manage"][0] if u.is_tutorial_finished else localization[u.language]["help"][5],
                 reply_markup=reply_markup,
                 parse_mode='HTML'
             )
+            User.change_tutorial_state(
+                u, True) if not u.is_tutorial_finished else None
     else:
         if mode == "echo":
             update.message.reply_text(
@@ -385,6 +393,8 @@ def _send_message(
     disable_notification: Optional[bool] = None,
     entities: Optional[List[MessageEntity]] = None,
     tg_token: str = settings.TOKEN,
+
+
 ) -> bool:
     bot = telegram.Bot(tg_token)
     try:
