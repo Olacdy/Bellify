@@ -44,10 +44,19 @@ def echo_handler(update: Update, context: CallbackContext) -> None:
                 parse_mode='HTML',
                 reply_markup=reply_markup)
         elif user_text == localization[u.language]['commands']['help_command_text']:
-            update.message.reply_text(
-                text=localization[u.language]['help'][0],
-                parse_mode='HTML'
+            reply_markup = InlineKeyboardMarkup(
+                [
+                    [
+                        InlineKeyboardButton(
+                            localization[u.language]['help'][0][1], callback_data='tutorial'),
+                    ]
+                ]
             )
+
+            update.message.reply_text(
+                text=localization[u.language]['help'][0][0],
+                parse_mode='HTML',
+                reply_markup=reply_markup)
         elif user_text == localization[u.language]['commands']['upgrade_command_text']:
             upgrade(update.message, u)
         elif channel_type:
@@ -88,10 +97,16 @@ def echo_handler(update: Update, context: CallbackContext) -> None:
 
                     User.set_menu_field(u)
 
-                    update.message.reply_text(
-                        text=f"{localization[u.language]['echo'][0][0]} <a href=\"{user_text}\">{channel_id if channel_type == 'Twitch' else channel_title} </a>{localization[u.language]['echo'][0][1]}",
-                        parse_mode='HTML',
-                        reply_markup=reply_markup)
+                    if u.is_tutorial_finished:
+                        update.message.reply_text(
+                            text=f"{localization[u.language]['echo'][0][0]} <a href=\"{user_text}\">{channel_id if channel_type == 'Twitch' else channel_title} </a>{localization[u.language]['echo'][0][1]}",
+                            parse_mode='HTML',
+                            reply_markup=reply_markup)
+                    else:
+                        update.message.reply_text(
+                            text=f"{localization[u.language]['help'][2][0]} <a href=\"{user_text}\">{channel_id if channel_type == 'Twitch' else channel_title} </a>{localization[u.language]['help'][2][1]}",
+                            parse_mode='HTML',
+                            reply_markup=reply_markup)
                 else:
                     update.message.reply_text(
                         text=localization[u.language]['echo'][3],

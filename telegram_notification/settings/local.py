@@ -175,3 +175,13 @@ SPLITTING_CHARACTER = 'ø'
 SESSION_CLIENT_COOKIES = {"CONSENT": "YES+cb"}
 
 REQUESTS_DELAY = 0.05
+
+SAMPLE_CHANNELS_IDS = [
+    'UCcAd5Np7fO8SeejB1FVKcYw',
+    'UCNruPWfg4GUGw3RcwaKtsXQ',
+    'UCbBiC9us6srqQytH22wD7Zw',
+    'UC9XTzwex6rGLVUGS9cLKFLw',
+    'UCBU8GKSd4NY0wCdcalbaltw',
+    'UCggHsHce2n3vvbJf_8YKrMA',
+    'UCgPClNr5VSYC3syrDUIlzLw'
+]

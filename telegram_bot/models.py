@@ -34,6 +34,8 @@ class User(CreateUpdateTracker):
     max_youtube_channels_number = models.PositiveIntegerField(default=3, **nb)
     max_twitch_channels_number = models.PositiveIntegerField(default=0, **nb)
 
+    is_tutorial_finished = models.BooleanField(default=False)
+
     is_blocked_bot = models.BooleanField(default=False)
 
     is_admin = models.BooleanField(default=False)
@@ -62,12 +64,16 @@ class User(CreateUpdateTracker):
         u.save()
 
     @classmethod
+    def change_tutorial_state(cls, u: User, value: bool) -> None:
+        u.is_tutorial_finished = value
+        u.save()
+
+    @classmethod
     def get_or_create_profile(cls, chat_id: str, username: str, reset: Optional[bool] = True):
         user_data = cls.objects.get_or_create(
             user_id=chat_id,
             defaults={
                 'username': username,
-                'language': 'en',
             }
         )
         if reset:
