@@ -137,7 +137,7 @@ class ChannelUserItem(CreateUpdateTracker):
         if channel_type == 'YouTube':
             return apps.get_model('youtube', 'YouTubeChannelUserItem').objects.filter(user=u).count() + 1
         elif channel_type == 'Twitch':
-            return apps.get_model('Twitch', 'TwitchChannelUserItem').objects.filter(user=u).count() + 1
+            return apps.get_model('twitch', 'TwitchChannelUserItem').objects.filter(user=u).count() + 1
 
     @classmethod
     def mute_channel(cls, u: User, channel: 'ChannelUserItem') -> None:
@@ -146,13 +146,11 @@ class ChannelUserItem(CreateUpdateTracker):
 
 
 class Channel(CreateUpdateTracker):
-    title = models.CharField(max_length=256)
     channel_id = models.CharField(max_length=128, unique=True)
     channel_url = models.URLField(unique=True)
 
-    live_url = models.URLField(**nb)
     live_title = models.CharField(max_length=256, **nb)
     is_live = models.BooleanField(default=False, **nb)
 
     def __str__(self):
-        return f'{self.title}'
+        return f'{self.channel_id}'

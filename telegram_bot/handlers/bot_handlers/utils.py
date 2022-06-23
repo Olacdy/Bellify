@@ -8,7 +8,8 @@ from telegram import (InlineKeyboardButton, InlineKeyboardMarkup,
                       Update)
 from telegram_bot.localization import localization
 from telegram_bot.models import ChannelUserItem, User
-from twitch.utils import _is_twitch_channel_url
+from twitch.utils import _is_twitch_channel_url, get_channels_is_live_and_title, get_channel_url_from_title
+from twitch.models import TwitchChannel, TwitchChannelUserItem
 from youtube.models import YouTubeChannel, YouTubeChannelUserItem
 from youtube.utils import (_is_youtube_channel_url,
                            get_channels_and_videos_info,
@@ -128,10 +129,10 @@ def get_manage_inline_keyboard(u: User, page_num: Optional[int] = 0) -> List:
 
 # Returns Upgrade inline keyboard
 @ log_errors
-def get_upgrade_inline_keyboard(u: User, mode: Optional[str] = 'command', channel_type: Optional[str] = 'youtube') -> List[List[InlineKeyboardButton]]:
+def get_upgrade_inline_keyboard(u: User, mode: Optional[str] = 'upgrade', channel_type: Optional[str] = 'youtube') -> List[List[InlineKeyboardButton]]:
     keyboard = [[]]
 
-    if mode == 'command':
+    if mode == 'upgrade':
         keyboard.append(
             [
                 InlineKeyboardButton(
@@ -166,6 +167,13 @@ def get_upgrade_inline_keyboard(u: User, mode: Optional[str] = 'command', channe
                     localization[u.language]['upgrade'][6], callback_data=f"upgrade{settings.SPLITTING_CHARACTER}back{settings.SPLITTING_CHARACTER}upgrade")
             ]
         )
+    elif mode == 'premium':
+        keyboard.append(
+            [
+                InlineKeyboardButton(
+                    localization[u.language]['upgrade'][1], callback_data=f'upgrade{settings.SPLITTING_CHARACTER}premium')
+            ]
+        )
 
     return keyboard
 
@@ -197,8 +205,47 @@ def add(channel_id: str, channel_type: str, message: Message, u: User, name: Opt
 # Adds Twitch channel to a given user
 @ log_errors
 def _add_twitch_channel(channel_id: str, message: Message, u: User, name: Optional[str] = None) -> None:
-    print(channel_id)
-    pass
+    channel_url = get_channel_url_from_title(channel_id)
+
+    if not TwitchChannel.objects.filter(channel_id=channel_id).exists():
+        live_title, is_live = get_channels_is_live_and_title([channel_url])[0]
+
+    else:
+        channel = TwitchChannel.objects.get(channel_id=channel_id)
+        live_title, is_live = channel.live_title, channel.is_live
+
+    channel_name = name if name else channel_id
+    channel, _ = TwitchChannel.objects.get_or_create(
+        channel_id=channel_id,
+        channel_url=channel_url,
+        defaults={
+            'live_title': live_title,
+            'is_live': is_live
+        }
+    )
+
+    if not u in channel.users.all():
+        if not TwitchChannelUserItem.objects.filter(user=u, channel_title=channel_name).exists():
+            TwitchChannelUserItem.objects.create(
+                user=u, channel=channel, channel_title=channel_name)
+
+            message.reply_text(
+                text=f"{localization[u.language]['add'][1][0]} {channel_name}{localization[u.language]['add'][1][2 if is_live else 3]} <a href=\"{channel_url}\">{live_title}</a>",
+                parse_mode='HTML',
+                reply_markup=_get_notification_reply_markup(
+                    live_title, channel_url)
+            )
+            if not u.is_tutorial_finished:
+                message.reply_text(
+                    text=localization[u.language]['help'][3],
+                    parse_mode='HTML',
+                    reply_markup=ReplyKeyboardMarkup(_get_keyboard(u))
+                )
+        else:
+            message.reply_text(
+                text=localization[u.language]['add'][2],
+                parse_mode='HTML'
+            )
 
 
 # Adds YouTube channel to a given user

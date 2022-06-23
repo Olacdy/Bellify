@@ -11,4 +11,4 @@ class TwitchChannelUserItemInline(admin.TabularInline):
 @admin.register(TwitchChannel)
 class TwitchChannelAdmin(admin.ModelAdmin):
     inlines = (TwitchChannelUserItemInline,)
-    list_display = ('title', 'live_title', 'is_live')
+    list_display = ('channel_id', 'live_title', 'is_live')

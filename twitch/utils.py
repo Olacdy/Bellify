@@ -17,7 +17,8 @@ def get_channels_is_live_and_title(urls: List[str]):
             async def fetch(url):
                 async with session.get(url, headers=Headers().generate()) as response:
                     text = await response.text()
-                    return re.findall(r'<meta property="og:description" content=\"((.*))\"\/>', text)[0], any(re.findall(r'\"isLiveBroadcast\":true', text))
+                    return re.search(
+                        r'<meta property=\"og:description\" content=\"((.*?))\"/>', text).group(1), any(re.findall(r'\"isLiveBroadcast\":true', text))
             return await asyncio.gather(*[
                 fetch(url) for url in urls
             ])

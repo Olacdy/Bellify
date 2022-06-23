@@ -13,8 +13,9 @@ localization = {
         [
             'Now send Your own name for the channel:',
             ['The new channel added with the name',
-                '.\nThe last video is', '.\nChannel is live now!'],
+                '.\nThe last video is', '.\nChannel is live now!', '.\nChannel is not currently live.'],
             'Cannot add a new channel because a channel with the same name already exists.\nTry coming up with a new name, or leave the name parameter blank.',
+
         ],
         'manage':
         [
@@ -64,6 +65,7 @@ localization = {
                 '\nWould You like to change it?'],
             'This channel is already in your list. What You like to delete it?',
             'No channel with such a name.',
+            'Sorry, You are do not have a premium account, so the Twitch channels is not availiable to You at the time.\n\nYou can support the project and upgrade to premium.',
             'Sorry, You have exceeded Your limit on the number of channels. Try to delete one of the channels You have already added.\n\nOr support the project and increase Your limit.',
             'Doesn\'t look like a real channel URL, please try again.'
         ]
@@ -82,7 +84,7 @@ localization = {
         [
             'Можете прислать имя, под которым хотите сохранить канал.',
             ['Новый канал под именем', ' был добавлен.\nПоследнее видео',
-                ' был добавлен.\nНа канале проходит трансляция!'],
+                ' был добавлен.\nНа канале проходит трансляция!', ' был добавлен.\nКанал не проводит трансляцию.'],
             'Невозможно добавить новый канал под этим именем.\nПопробуйте придумать новое имя или оставить параметр имени пустым.',
         ],
         'manage':
@@ -130,6 +132,7 @@ localization = {
                 '\nХотите сохранить канал под другим именем?'],
             'Этот канал уже есть в Вашем списке. Хотите его удалить?',
             'Канала с таким именем не существует.',
+            'Извините, но Ваш аккаунт не является премиумным, поэтому добавление Twitch каналов Вам пока не доступно.\n\nВы можете поддержать проект и улучшить аккаунт.',
             'Извините, Вы превысили Ваш лимит на количество каналов. Попробуйте удалить один из уже добавленных Вами каналов.\n\nИли поддержите проект и увеличьте Ваш лимит.',
             'URL-адрес не похож на реальный URL канала. Повторите попытку.',
         ]

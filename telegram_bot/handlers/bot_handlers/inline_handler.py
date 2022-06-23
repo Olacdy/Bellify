@@ -1,5 +1,5 @@
 from django.conf import settings
-from telegram import (InlineKeyboardButton, InlineKeyboardMarkup,
+from telegram import (InlineKeyboardMarkup,
                       ReplyKeyboardMarkup, Update)
 from telegram.ext import CallbackContext
 from telegram_bot.handlers.bot_handlers.utils import (
@@ -38,6 +38,11 @@ def inline_handler(update: Update, context: CallbackContext) -> None:
                 reply_markup=reply_markup
             )
         else:
+            try:
+                u.language = query_data[0]
+                u.save()
+            except:
+                pass
             query.message.reply_text(
                 text=localization[u.language]['help'][1],
                 parse_mode='HTML',

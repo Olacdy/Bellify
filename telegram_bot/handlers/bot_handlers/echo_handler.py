@@ -60,8 +60,13 @@ def echo_handler(update: Update, context: CallbackContext) -> None:
         elif user_text == localization[u.language]['commands']['upgrade_command_text']:
             upgrade(update.message, u)
         elif channel_type:
-            channel_id = scrape_id_by_url(
-                user_text) if channel_type == 'YouTube' else is_twitch_channel_exists(user_text)
+            if channel_type == 'YouTube':
+                channel_id = scrape_id_by_url(user_text)
+                _, _, channel_title = get_channels_and_videos_info(
+                    [f'https://www.youtube.com/feeds/videos.xml?channel_id={channel_id}'])[0]
+            elif channel_type == 'Twitch':
+                channel_id = channel_title = is_twitch_channel_exists(
+                    user_text)
 
             if channel_id:
                 if ChannelUserItem.is_user_subscribed_to_channel(u, channel_id):
@@ -79,11 +84,16 @@ def echo_handler(update: Update, context: CallbackContext) -> None:
                     update.message.reply_text(
                         text=localization[u.language]['echo'][1],
                         parse_mode='HTML',
+                        disable_web_page_preview=True,
                         reply_markup=reply_markup)
+                elif u.status == 'B' and channel_type != 'YouTube':
+                    update.message.reply_text(
+                        text=localization[u.language]['echo'][3],
+                        parse_mode='HTML',
+                        reply_markup=InlineKeyboardMarkup(
+                            get_upgrade_inline_keyboard(u, 'premium'))
+                    )
                 elif ChannelUserItem.get_count_by_user_and_channel(u, channel_type=channel_type) <= User.get_max_for_channel(u, channel_type=channel_type):
-                    _, _, channel_title = get_channels_and_videos_info(
-                        [f'https://www.youtube.com/feeds/videos.xml?channel_id={channel_id}'])[0]
-
                     keyboard = [
                         [
                             InlineKeyboardButton(
@@ -99,24 +109,26 @@ def echo_handler(update: Update, context: CallbackContext) -> None:
 
                     if u.is_tutorial_finished:
                         update.message.reply_text(
-                            text=f"{localization[u.language]['echo'][0][0]} <a href=\"{user_text}\">{channel_id if channel_type == 'Twitch' else channel_title} </a>{localization[u.language]['echo'][0][1]}",
+                            text=f"{localization[u.language]['echo'][0][0]} <a href=\"{user_text}\">{channel_title} </a>{localization[u.language]['echo'][0][1]}",
                             parse_mode='HTML',
+                            disable_web_page_preview=True,
                             reply_markup=reply_markup)
                     else:
                         update.message.reply_text(
-                            text=f"{localization[u.language]['help'][2][0]} <a href=\"{user_text}\">{channel_id if channel_type == 'Twitch' else channel_title} </a>{localization[u.language]['help'][2][1]}",
+                            text=f"{localization[u.language]['help'][2][0]} <a href=\"{user_text}\">{channel_title} </a>{localization[u.language]['help'][2][1]}",
                             parse_mode='HTML',
+                            disable_web_page_preview=True,
                             reply_markup=reply_markup)
                 else:
                     update.message.reply_text(
-                        text=localization[u.language]['echo'][3],
+                        text=localization[u.language]['echo'][4],
                         parse_mode='HTML',
                         reply_markup=InlineKeyboardMarkup(get_upgrade_inline_keyboard(
                             u, mode='quota'))
                     )
             else:
                 update.message.reply_text(
-                    text=localization[u.language]['echo'][4],
+                    text=localization[u.language]['echo'][5],
                     parse_mode='HTML',)
         else:
             pass
