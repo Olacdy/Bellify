@@ -24,7 +24,7 @@ localization = {
         ],
         'upgrade':
         [
-            'Select the product that You would like to purchase.\n\nBy clicking on the button, a payment form will be generated to pay with 💳 credit card.\n\nBy choosing/approving the payment/purchase you accept the 📃 Terms and Conditions (/terms).',
+            'Select the product that You would like to purchase.\n\nBy clicking on the button, a payment form will be generated to pay with 💳 credit card.\n\nBy choosing/approving the payment/purchase you accept the \n<a href="https://telegra.ph/Bellify-Bot--Terms-and-Conditions-06-23-2">📃 Terms and Conditions</a>.',
             'Upgrade to Premium (YouTube and Twitch live notifications)',
             ['Increase max amount of', 'channels'],
             ['Upgrade to Premium',
@@ -39,17 +39,13 @@ localization = {
             'Oops, something went wrong...',
             'Thank You! The payment was successful.'
         ],
-        'terms':
-        [
-            'Terms'
-        ],
         'help':
         [
             ['Bellify Bot manual\n\nThis bot is capable of storing and notifying users when a new video is uploaded on the YouTube channel.\n\nIn premium mode, live stream notifications functionality is available for YouTube and Twitch channels.\n\nDeveloper contacts:\nTelegram - https://t.me/golovakanta\nGmail - dbofury@gmail.com\n\nTo start tutorial click on the button below.', 'Start tutorial'],
             'To start using this bot is recommended to complete a little tutorial. It will help You to familiarize the main functionality and using the bot right away.\n\nFirst things first, let\'s send a link to a sample YouTube channel.\nCopy the link below and send it to a bot.\n\nExample link:',
             ['At this point, You can decide whether You want to change the default channel name to Your custom one.\nChannel default name is: ',
                 '\n\nWould You like to change it?'],
-            'To review added channels, You should use the "⚙️ Manage Channels" button, which is available in the keyboard section.\n\nTry to click on it.',
+            'To review added channels, You should use the \n"⚙️ Manage Channels" button, which is available in the keyboard section.\n\nTry to click on it.',
             'Here You can review Your channels.\n\nIf the channel has 🔔 state You will get an unmuted notification, which means a message with sound, but if the channel has 🔕 state You will get only messages, but no sound with it.\n\nTry to mute the channel and You\'ll see that icon will change its appearance (click on bell icon).',
             'Consider that the tutorial is done, now You can leave the channel in Your list or delete it with ❌ button.\n\nBy default You have a quota for 3 YouTube channels, You can increase it with "⭐ Upgrade" button.\n\nThe main feature of the bot is a new video notification, when a channel uploads a new video, You will get a notification. By upgrading to a premium, You will unlock Twitch and YouTube live stream functionality, which means notifications when channels start a live stream. Hoping You will be satisfied with this bot ❤️.\n\nTo start the tutorial again, use "📑 Help" button.'
         ],
@@ -97,7 +93,7 @@ localization = {
         ],
         'upgrade':
         [
-            'Выберите товар, который Вы хотите приобрести.\n\nПосле нажатия на кнопку будет сгенерирована платежная форма для оплаты 💳 кредитной картой.\n\nПродолжив процесс оплаты вы соглашаетесь с 📃 Правилами и Условиями (/terms)',
+            'Выберите товар, который Вы хотите приобрести.\n\nПосле нажатия на кнопку будет сгенерирована платежная форма для оплаты 💳 кредитной картой.\n\nПродолжив процесс оплаты вы соглашаетесь с \n<a href="https://telegra.ph/Bellify-Bot--Pravila-i-Usloviya-06-23">📃 Правилами и Условиями</a>.',
             'Перейти на Премиум (Уведомления, при начале трансляции)',
             ['Увеличить максимальное количество', 'каналов'],
             ['Переход на Премиум',
@@ -109,10 +105,6 @@ localization = {
             'Ой, что-то пошло не по плану...',
             'Спасибо! Оплата прошла успешно.'
         ],
-        'terms':
-        [
-            'Terms'
-        ],
         'help':
         [
             ['Bellify Bot мануал\n\nЭтот бот сохраняет пользовательские каналы и уведомляет их о выходе нового видео.\n\nВ премиум моде пользователи также будут получать уведомления о начале трансляции на YouTube и Twitch каналах.\n\nКонтакты разработчика:\nTelegram - https://t.me/golovakanta\nGmail - dbofury@gmail.com\n\nЧтобы начать обучение, нажмите на кнопку снизу.', 'Начать обучение'],
@@ -121,7 +113,7 @@ localization = {
                 '\n\nХотите его поменять?'],
             'Чтобы просмотреть добавленные каналы, Вам нужно нажать кнопку "⚙️ Управление Каналами", которая находиться в секции клавиатуры.\n\nПопробуйте на нее нажать.',
             'Здесь Вы можете просмотреть добавленные Вами каналы.\n\nЕсли канал имеет свойство 🔔, то Вы будете получать сообщения, которые сопровождаются еще и звуком, в противном случае, если канал имеет свойство 🔕, Вы будете получать лишь сообщение, но уже без звука.\n\nПопробуйте изменить текущее свойство нажатием на иконку колокольчика.',
-            'Считайте, что обучение окончено, теперь Вы можете либо оставить канал в Вашем списке, либо удалить его с помощью ❌.\n\nПо умолчанию, у Вам доступна квота на 3 YouTube канала, Вы можете увеличить ее з помощью кнопки "⭐ Прокачать".\n\nГлавная особенность бота - это уведомления, при выходе нового видео. В премиум режиме Вам также будет доступна функциональность уведомлений, при начале трансляции на Twitch и YouTube каналах. Надеюсь, что Вам придется по душе данный бот ❤️.\n\nЧтобы начать обучение заново, воспользуйтесь кнопкой "📑 Помощь".',
+            'Считайте, что обучение окончено, теперь Вы можете либо оставить канал в Вашем списке, либо удалить его с помощью ❌.\n\nПо умолчанию, у Вам доступна квота на 3 YouTube канала, Вы можете увеличить ее з помощью кнопки "⭐ Прокачать".\n\nГлавная особенность бота - это уведомления, при выходе нового видео. В премиум режиме Вам также будет доступна функциональность уведомлений, при начале трансляции на Twitch и YouTube каналах. Надеюсь, что Вам придется по душе данный бот ❤️.\n\nЧтобы начать обучение заново, воспользуйтесь кнопкой \n"📑 Помощь".',
         ],
         'lang_start_command':
         [
