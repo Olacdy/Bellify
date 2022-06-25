@@ -14,6 +14,67 @@ from youtube.utils import scrape_id_by_url, get_channels_and_videos_info
 
 
 @log_errors
+def manage_reply_command_handler(update: Update, context: CallbackContext) -> None:
+    u, _ = User.get_or_create_profile(
+        update.message.chat_id, update.message.from_user.username, False)
+    user_text = update.message.text
+
+    Message.get_or_create_message(u, user_text)
+
+    manage(update, u)
+
+
+@log_errors
+def language_reply_command_handler(update: Update, context: CallbackContext) -> None:
+    u, _ = User.get_or_create_profile(
+        update.message.chat_id, update.message.from_user.username, False)
+    user_text = update.message.text
+
+    Message.get_or_create_message(u, user_text)
+
+    reply_markup = InlineKeyboardMarkup(get_lang_inline_keyboard())
+
+    update.message.reply_text(
+        text=localization[u.language]['language_command'][0],
+        parse_mode='HTML',
+        reply_markup=reply_markup)
+
+
+@log_errors
+def help_reply_command_handler(update: Update, context: CallbackContext) -> None:
+    u, _ = User.get_or_create_profile(
+        update.message.chat_id, update.message.from_user.username, False)
+    user_text = update.message.text
+
+    Message.get_or_create_message(u, user_text)
+
+    reply_markup = InlineKeyboardMarkup(
+        [
+            [
+                InlineKeyboardButton(
+                    localization[u.language]['help'][0][1], callback_data='tutorial'),
+            ]
+        ]
+    )
+
+    update.message.reply_text(
+        text=localization[u.language]['help'][0][0],
+        parse_mode='HTML',
+        reply_markup=reply_markup)
+
+
+@log_errors
+def upgrade_reply_command_handler(update: Update, context: CallbackContext) -> None:
+    u, _ = User.get_or_create_profile(
+        update.message.chat_id, update.message.from_user.username, False)
+    user_text = update.message.text
+
+    Message.get_or_create_message(u, user_text)
+
+    upgrade(update.message, u)
+
+
+@log_errors
 def echo_handler(update: Update, context: CallbackContext) -> None:
     u, _ = User.get_or_create_profile(
         update.message.chat_id, update.message.from_user.username, False)
@@ -34,32 +95,7 @@ def echo_handler(update: Update, context: CallbackContext) -> None:
                 u, user_text.lstrip())
     else:
         channel_type = get_channel_url_type(user_text)
-        if user_text == localization[u.language]['commands']['manage_command_text']:
-            manage(update, u)
-        elif user_text == localization[u.language]['commands']['language_command_text']:
-            reply_markup = InlineKeyboardMarkup(get_lang_inline_keyboard())
-
-            update.message.reply_text(
-                text=localization[u.language]['lang_start_command'][0],
-                parse_mode='HTML',
-                reply_markup=reply_markup)
-        elif user_text == localization[u.language]['commands']['help_command_text']:
-            reply_markup = InlineKeyboardMarkup(
-                [
-                    [
-                        InlineKeyboardButton(
-                            localization[u.language]['help'][0][1], callback_data='tutorial'),
-                    ]
-                ]
-            )
-
-            update.message.reply_text(
-                text=localization[u.language]['help'][0][0],
-                parse_mode='HTML',
-                reply_markup=reply_markup)
-        elif user_text == localization[u.language]['commands']['upgrade_command_text']:
-            upgrade(update.message, u)
-        elif channel_type:
+        if channel_type:
             if channel_type == 'YouTube':
                 channel_id = scrape_id_by_url(user_text)
                 _, _, channel_title = get_channels_and_videos_info(
@@ -73,9 +109,9 @@ def echo_handler(update: Update, context: CallbackContext) -> None:
                     keyboard = [
                         [
                             InlineKeyboardButton(
-                                '🗑️', callback_data=f'echo{settings.SPLITTING_CHARACTER}{channel_id}{settings.SPLITTING_CHARACTER}{channel_type}{settings.SPLITTING_CHARACTER}remove'),
+                                '🗑️', callback_data=f'link{settings.SPLITTING_CHARACTER}{channel_id}{settings.SPLITTING_CHARACTER}{channel_type}{settings.SPLITTING_CHARACTER}remove'),
                             InlineKeyboardButton(
-                                '❌', callback_data=f'echo{settings.SPLITTING_CHARACTER}{channel_id}{settings.SPLITTING_CHARACTER}{channel_type}{settings.SPLITTING_CHARACTER}cancel')
+                                '❌', callback_data=f'link{settings.SPLITTING_CHARACTER}{channel_id}{settings.SPLITTING_CHARACTER}{channel_type}{settings.SPLITTING_CHARACTER}cancel')
                         ]
                     ]
 
@@ -86,7 +122,7 @@ def echo_handler(update: Update, context: CallbackContext) -> None:
                         parse_mode='HTML',
                         disable_web_page_preview=True,
                         reply_markup=reply_markup)
-                elif u.status == 'B' and channel_type != 'YouTube':
+                elif u.status == 'B' and not channel_type in settings.FREE_CHANNELS_TYPES:
                     update.message.reply_text(
                         text=localization[u.language]['echo'][3],
                         parse_mode='HTML',
