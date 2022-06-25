@@ -1,3 +1,4 @@
+from codecs import ignore_errors
 import time
 from typing import Dict, List, Optional, Union
 
@@ -13,21 +14,22 @@ logger = get_task_logger(__name__)
 
 
 @app.task(ignore_result=True)
-def notify_users(users: List[User], channel: Channel, live: Optional[bool] = False) -> None:
+def notify_users(users: List[User], channel_info: dict, live: Optional[bool] = False) -> None:
     for user in users:
-        item = ChannelUserItem.get_user_channel_by_id(user, channel.channel_id)
+        item = ChannelUserItem.get_user_channel_by_id(
+            user, channel_info['id'])
         user_title, is_muted = item.channel_title, item.is_muted
         if not live:
             utils._send_message(
-                user.user_id, f"{localization[user.language]['notification'][0][0]} {user_title} {localization[user.language]['notification'][0][1]}\n<a href=\"{channel.video_url}\">{channel.video_title}</a>",
+                user.user_id, f"{localization[user.language]['notification'][0][0]} {user_title} {localization[user.language]['notification'][0][1]}\n<a href=\"{channel_info['url']}\">{channel_info['title']}</a>",
                 reply_markup=utils._get_notification_reply_markup(
-                    channel.video_title, channel.video_url),
+                    channel_info['title'], channel_info['url']),
                 disable_notification=not is_muted)
         else:
             utils._send_message(
-                user.user_id, f"{user_title} {localization[user.language]['notification'][1]}\n<a href=\"{channel.live_url}\">{channel.live_title}</a>",
+                user.user_id, f"{user_title} {localization[user.language]['notification'][1]}\n<a href=\"{channel_info['url']}\">{channel_info['title']}</a>",
                 reply_markup=utils._get_notification_reply_markup(
-                    channel.live_title, channel.live_url),
+                    channel_info['title'], channel_info['url']),
                 disable_notification=not is_muted)
 
 
@@ -70,3 +72,8 @@ def check_channels_for_video_youtube():
 @app.task(ignore_result=True)
 def check_channels_for_live_stream_youtube():
     call_command("check_channels_for_live_stream_youtube", )
+
+
+@app.task(ignore_result=True)
+def check_channels_for_live_stream_twitch():
+    call_command("check_channels_for_live_stream_twitch",)

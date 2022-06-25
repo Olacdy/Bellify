@@ -9,7 +9,7 @@ from telegram_bot.handlers.bot_handlers.utils import (add,
                                                       upgrade)
 from telegram_bot.localization import localization
 from telegram_bot.models import ChannelUserItem, Message, User
-from twitch.utils import is_twitch_channel_exists
+from twitch.utils import get_channel_title
 from youtube.utils import scrape_id_by_url, get_channels_and_videos_info
 
 
@@ -65,7 +65,7 @@ def echo_handler(update: Update, context: CallbackContext) -> None:
                 _, _, channel_title = get_channels_and_videos_info(
                     [f'https://www.youtube.com/feeds/videos.xml?channel_id={channel_id}'])[0]
             elif channel_type == 'Twitch':
-                channel_id = channel_title = is_twitch_channel_exists(
+                channel_id = channel_title = get_channel_title(
                     user_text)
 
             if channel_id:

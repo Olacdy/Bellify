@@ -10,38 +10,62 @@ from django.conf import settings
 from fake_headers import Headers
 
 
-# Get channels live title and urls
-def get_channels_is_live_and_title(urls: List[str]):
+# Get channels live title and is_live
+# TODO Проверить есть ли атрибут isLiveBroadcast: false, если - да, то сделать луп, который будет пытаться его получить, если - нет, сделать луп, который будет пытаться загрузить страницу
+def get_channels_title_and_is_live(urls: List[str]):
     async def get_all(urls):
         async with aiohttp.ClientSession(cookies=settings.SESSION_CLIENT_COOKIES) as session:
             async def fetch(url):
                 async with session.get(url, headers=Headers().generate()) as response:
                     text = await response.text()
-                    return re.search(
-                        r'<meta property=\"og:description\" content=\"((.*?))\"/>', text).group(1), any(re.findall(r'\"isLiveBroadcast\":true', text))
+                    try:
+                        return re.search(
+                            r'<meta property=\"og:description\" content=\"((.*?))\"/>', text).group(1), any(re.findall(r'\"isLiveBroadcast\":true', text))
+                    except AttributeError as attr_error:
+                        return None, None
             return await asyncio.gather(*[
                 fetch(url) for url in urls
             ])
     return sync.async_to_sync(get_all)(urls)
 
 
-# Checks if given channel exists and returns title if it is
-def is_twitch_channel_exists(url: str) -> Union[str, bool]:
+# Returns BeautifulSoup object of given twitch channel url
+def get_html_of_twitch_url(url: str) -> soup.BeautifulSoup:
     session = requests.Session()
-    response = session.get(url)
+    response = session.get(url, headers=Headers().generate(), timeout=(1, 10))
     if "uxe=" in response.request.url:
         session.cookies.set("CONSENT", "YES+cb", domain=".twitch.tv")
         response = session.get(url)
     session.close()
 
-    html = soup.BeautifulSoup(response.text, 'lxml')
-    try:
-        title = re.sub(r'\s-\sTwitch$', '',
-                       html.find('meta', {'name': 'title'})['content'])
-    except:
-        return False
-    else:
-        return title
+    return soup.BeautifulSoup(response.content, 'lxml')
+
+
+# Checks if given channel exists and returns title if it is
+def get_channel_title(url: str) -> Union[str, bool]:
+    for _ in range(settings.TWITCH_TRIES_NUMBER):
+        html = get_html_of_twitch_url(url)
+        try:
+            title = re.sub(r'\s-\sTwitch$', '',
+                           html.find('meta', {'name': 'title'})['content'])
+        except:
+            continue
+        else:
+            return title
+    return False
+
+
+def get_channel_title_and_is_live(url: str) -> Union[Union[str, bool], List[None]]:
+    while True:
+        html = get_html_of_twitch_url(url)
+
+        try:
+            title, is_live = html.find(
+                'meta', {'name': 'description'})['content'], any(re.findall(r'\"isLiveBroadcast\":true', str(html)))
+        except:
+            continue
+        else:
+            return title, is_live
 
 
 # Checks if given string is twitch channel url
