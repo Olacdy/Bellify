@@ -1,7 +1,6 @@
 import asyncio
 import platform
 import sys
-from ast import Call
 from typing import Dict
 
 from django.conf import settings
@@ -12,7 +11,7 @@ from telegram.ext import (CallbackContext, CallbackQueryHandler,
                           CommandHandler, Dispatcher, Filters, MessageHandler,
                           PreCheckoutQueryHandler, Updater)
 from telegram_notification.celery import app
-from utils.keyboards import get_lang_inline_keyboard
+from utils.keyboards import get_language_inline_keyboard
 
 from telegram_bot.handlers.bot_handlers.echo_handler import (
     echo_handler, help_reply_command_handler, language_reply_command_handler,
@@ -21,9 +20,7 @@ from telegram_bot.handlers.bot_handlers.inline_handler import (
     inline_add_handler, inline_language_handler, inline_link_handler,
     inline_manage_handler, inline_pagination_handler, inline_start_handler,
     inline_tutorial_handler, inline_upgrade_handler)
-from telegram_bot.handlers.bot_handlers.utils import (_get_keyboard,
-                                                      get_lang_inline_keyboard,
-                                                      log_errors)
+from utils.keyboards import _get_keyboard, get_language_inline_keyboard, log_errors
 from telegram_bot.localization import localization, reply_commands
 from telegram_bot.models import User
 
@@ -34,7 +31,7 @@ def start_callback(update: Update, context: CallbackContext) -> None:
                                       update.message.from_user.username)
 
     reply_markup = InlineKeyboardMarkup(
-        get_lang_inline_keyboard(command='start'))
+        get_language_inline_keyboard(command='start'))
 
     if u.language:
         update.message.reply_text(

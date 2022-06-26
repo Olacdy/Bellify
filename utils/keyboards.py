@@ -10,7 +10,7 @@ from utils.general_utils import channels_type_name, get_html_link, log_errors
 
 # Returns Language inline keyboard
 @log_errors
-def get_lang_inline_keyboard(command: Optional[str] = 'lang') -> List[List[InlineKeyboardButton]]:
+def get_language_inline_keyboard(command: Optional[str] = 'language') -> List[List[InlineKeyboardButton]]:
     keyboard = [
         [
             InlineKeyboardButton(
@@ -116,15 +116,15 @@ def _get_notification_reply_markup(title: str, url: str):
 
 # Returns keyboard with all basic commands
 @log_errors
-def _get_keyboard(u: User):
+def _get_keyboard(language):
     keyboard = [
-        [KeyboardButton(localization[u.language]['commands']
+        [KeyboardButton(localization[language]['commands']
                         ['manage_command_text'])],
-        [KeyboardButton(localization[u.language]['commands']
+        [KeyboardButton(localization[language]['commands']
                         ['language_command_text'])],
-        [KeyboardButton(localization[u.language]
+        [KeyboardButton(localization[language]
                         ['commands']['help_command_text'])],
-        [KeyboardButton(localization[u.language]['commands']
+        [KeyboardButton(localization[language]['commands']
                         ['upgrade_command_text'])]
     ]
 

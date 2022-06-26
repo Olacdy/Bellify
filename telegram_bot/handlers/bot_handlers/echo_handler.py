@@ -9,7 +9,7 @@ from twitch.utils import get_twitch_channel_info
 from youtube.utils import get_channels_and_videos_info, scrape_id_by_url
 
 from utils.general_utils import get_channel_url_type
-from utils.keyboards import get_lang_inline_keyboard
+from utils.keyboards import get_language_inline_keyboard
 
 
 @log_errors
@@ -31,7 +31,7 @@ def language_reply_command_handler(update: Update, context: CallbackContext) -> 
 
     Message.get_or_create_message(u, user_text)
 
-    reply_markup = InlineKeyboardMarkup(get_lang_inline_keyboard())
+    reply_markup = InlineKeyboardMarkup(get_language_inline_keyboard())
 
     update.message.reply_text(
         text=localization[u.language]['language_command'][0],

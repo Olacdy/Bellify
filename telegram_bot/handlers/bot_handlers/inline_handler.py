@@ -1,8 +1,6 @@
-from ast import Call
-from turtle import update
 from django.conf import settings
-from telegram import (CallbackQuery, InlineKeyboardMarkup,
-                      ReplyKeyboardMarkup, Update)
+from telegram import (CallbackQuery, InlineKeyboardMarkup, ReplyKeyboardMarkup,
+                      Update)
 from telegram.ext import CallbackContext
 from telegram_bot.handlers.bot_handlers.utils import (
     _get_keyboard, add, get_manage_inline_keyboard,
