@@ -157,7 +157,7 @@ def _add_twitch_channel(channel_id: str, message: Message, u: User, name: Option
                 message.reply_text(
                     text=localization[u.language]['help'][3],
                     parse_mode='HTML',
-                    reply_markup=ReplyKeyboardMarkup(_get_keyboard(u))
+                    reply_markup=ReplyKeyboardMarkup(_get_keyboard(u.language))
                 )
         else:
             message.reply_text(
@@ -218,7 +218,7 @@ def _add_youtube_channel(channel_id: str, message: Message, u: User, name: Optio
                 message.reply_text(
                     text=localization[u.language]['help'][3],
                     parse_mode='HTML',
-                    reply_markup=ReplyKeyboardMarkup(_get_keyboard(u))
+                    reply_markup=ReplyKeyboardMarkup(_get_keyboard(u.language))
                 )
         else:
             message.reply_text(
@@ -261,7 +261,7 @@ def manage(update: Update, u: User, mode: Optional[str] = "echo") -> None:
                 reply_markup=reply_markup,
                 parse_mode='HTML'
             )
-            User.change_tutorial_state(
+            User.set_tutorial_state(
                 u, True) if not u.is_tutorial_finished else None
     else:
         if mode == "echo":

@@ -1,9 +1,19 @@
+reply_commands = {
+    'manage_command_text': ["⚙️ Manage Channels", "⚙️ Управление Каналами"],
+    'language_command_text': ["🌐 Language", "🌐 Смена языка"],
+    'help_command_text': ["📑 Help", "📑 Помощь"],
+    'upgrade_command_text': ["⭐ Upgrade", "⭐ Прокачать"]
+}
+
 localization = {
     'en': {
-        'commands': {'manage_command_text': "⚙️ Manage Channels",
-                     'language_command_text': "🌐 Language",
-                     'help_command_text': "📑 Help",
-                     'upgrade_command_text': "⭐ Upgrade"},
+        'commands':
+        {
+            'manage_command_text': reply_commands['manage_command_text'][0],
+            'language_command_text': reply_commands['language_command_text'][0],
+            'help_command_text': reply_commands['help_command_text'][0],
+            'upgrade_command_text': reply_commands['upgrade_command_text'][0]
+        },
         'notification':
         [
             ['New video from', 'is out!'],
@@ -50,7 +60,7 @@ localization = {
             'Here You can review Your channels.\n\nIf the channel has 🔔 state You will get an unmuted notification, which means a message with sound, but if the channel has 🔕 state You will get only messages, but no sound with it.\n\nTry to mute the channel and You\'ll see that icon will change its appearance (click on bell icon).',
             'Consider that the tutorial is done, now You can leave the channel in Your list or delete it with ❌ button.\n\nBy default You have a quota for 3 YouTube channels, You can increase it with "⭐ Upgrade" button.\n\nThe main feature of the bot is a new video notification, when a channel uploads a new video, You will get a notification. By upgrading to a premium, You will unlock Twitch and YouTube live stream functionality, which means notifications when channels start a live stream. Hoping You will be satisfied with this bot ❤️.\n\nTo start the tutorial again, use "📑 Help" button.'
         ],
-        'lang_start_command':
+        'language_command':
         [
             'Please, select a language.',
             'Thanks, You will continue to work in 🇬🇧English.',
@@ -71,10 +81,13 @@ localization = {
         ]
     },
     'ru': {
-        'commands': {'manage_command_text': "⚙️ Управление Каналами",
-                     'language_command_text': "🌐 Смена языка",
-                     'help_command_text': "📑 Помощь",
-                     'upgrade_command_text': "⭐ Прокачать"},
+        'commands':
+        {
+            'manage_command_text': reply_commands['manage_command_text'][1],
+            'language_command_text': reply_commands['language_command_text'][1],
+            'help_command_text': reply_commands['help_command_text'][1],
+            'upgrade_command_text': reply_commands['upgrade_command_text'][1]
+        },
         'notification':
         [
             ['Новое видео от', 'уже вышло!'],
@@ -117,7 +130,7 @@ localization = {
             'Здесь Вы можете просмотреть добавленные Вами каналы.\n\nЕсли канал имеет свойство 🔔, то Вы будете получать сообщения, которые сопровождаются еще и звуком, в противном случае, если канал имеет свойство 🔕, Вы будете получать лишь сообщение, но уже без звука.\n\nПопробуйте изменить текущее свойство нажатием на иконку колокольчика.',
             'Считайте, что обучение окончено, теперь Вы можете либо оставить канал в Вашем списке, либо удалить его с помощью ❌.\n\nПо умолчанию, у Вам доступна квота на 3 YouTube канала, Вы можете увеличить ее з помощью кнопки "⭐ Прокачать".\n\nГлавная особенность бота - это уведомления, при выходе нового видео. В премиум режиме Вам также будет доступна функциональность уведомлений, при начале трансляции на Twitch и YouTube каналах. Надеюсь, что Вам придется по душе данный бот ❤️.\n\nЧтобы начать обучение заново, воспользуйтесь кнопкой \n"📑 Помощь".',
         ],
-        'lang_start_command':
+        'language_command':
         [
             'Пожалуйста, выберите язык.',
             'Спасибо, теперь работа будет продолжена на 🇷🇺Русском.',

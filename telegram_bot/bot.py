@@ -1,6 +1,7 @@
 import asyncio
 import platform
 import sys
+from ast import Call
 from typing import Dict
 
 from django.conf import settings
@@ -13,10 +14,17 @@ from telegram.ext import (CallbackContext, CallbackQueryHandler,
 from telegram_notification.celery import app
 from utils.keyboards import get_lang_inline_keyboard
 
-from telegram_bot.handlers.bot_handlers.echo_handler import echo_handler
-from telegram_bot.handlers.bot_handlers.inline_handler import inline_handler
-from telegram_bot.handlers.bot_handlers.utils import _get_keyboard, log_errors
-from telegram_bot.localization import localization
+from telegram_bot.handlers.bot_handlers.echo_handler import (
+    echo_handler, help_reply_command_handler, language_reply_command_handler,
+    manage_reply_command_handler, upgrade_reply_command_handler)
+from telegram_bot.handlers.bot_handlers.inline_handler import (
+    inline_add_handler, inline_language_handler, inline_link_handler,
+    inline_manage_handler, inline_pagination_handler, inline_start_handler,
+    inline_tutorial_handler, inline_upgrade_handler)
+from telegram_bot.handlers.bot_handlers.utils import (_get_keyboard,
+                                                      get_lang_inline_keyboard,
+                                                      log_errors)
+from telegram_bot.localization import localization, reply_commands
 from telegram_bot.models import User
 
 
@@ -30,12 +38,12 @@ def start_callback(update: Update, context: CallbackContext) -> None:
 
     if u.language:
         update.message.reply_text(
-            text=localization[u.language]['lang_start_command'][0],
+            text=localization[u.language]['language_command'][0],
             parse_mode='HTML',
             reply_markup=reply_markup)
     else:
         update.message.reply_text(
-            text=f"{localization['en']['lang_start_command'][0]}\n{localization['ru']['lang_start_command'][0]}",
+            text=f"{localization['en']['language_command'][0]}\n{localization['ru']['language_command'][0]}",
             parse_mode='HTML',
             reply_markup=reply_markup)
 
@@ -45,7 +53,7 @@ def keyboard_callback(update: Update, context: CallbackContext) -> None:
     u, _ = User.get_or_create_profile(update.message.chat_id,
                                       update.message.from_user.username)
 
-    reply_markup = ReplyKeyboardMarkup(_get_keyboard(u))
+    reply_markup = ReplyKeyboardMarkup(_get_keyboard(u.language))
 
     update.message.reply_text(
         text=localization[u.language]['keyboard_command'][0],
@@ -111,9 +119,40 @@ def set_up_commands(bot_instance: Bot) -> None:
 def setup_dispatcher(dp):
     dp.add_handler(CommandHandler('start', start_callback))
     dp.add_handler(CommandHandler('keyboard', keyboard_callback))
+    dp.add_handler(
+        MessageHandler(Filters.regex(
+            rf'^{"(" + ")|(".join(reply_commands["manage_command_text"]) + ")"}(/s)?.*'), manage_reply_command_handler)
+    )
+    dp.add_handler(
+        MessageHandler(Filters.regex(
+            rf'^{"(" + ")|(".join(reply_commands["language_command_text"]) + ")"}(/s)?.*'), language_reply_command_handler)
+    )
+    dp.add_handler(
+        MessageHandler(Filters.regex(
+            rf'^{"(" + ")|(".join(reply_commands["help_command_text"]) + ")"}(/s)?.*'), help_reply_command_handler)
+    )
+    dp.add_handler(
+        MessageHandler(Filters.regex(
+            rf'^{"(" + ")|(".join(reply_commands["upgrade_command_text"]) + ")"}(/s)?.*'), upgrade_reply_command_handler)
+    )
     dp.add_handler(MessageHandler(
         Filters.text & ~Filters.command, echo_handler))
-    dp.add_handler(CallbackQueryHandler(inline_handler))
+    dp.add_handler(CallbackQueryHandler(
+        inline_language_handler, pattern=r'^language'))
+    dp.add_handler(CallbackQueryHandler(
+        inline_start_handler, pattern=r'^start'))
+    dp.add_handler(CallbackQueryHandler(
+        inline_tutorial_handler, pattern=r'^tutorial'))
+    dp.add_handler(CallbackQueryHandler(
+        inline_add_handler, pattern=r'^add'))
+    dp.add_handler(CallbackQueryHandler(
+        inline_link_handler, pattern=r'^link'))
+    dp.add_handler(CallbackQueryHandler(
+        inline_manage_handler, pattern=r'^manage'))
+    dp.add_handler(CallbackQueryHandler(
+        inline_upgrade_handler, pattern=r'^upgrade'))
+    dp.add_handler(CallbackQueryHandler(
+        inline_pagination_handler, pattern=r'^pagination'))
     dp.add_handler(PreCheckoutQueryHandler(precheckout_callback))
     dp.add_handler(MessageHandler(
         Filters.successful_payment, successful_payment_callback))

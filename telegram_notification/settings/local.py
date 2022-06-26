@@ -152,6 +152,8 @@ INCREASE_PRICES = {
 
 INCREASE_CHANNELS_AMOUNT = [1, 2, 3, 4, 5, 10]
 
+FREE_CHANNELS_TYPES = ['YouTube']
+
 CELERY_BROKER_URL = os.environ.get("REDIS_URL", "") + "/1"
 CELERY_RESULT_BACKEND = os.environ.get("REDIS_URL", "") + "/1"
 CELERY_ACCEPT_CONTENT = ['json']
