@@ -64,7 +64,13 @@ class User(CreateUpdateTracker):
         u.save()
 
     @classmethod
-    def change_tutorial_state(cls, u: User, value: bool) -> None:
+    def set_language(cls, u: User, value: str) -> None:
+        u = cls.objects.filter(user_id=u.user_id).first()
+        u.language = value
+        u.save()
+
+    @classmethod
+    def set_tutorial_state(cls, u: User, value: bool) -> None:
         u.is_tutorial_finished = value
         u.save()
 
@@ -95,7 +101,7 @@ class Message(CreateUpdateTracker):
     user = models.ForeignKey(
         to='telegram_bot.User',
         verbose_name='User name',
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
     )
     text = models.TextField(
         verbose_name='Text',

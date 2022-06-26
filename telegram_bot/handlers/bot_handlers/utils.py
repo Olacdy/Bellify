@@ -180,7 +180,7 @@ def get_upgrade_inline_keyboard(u: User, mode: Optional[str] = 'upgrade', channe
 
 # Returns Language inline keyboard
 @ log_errors
-def get_lang_inline_keyboard(command: Optional[str] = 'lang') -> List[List[InlineKeyboardButton]]:
+def get_lang_inline_keyboard(command: Optional[str] = 'language') -> List[List[InlineKeyboardButton]]:
     keyboard = [
         [
             InlineKeyboardButton(
@@ -239,7 +239,7 @@ def _add_twitch_channel(channel_id: str, message: Message, u: User, name: Option
                 message.reply_text(
                     text=localization[u.language]['help'][3],
                     parse_mode='HTML',
-                    reply_markup=ReplyKeyboardMarkup(_get_keyboard(u))
+                    reply_markup=ReplyKeyboardMarkup(_get_keyboard(u.language))
                 )
         else:
             message.reply_text(
@@ -303,7 +303,7 @@ def _add_youtube_channel(channel_id: str, message: Message, u: User, name: Optio
                 message.reply_text(
                     text=localization[u.language]['help'][3],
                     parse_mode='HTML',
-                    reply_markup=ReplyKeyboardMarkup(_get_keyboard(u))
+                    reply_markup=ReplyKeyboardMarkup(_get_keyboard(u.language))
                 )
         else:
             message.reply_text(
@@ -346,7 +346,7 @@ def manage(update: Update, u: User, mode: Optional[str] = "echo") -> None:
                 reply_markup=reply_markup,
                 parse_mode='HTML'
             )
-            User.change_tutorial_state(
+            User.set_tutorial_state(
                 u, True) if not u.is_tutorial_finished else None
     else:
         if mode == "echo":
@@ -414,15 +414,15 @@ def _get_notification_reply_markup(title: str, url: str):
 
 
 # Returns keyboard with all basic commands
-def _get_keyboard(u: User):
+def _get_keyboard(language: str):
     keyboard = [
-        [KeyboardButton(localization[u.language]['commands']
+        [KeyboardButton(localization[language]['commands']
                         ['manage_command_text'])],
-        [KeyboardButton(localization[u.language]['commands']
+        [KeyboardButton(localization[language]['commands']
                         ['language_command_text'])],
-        [KeyboardButton(localization[u.language]
+        [KeyboardButton(localization[language]
                         ['commands']['help_command_text'])],
-        [KeyboardButton(localization[u.language]['commands']
+        [KeyboardButton(localization[language]['commands']
                         ['upgrade_command_text'])]
     ]
 
