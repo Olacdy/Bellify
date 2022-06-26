@@ -168,7 +168,13 @@ CELERY_BEAT_SCHEDULE = {
         "task": "telegram_notification.tasks.check_channels_for_live_stream_youtube",
         "schedule": crontab(minute="*/1"),
     },
+    "check_channels_for_live_stream_twitch": {
+        "task": "telegram_notification.tasks.check_channels_for_live_stream_twitch",
+        "schedule": crontab(minute="*/1"),
+    },
 }
+
+TWITCH_TRIES_NUMBER = 15
 
 PAGINATION_SIZE = 5
 

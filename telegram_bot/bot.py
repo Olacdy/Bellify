@@ -12,6 +12,7 @@ from telegram.ext import (CallbackContext, CallbackQueryHandler,
                           CommandHandler, Dispatcher, Filters, MessageHandler,
                           PreCheckoutQueryHandler, Updater)
 from telegram_notification.celery import app
+from utils.keyboards import get_lang_inline_keyboard
 
 from telegram_bot.handlers.bot_handlers.echo_handler import (
     echo_handler, help_reply_command_handler, language_reply_command_handler,

@@ -77,7 +77,7 @@ localization = {
             'No channel with such a name.',
             'Sorry, You are do not have a premium account, so the Twitch channels is not availiable to You at the time.\n\nYou can support the project and upgrade to premium.',
             'Sorry, You have exceeded Your limit on the number of channels. Try to delete one of the channels You have already added.\n\nOr support the project and increase Your limit.',
-            'Doesn\'t look like a real channel URL, please try again.'
+            'Doesn\'t look like a channel URL. Please review the URL You sent and try again.'
         ]
     },
     'ru': {
@@ -147,7 +147,7 @@ localization = {
             'Канала с таким именем не существует.',
             'Извините, но Ваш аккаунт не является премиумным, поэтому добавление Twitch каналов Вам пока не доступно.\n\nВы можете поддержать проект и улучшить аккаунт.',
             'Извините, Вы превысили Ваш лимит на количество каналов. Попробуйте удалить один из уже добавленных Вами каналов.\n\nИли поддержите проект и увеличьте Ваш лимит.',
-            'URL-адрес не похож на реальный URL канала. Повторите попытку.',
+            'URL-адрес не похож на реальный URL канала. Пожалуйста, проверьте правильность URL и повторите попытку.',
         ]
     }
 }
