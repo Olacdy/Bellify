@@ -7,16 +7,15 @@ from django.conf import settings
 from telegram import (Bot, BotCommand, InlineKeyboardMarkup,
                       ReplyKeyboardMarkup, Update)
 from telegram.error import Unauthorized
-from telegram.ext import (CallbackContext, CallbackQueryHandler, PreCheckoutQueryHandler,
+from telegram.ext import (CallbackContext, CallbackQueryHandler,
                           CommandHandler, Dispatcher, Filters, MessageHandler,
-                          Updater)
+                          PreCheckoutQueryHandler, Updater)
 from telegram_notification.celery import app
+from utils.keyboards import get_lang_inline_keyboard
 
 from telegram_bot.handlers.bot_handlers.echo_handler import echo_handler
 from telegram_bot.handlers.bot_handlers.inline_handler import inline_handler
-from telegram_bot.handlers.bot_handlers.utils import (_get_keyboard,
-                                                      get_lang_inline_keyboard,
-                                                      log_errors)
+from telegram_bot.handlers.bot_handlers.utils import _get_keyboard, log_errors
 from telegram_bot.localization import localization
 from telegram_bot.models import User
 

@@ -8,7 +8,7 @@ from django_celery_beat.models import (ClockedSchedule, CrontabSchedule,
 from telegram_notification.tasks import broadcast_message
 
 from telegram_bot.forms import BroadcastForm
-from telegram_bot.handlers.bot_handlers.utils import _send_message
+from utils.general_utils import _send_message
 from telegram_bot.models import Message, User
 
 
