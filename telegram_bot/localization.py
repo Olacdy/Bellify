@@ -25,11 +25,10 @@ localization = {
             ['The new channel added with the name',
                 '.\nThe last video is', '.\nChannel is live now!', '.\nChannel is not currently live.'],
             'Cannot add a new channel because a channel with the same name already exists.\nTry coming up with a new name, or leave the name parameter blank.',
-
         ],
         'manage':
         [
-            '⚙️ Manage Channels',
+            reply_commands["manage_command_text"][0],
             'Sorry, but You have no added channels right now. Try to send a link.',
             'Looks like You have deleted all of Your channels.',
         ],
@@ -56,9 +55,9 @@ localization = {
             'To start using this bot is recommended to complete a little tutorial. It will help You to familiarize the main functionality and using the bot right away.\n\nFirst things first, let\'s send a link to a sample YouTube channel.\nCopy the link below and send it to a bot.\n\nExample link:',
             ['At this point, You can decide whether You want to change the default channel name to Your custom one.\nChannel default name is: ',
                 '\n\nWould You like to change it?'],
-            'To review added channels, You should use the \n"⚙️ Manage Channels" button, which is available in the keyboard section.\n\nTry to click on it.',
+            f'To review added channels, You should use the \n"{reply_commands["manage_command_text"][0]}" button, which is available in the keyboard section.\n\nTry to click on it.',
             'Here You can review Your channels.\n\nIf the channel has 🔔 state You will get an unmuted notification, which means a message with sound, but if the channel has 🔕 state You will get only messages, but no sound with it.\n\nTry to mute the channel and You\'ll see that icon will change its appearance (click on bell icon).',
-            'Consider that the tutorial is done, now You can leave the channel in Your list or delete it with ❌ button.\n\nBy default You have a quota for 3 YouTube channels, You can increase it with "⭐ Upgrade" button.\n\nThe main feature of the bot is a new video notification, when a channel uploads a new video, You will get a notification. By upgrading to a premium, You will unlock Twitch and YouTube live stream functionality, which means notifications when channels start a live stream. Hoping You will be satisfied with this bot ❤️.\n\nTo start the tutorial again, use "📑 Help" button.'
+            f'Consider that the tutorial is done, now You can leave the channel in Your list or delete it with ❌ button.\n\nBy default You have a quota for 3 YouTube channels, You can increase it with "⭐ Upgrade" button.\n\nThe main feature of the bot is a new video notification, when a channel uploads a new video, You will get a notification. By upgrading to a premium, You will unlock Twitch and YouTube live stream functionality, which means notifications when channels start a live stream. Hoping You will be satisfied with this bot ❤️.\n\nTo start the tutorial again, use "{reply_commands["help_command_text"][0]}" button.'
         ],
         'language_command':
         [
@@ -102,7 +101,7 @@ localization = {
         ],
         'manage':
         [
-            '⚙️ Управление Каналами',
+            reply_commands["manage_command_text"][1],
             'Пока у Вас нет добавленных каналов. Поробуйте прислать ссылку.',
             'Похоже, Вы удалили все Ваши каналы.',
         ],
@@ -126,9 +125,9 @@ localization = {
             'Для того чтобы начать пользоваться этим ботом, рекомендуется пройти небольшое обучение. Оно поможет Вам ознакомиться с основной функциональностью и пользоваться ботом без задержек.\n\nПрежде всего, давайте пришлем боту ссылку-пример.\nСкопируйте и пришлите ссылку ниже.\n\nСсылка-пример:',
             ['На этом моменте Вы можете решить, хотите ли Вы поменять имя канала на Ваше собственное.\nИмя канала сейчас: ',
                 '\n\nХотите его поменять?'],
-            'Чтобы просмотреть добавленные каналы, Вам нужно нажать кнопку "⚙️ Управление Каналами", которая находиться в секции клавиатуры.\n\nПопробуйте на нее нажать.',
+            f'Чтобы просмотреть добавленные каналы, Вам нужно нажать кнопку "{reply_commands["manage_command_text"][1]}", которая находиться в секции клавиатуры.\n\nПопробуйте на нее нажать.',
             'Здесь Вы можете просмотреть добавленные Вами каналы.\n\nЕсли канал имеет свойство 🔔, то Вы будете получать сообщения, которые сопровождаются еще и звуком, в противном случае, если канал имеет свойство 🔕, Вы будете получать лишь сообщение, но уже без звука.\n\nПопробуйте изменить текущее свойство нажатием на иконку колокольчика.',
-            'Считайте, что обучение окончено, теперь Вы можете либо оставить канал в Вашем списке, либо удалить его с помощью ❌.\n\nПо умолчанию, у Вам доступна квота на 3 YouTube канала, Вы можете увеличить ее з помощью кнопки "⭐ Прокачать".\n\nГлавная особенность бота - это уведомления, при выходе нового видео. В премиум режиме Вам также будет доступна функциональность уведомлений, при начале трансляции на Twitch и YouTube каналах. Надеюсь, что Вам придется по душе данный бот ❤️.\n\nЧтобы начать обучение заново, воспользуйтесь кнопкой \n"📑 Помощь".',
+            f'Считайте, что обучение окончено, теперь Вы можете либо оставить канал в Вашем списке, либо удалить его с помощью ❌.\n\nПо умолчанию, у Вам доступна квота на 3 YouTube канала, Вы можете увеличить ее з помощью кнопки "⭐ Прокачать".\n\nГлавная особенность бота - это уведомления, при выходе нового видео. В премиум режиме Вам также будет доступна функциональность уведомлений, при начале трансляции на Twitch и YouTube каналах. Надеюсь, что Вам придется по душе данный бот ❤️.\n\nЧтобы начать обучение заново, воспользуйтесь кнопкой \n"{reply_commands["help_command_text"][1]}".',
         ],
         'language_command':
         [
