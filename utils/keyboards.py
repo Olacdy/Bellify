@@ -5,7 +5,7 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup, KeyboardButton
 from telegram_bot.localization import localization
 from telegram_bot.models import ChannelUserItem, User
 
-from utils.general_utils import channels_type_name, get_html_link, log_errors
+from utils.general_utils import channels_type_name, log_errors
 
 
 # Returns Language inline keyboard
