@@ -155,13 +155,13 @@ def echo_handler(update: Update, context: CallbackContext) -> None:
 
                 if u.is_tutorial_finished:
                     update.message.reply_text(
-                        text=f"{localization[u.language]['echo'][0][0]} <a href=\"{user_text}\">{channel_title} </a>{localization[u.language]['echo'][0][1]}",
+                        text=f"{localization[u.language]['echo'][0][0]}<a href=\"{user_text}\">{channel_title} </a>{localization[u.language]['echo'][0][1]}",
                         parse_mode='HTML',
                         disable_web_page_preview=True,
                         reply_markup=reply_markup)
                 else:
                     update.message.reply_text(
-                        text=f"{localization[u.language]['help'][2][0]} <a href=\"{user_text}\">{channel_title} </a>{localization[u.language]['help'][2][1]}",
+                        text=f"{localization[u.language]['help'][2][0]}<a href=\"{user_text}\">{channel_title} </a>{localization[u.language]['help'][2][1]}",
                         parse_mode='HTML',
                         disable_web_page_preview=True,
                         reply_markup=reply_markup)
