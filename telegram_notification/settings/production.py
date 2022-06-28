@@ -17,4 +17,5 @@ ALLOWED_HOSTS = env.list('ALLOWED_HOSTS')
 if "DATABASE_URL" in env:
     print(env.db('DATABASE_URL'))
     DATABASES['default'] = env.db('DATABASE_URL')
+    DATABASES['default']['ENGINE'] = 'django.db.backends.postgresql_psycopg2'
     DATABASES['default']['ATOMIC_REQUESTS'] = True
