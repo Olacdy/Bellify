@@ -20,7 +20,7 @@ from telegram_bot.handlers.bot_handlers.inline_handler import (
     inline_add_handler, inline_language_handler, inline_link_handler,
     inline_manage_handler, inline_pagination_handler, inline_start_handler,
     inline_tutorial_handler, inline_upgrade_handler)
-from utils.keyboards import _get_keyboard, get_language_inline_keyboard, log_errors
+from utils.keyboards import get_reply_markup_keyboard, get_language_inline_keyboard, log_errors
 from telegram_bot.localization import localization, reply_commands
 from telegram_bot.models import User
 
@@ -46,11 +46,12 @@ def start_callback(update: Update, context: CallbackContext) -> None:
 
 
 @log_errors
-def keyboard_callback(update: Update, context: CallbackContext) -> None:
+def menu_callback(update: Update, context: CallbackContext) -> None:
     u, _ = User.get_or_create_profile(update.message.chat_id,
                                       update.message.from_user.username)
 
-    reply_markup = ReplyKeyboardMarkup(_get_keyboard(u.language))
+    reply_markup = ReplyKeyboardMarkup(
+        get_reply_markup_keyboard(u.language), one_time_keyboard=True,  resize_keyboard=True)
 
     update.message.reply_text(
         text=localization[u.language]['keyboard_command'][0],
@@ -96,10 +97,10 @@ def successful_payment_callback(update: Update, context: CallbackContext) -> Non
 def set_up_commands(bot_instance: Bot) -> None:
     langs_with_commands: Dict[str, Dict[str, str]] = {
         'en': {
-            'keyboard': 'Get the keyboard ⌨️',
+            'menu': 'Get the menu keyboard ⌨️',
         },
         'ru': {
-            'keyboard': 'Получить клавиатуру ⌨️',
+            'menu': 'Получить клавиатуру меню ⌨️',
         }
     }
 
@@ -115,7 +116,7 @@ def set_up_commands(bot_instance: Bot) -> None:
 
 def setup_dispatcher(dp):
     dp.add_handler(CommandHandler('start', start_callback))
-    dp.add_handler(CommandHandler('keyboard', keyboard_callback))
+    dp.add_handler(CommandHandler('menu', menu_callback))
     dp.add_handler(
         MessageHandler(Filters.regex(
             rf'^{"(" + ")|(".join(reply_commands["manage_command_text"]) + ")"}(/s)?.*'), manage_reply_command_handler)

@@ -5,7 +5,7 @@ from utils.models import nb
 
 # YouTubeChannel model
 class YouTubeChannel(Channel):
-    title = models.CharField(max_length=256)
+    channel_title = models.CharField(max_length=256)
 
     video_title = models.CharField(max_length=256, **nb)
     video_url = models.URLField(**nb)
@@ -20,7 +20,7 @@ class YouTubeChannel(Channel):
         verbose_name_plural = 'YouTube Channels'
 
     def __str__(self):
-        return f'{self.title}'
+        return f'{self.channel_title}'
 
 
 # Custom through model with title

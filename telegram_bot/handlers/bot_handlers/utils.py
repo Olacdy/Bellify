@@ -7,15 +7,16 @@ from telegram import (InlineKeyboardButton, InlineKeyboardMarkup, LabeledPrice,
 from telegram_bot.localization import localization
 from telegram_bot.models import ChannelUserItem, User
 from twitch.models import TwitchChannel, TwitchChannelUserItem
-from twitch.utils import (get_twitch_channel_info,
-                          get_channel_url_from_title,
-                          get_channels_title_and_is_live)
+from twitch.utils import (get_channel_url_from_title,
+                          get_channels_title_and_is_live,
+                          get_twitch_channel_info)
 from youtube.models import YouTubeChannel, YouTubeChannelUserItem
 from youtube.utils import (get_channels_and_videos_info,
                            get_channels_live_title_and_url, get_url_from_id)
 
-from utils.keyboards import (_get_keyboard, _get_notification_reply_markup,
-                             get_html_link, get_manage_inline_keyboard,
+from utils.keyboards import (_get_notification_reply_markup, get_html_link,
+                             get_manage_inline_keyboard,
+                             get_reply_markup_keyboard,
                              get_upgrade_inline_keyboard, log_errors)
 
 
@@ -157,7 +158,8 @@ def _add_twitch_channel(channel_id: str, message: Message, u: User, name: Option
                 message.reply_text(
                     text=localization[u.language]['help'][3],
                     parse_mode='HTML',
-                    reply_markup=ReplyKeyboardMarkup(_get_keyboard(u.language))
+                    reply_markup=ReplyKeyboardMarkup(
+                        get_reply_markup_keyboard(u.language), one_time_keyboard=True, resize_keyboard=True)
                 )
         else:
             message.reply_text(
@@ -182,10 +184,11 @@ def _add_youtube_channel(channel_id: str, message: Message, u: User, name: Optio
 
     else:
         channel = YouTubeChannel.objects.get(channel_id=channel_id)
-        video_title, video_url, channel_title, live_title, live_url = channel.video_title, channel.video_url, channel.title, channel.live_title, channel.live_url
+        video_title, video_url, channel_title, live_title, live_url = channel.video_title, channel.video_url, channel.channel_title, channel.live_title, channel.live_url
 
     channel_name = name if name else channel_title
     channel, _ = YouTubeChannel.objects.get_or_create(
+        channel_id=channel_id,
         channel_url=get_url_from_id(channel_id),
         channel_title=channel_title,
         video_title=video_title,
@@ -218,7 +221,8 @@ def _add_youtube_channel(channel_id: str, message: Message, u: User, name: Optio
                 message.reply_text(
                     text=localization[u.language]['help'][3],
                     parse_mode='HTML',
-                    reply_markup=ReplyKeyboardMarkup(_get_keyboard(u.language))
+                    reply_markup=ReplyKeyboardMarkup(
+                        get_reply_markup_keyboard(u.language), one_time_keyboard=True, resize_keyboard=True)
                 )
         else:
             message.reply_text(
@@ -230,7 +234,7 @@ def _add_youtube_channel(channel_id: str, message: Message, u: User, name: Optio
 # Removes given channel user item
 @log_errors
 def remove(update: Update, u: User, channel: ChannelUserItem) -> None:
-    channel.delete()
+    channel.delete() if u.is_tutorial_finished else None
     manage(update, u, mode="remove")
 
 
@@ -306,6 +310,6 @@ def reply_invoice(update: Update, u: User, title: str, description: str, payload
         payload=payload,
         provider_token=settings.PROVIDER_TOKEN,
         currency=settings.CURRENCY,
-        prices=[LabeledPrice(description[:-1], price)],
+        prices=[LabeledPrice(description[:-1], price - 1)],
         reply_markup=reply_markup
     )

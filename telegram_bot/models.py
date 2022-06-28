@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Optional
 
 from django.apps import apps
+from django.conf import settings
 from django.db import models
 from django.db.models import Manager, Q, QuerySet
 from utils.models import CreateUpdateTracker, GetOrNoneManager, nb
@@ -31,8 +32,10 @@ class User(CreateUpdateTracker):
     status = models.CharField(
         max_length=1, choices=PLAN_CHOICES, default='B', **nb)
 
-    max_youtube_channels_number = models.PositiveIntegerField(default=3, **nb)
-    max_twitch_channels_number = models.PositiveIntegerField(default=0, **nb)
+    max_youtube_channels_number = models.PositiveIntegerField(
+        default=settings.INITIAL_CHANNELS_NUMBER['YouTube'], **nb)
+    max_twitch_channels_number = models.PositiveIntegerField(
+        default=settings.INITIAL_CHANNELS_NUMBER['Twitch'], **nb)
 
     is_tutorial_finished = models.BooleanField(default=False)
 

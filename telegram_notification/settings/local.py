@@ -142,17 +142,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 TOKEN = env.str('TELEGRAM_TOKEN')
 
 PROVIDER_TOKEN = env.str('PROVIDER_TOKEN')
-CURRENCY = 'USD'
-PREMIUM_PRICE = 399
 
-INCREASE_PRICES = {
-    'youtube': 199,
-    'twitch': 199
-}
-
-INCREASE_CHANNELS_AMOUNT = [1, 2, 3, 4, 5, 10]
-
-FREE_CHANNELS_TYPES = ['YouTube']
+# Celery section
 
 CELERY_BROKER_URL = os.environ.get("REDIS_URL", "") + "/1"
 CELERY_RESULT_BACKEND = os.environ.get("REDIS_URL", "") + "/1"
@@ -174,6 +165,8 @@ CELERY_BEAT_SCHEDULE = {
     },
 }
 
+# Configuration settings
+
 TWITCH_TRIES_NUMBER = 15
 
 PAGINATION_SIZE = 5
@@ -183,6 +176,32 @@ SPLITTING_CHARACTER = 'ø'
 SESSION_CLIENT_COOKIES = {"CONSENT": "YES+cb"}
 
 REQUESTS_DELAY = 0.05
+
+# Upgrades section
+
+CURRENCY = 'USD'
+PREMIUM_PRICE = 400
+
+INCREASE_PRICES = {
+    'youtube': 50,
+    'twitch': 100
+}
+
+INITIAL_CHANNELS_NUMBER = {
+    'YouTube': 5,
+    'Twitch': 0
+}
+
+INCREASE_CHANNELS_PREMIUM = {
+    'YouTube': 3,
+    'Twitch': 3
+}
+
+INCREASE_CHANNELS_AMOUNT = [1, 2, 3, 4, 5, 10]
+
+FREE_CHANNELS_TYPES = ['YouTube']
+
+# Help section
 
 SAMPLE_CHANNELS_IDS = [
     'UCcAd5Np7fO8SeejB1FVKcYw',

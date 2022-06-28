@@ -1,9 +1,9 @@
 from django.conf import settings
-from telegram import (CallbackQuery, InlineKeyboardMarkup, ReplyKeyboardMarkup,
-                      Update)
+from telegram import (CallbackQuery, InlineKeyboardMarkup,
+                      Update, error)
 from telegram.ext import CallbackContext
 from telegram_bot.handlers.bot_handlers.utils import (
-    _get_keyboard, add, get_manage_inline_keyboard,
+    get_reply_markup_keyboard, add, get_manage_inline_keyboard,
     get_upgrade_inline_keyboard, log_errors, mute, remove, reply_invoice,
     upgrade)
 from telegram_bot.localization import localization
@@ -30,13 +30,14 @@ def inline_language_handler(update: Update, context: CallbackContext) -> None:
 
     User.set_language(u, query_data[0])
 
-    reply_markup = ReplyKeyboardMarkup(_get_keyboard(query_data[0]))
+    # reply_markup = ReplyKeyboardMarkup(
+    #     get_reply_markup_keyboard(query_data[0]), resize_keyboard=True)
 
     query.delete_message()
     query.message.reply_text(
         text=localization[query_data[0]]['language_command'][1],
         parse_mode='HTML',
-        reply_markup=reply_markup
+        # reply_markup=reply_markup
     )
 
 
@@ -69,6 +70,19 @@ def inline_tutorial_handler(update: Update, context: CallbackContext) -> None:
 
     User.set_tutorial_state(u, False)
 
+    query.delete_message()
+    query.message.reply_text(
+        text=localization[u.language]['help'][1],
+        parse_mode='HTML',
+    )
+    for channel_id in settings.SAMPLE_CHANNELS_IDS:
+        if not ChannelUserItem.is_user_subscribed_to_channel(u, channel_id):
+            query.message.reply_text(
+                text=f'https://www.youtube.com/channel/{channel_id}',
+                parse_mode='HTML',
+            )
+            break
+
 
 @log_errors
 def inline_add_handler(update: Update, context: CallbackContext) -> None:
@@ -93,7 +107,7 @@ def inline_link_handler(update: Update, context: CallbackContext) -> None:
     query = update.callback_query
     query_data, u = get_query_data_and_user(query)
 
-    channel_id, channel_type = query_data[-3], query_data[-2]
+    channel_id = query_data[-2]
     if 'remove' in query_data:
         try:
             channel = ChannelUserItem.get_user_channel_by_id(u, channel_id)
@@ -114,10 +128,24 @@ def inline_manage_handler(update: Update, context: CallbackContext) -> None:
 
     channel_id = query_data[-2]
     channel = ChannelUserItem.get_user_channel_by_id(u, channel_id)
-    remove(
-        update, u, channel) if query_data[-1] == 'remove' else mute(update, u, channel)
+    if query_data[-1] == 'mute':
+        mute(update, u, channel)
+    elif query_data[-1] == 'remove' and u.is_tutorial_finished:
+        remove(
+            update, u, channel)
+    else:
+        try:
+            update.callback_query.edit_message_text(
+                text=localization[u.language]["help"][6],
+                reply_markup=InlineKeyboardMarkup(
+                    get_manage_inline_keyboard(u)),
+                parse_mode='HTML'
+            )
+        except error.BadRequest:
+            pass
 
 
+# TODO Make prices int and decrease on 0.01
 @log_errors
 def inline_upgrade_handler(update: Update, context: CallbackContext) -> None:
     query = update.callback_query

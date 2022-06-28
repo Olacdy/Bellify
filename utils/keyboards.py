@@ -5,7 +5,7 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup, KeyboardButton
 from telegram_bot.localization import localization
 from telegram_bot.models import ChannelUserItem, User
 
-from utils.general_utils import channels_type_name, log_errors
+from utils.general_utils import channels_type_name, get_html_link, log_errors
 
 
 # Returns Language inline keyboard
@@ -116,7 +116,7 @@ def _get_notification_reply_markup(title: str, url: str):
 
 # Returns keyboard with all basic commands
 @log_errors
-def _get_keyboard(language):
+def get_reply_markup_keyboard(language):
     keyboard = [
         [KeyboardButton(localization[language]['commands']
                         ['manage_command_text'])],
