@@ -145,7 +145,6 @@ def inline_manage_handler(update: Update, context: CallbackContext) -> None:
             pass
 
 
-# TODO Make prices int and decrease on 0.01
 @log_errors
 def inline_upgrade_handler(update: Update, context: CallbackContext) -> None:
     query = update.callback_query
