@@ -116,4 +116,5 @@ class Migration(migrations.Migration):
                 'abstract': False,
             },
         ),
+        migrations.RunPython(create_initial_superuser)
     ]

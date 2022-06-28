@@ -16,9 +16,9 @@ def get_channels_title_and_is_live(urls: List[str]):
     async def get_all(urls):
         async with aiohttp.ClientSession(cookies=settings.SESSION_CLIENT_COOKIES) as session:
             async def fetch(url):
-                async with session.get(url, headers=Headers().generate()) as response:
-                    text = await response.text()
-                    for _ in range(settings.TWITCH_TRIES_NUMBER):
+                for _ in range(settings.TWITCH_TRIES_NUMBER):
+                    async with session.get(url, headers=Headers().generate()) as response:
+                        text = await response.text()
                         try:
                             live_title, is_live = re.search(
                                 r'<meta property=\"og:description\" content=\"((.*?))\"/>', text).group(1), any(re.findall(r'\"isLiveBroadcast\":true', text))
@@ -26,7 +26,7 @@ def get_channels_title_and_is_live(urls: List[str]):
                             continue
                         else:
                             return live_title, is_live
-                    return None, None
+                return None, None
             return await asyncio.gather(*[
                 fetch(url) for url in urls
             ])
@@ -57,8 +57,6 @@ def get_twitch_channel_info(url: str) -> Union[str, bool, None]:
         else:
             if title:
                 for _ in range(settings.TWITCH_TRIES_NUMBER):
-                    html = get_html_of_twitch_url(url)
-
                     try:
                         live_title = html.find(
                             'meta', {'name': 'description'})['content']
@@ -66,7 +64,6 @@ def get_twitch_channel_info(url: str) -> Union[str, bool, None]:
                         continue
                     else:
                         for _ in range(settings.TWITCH_TRIES_NUMBER):
-                            html = get_html_of_twitch_url(url)
                             try:
                                 is_live = any(re.findall(
                                     r'\"isLiveBroadcast\":true', str(html)))
