@@ -14,10 +14,8 @@ SECRET_KEY = env('SECRET_KEY')
 
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS')
 
-print(env.db('DATABASE_URL'))
 
 if "DATABASE_URL" in env:
-    print(env.db('DATABASE_URL'))
     DATABASES['default'] = env.db('DATABASE_URL')
     DATABASES['default']['ENGINE'] = 'django.db.backends.postgresql_psycopg2'
     DATABASES['default']['ATOMIC_REQUESTS'] = True
