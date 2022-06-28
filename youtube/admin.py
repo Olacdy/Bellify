@@ -1,28 +1,14 @@
-from django_celery_beat.models import (
-    IntervalSchedule,
-    CrontabSchedule,
-    SolarSchedule,
-    ClockedSchedule,
-    PeriodicTask,
-)
 from django.contrib import admin
-from youtube.models import Channel, ChannelUserItem
+
+from youtube.models import YouTubeChannel, YouTubeChannelUserItem
 
 
-class ChannelUserItemInline(admin.TabularInline):
-    model = ChannelUserItem
+class YouTubeChannelUserItemInline(admin.TabularInline):
+    model = YouTubeChannelUserItem
     extra = 1
 
 
-@admin.register(Channel)
-class ChannelAdmin(admin.ModelAdmin):
-    inlines = (ChannelUserItemInline,)
-    list_display = ('title', 'channel_id', 'video_title',
-                    'video_publication_date')
-
-
-admin.site.unregister(SolarSchedule)
-admin.site.unregister(ClockedSchedule)
-admin.site.unregister(PeriodicTask)
-admin.site.unregister(IntervalSchedule)
-admin.site.unregister(CrontabSchedule)
+@admin.register(YouTubeChannel)
+class YouTubeChannelAdmin(admin.ModelAdmin):
+    inlines = (YouTubeChannelUserItemInline,)
+    list_display = ('channel_title', 'video_title', 'is_live')

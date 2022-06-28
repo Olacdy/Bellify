@@ -1,30 +1,29 @@
 from django.db import models
-from telegram_bot.models import User
+from telegram_bot.models import User, Channel, ChannelUserItem
+from utils.models import nb
 
 
-# Channel model
-class Channel(models.Model):
-    title = models.CharField(max_length=200)
-    channel_id = models.CharField(max_length=200)
-    channel_url = models.URLField()
-    video_title = models.CharField(max_length=200)
-    video_url = models.URLField()
-    video_publication_date = models.DateTimeField()
-    users = models.ManyToManyField(User, through='ChannelUserItem')
+# YouTubeChannel model
+class YouTubeChannel(Channel):
+    channel_title = models.CharField(max_length=256)
 
-    def __str__(self):
-        return f'{self.title}'
+    video_title = models.CharField(max_length=256, **nb)
+    video_url = models.URLField(**nb)
+
+    live_url = models.URLField(**nb)
+
+    users = models.ManyToManyField(
+        User, through='YouTubeChannelUserItem')
 
     class Meta:
-        verbose_name = 'Channel'
-        verbose_name_plural = 'Channels'
+        verbose_name = 'YouTube Channel'
+        verbose_name_plural = 'YouTube Channels'
+
+    def __str__(self):
+        return f'{self.channel_title}'
 
 
 # Custom through model with title
-class ChannelUserItem(models.Model):
-    channel = models.ForeignKey(Channel, on_delete=models.CASCADE)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    channel_title = models.CharField(max_length=200, default='')
-
-    def __str__(self) -> str:
-        return self.channel_title
+class YouTubeChannelUserItem(ChannelUserItem):
+    channel = models.ForeignKey(
+        YouTubeChannel, on_delete=models.CASCADE)

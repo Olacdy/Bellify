@@ -1,12 +1,17 @@
 from __future__ import annotations
-from django.db import models
 
 from typing import Optional
 
+from django.apps import apps
+from django.conf import settings
 from django.db import models
-from django.db.models import QuerySet, Manager
+from django.db.models import Manager, Q, QuerySet
+from utils.models import CreateUpdateTracker, GetOrNoneManager, nb
 
-from utils.models import CreateUpdateTracker, nb, GetOrNoneManager
+PLAN_CHOICES = (
+    ('B', 'Basic'),
+    ('P', 'Premium')
+)
 
 
 class AdminUserManager(Manager):
@@ -20,9 +25,19 @@ class User(CreateUpdateTracker):
     first_name = models.CharField(max_length=256, **nb)
     last_name = models.CharField(max_length=256, **nb)
     language = models.CharField(
-        max_length=8, help_text="Telegram client's lang", **nb)
+        max_length=8, default=None, help_text="Telegram client's lang", **nb)
     deep_link = models.CharField(max_length=64, **nb)
     menu = models.CharField(max_length=64, **nb)
+
+    status = models.CharField(
+        max_length=1, choices=PLAN_CHOICES, default='B', **nb)
+
+    max_youtube_channels_number = models.PositiveIntegerField(
+        default=settings.INITIAL_CHANNELS_NUMBER['YouTube'], **nb)
+    max_twitch_channels_number = models.PositiveIntegerField(
+        default=settings.INITIAL_CHANNELS_NUMBER['Twitch'], **nb)
+
+    is_tutorial_finished = models.BooleanField(default=False)
 
     is_blocked_bot = models.BooleanField(default=False)
 
@@ -39,9 +54,27 @@ class User(CreateUpdateTracker):
         return f'@{self.username}' if self.username is not None else f'{self.user_id}'
 
     @classmethod
+    def get_max_for_channel(cls, u, channel_type: str) -> int:
+        if channel_type == 'YouTube':
+            return u.max_youtube_channels_number
+        elif channel_type == 'Twitch':
+            return u.max_twitch_channels_number
+
+    @classmethod
     def set_menu_field(cls, u: User, value: Optional[str] = '') -> None:
         u = cls.objects.filter(user_id=u.user_id).first()
         u.menu = value
+        u.save()
+
+    @classmethod
+    def set_language(cls, u: User, value: str) -> None:
+        u = cls.objects.filter(user_id=u.user_id).first()
+        u.language = value
+        u.save()
+
+    @classmethod
+    def set_tutorial_state(cls, u: User, value: bool) -> None:
+        u.is_tutorial_finished = value
         u.save()
 
     @classmethod
@@ -50,7 +83,6 @@ class User(CreateUpdateTracker):
             user_id=chat_id,
             defaults={
                 'username': username,
-                'language': 'en',
             }
         )
         if reset:
@@ -72,7 +104,7 @@ class Message(CreateUpdateTracker):
     user = models.ForeignKey(
         to='telegram_bot.User',
         verbose_name='User name',
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
     )
     text = models.TextField(
         verbose_name='Text',
@@ -91,3 +123,43 @@ class Message(CreateUpdateTracker):
             text=text,
             user=u
         )
+
+
+class ChannelUserItem(CreateUpdateTracker):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    channel_title = models.CharField(max_length=200, default='', **nb)
+    is_muted = models.BooleanField(default=False)
+
+    def __str__(self) -> str:
+        return self.channel_title
+
+    @classmethod
+    def is_user_subscribed_to_channel(cls, u: User, channel_id: str) -> bool:
+        return cls.objects.filter(Q(user=u) & (Q(twitchchanneluseritem__channel__channel_id=channel_id) | Q(youtubechanneluseritem__channel__channel_id=channel_id))).exists()
+
+    @classmethod
+    def get_user_channel_by_id(cls, u: User, channel_id: str) -> 'ChannelUserItem':
+        return cls.objects.filter(Q(user=u) & (Q(twitchchanneluseritem__channel__channel_id=channel_id) | Q(youtubechanneluseritem__channel__channel_id=channel_id))).first()
+
+    @classmethod
+    def get_count_by_user_and_channel(cls, u, channel_type: str) -> int:
+        if channel_type == 'YouTube':
+            return apps.get_model('youtube', 'YouTubeChannelUserItem').objects.filter(user=u).count() + 1
+        elif channel_type == 'Twitch':
+            return apps.get_model('twitch', 'TwitchChannelUserItem').objects.filter(user=u).count() + 1
+
+    @classmethod
+    def mute_channel(cls, u: User, channel: 'ChannelUserItem') -> None:
+        channel.is_muted = not channel.is_muted
+        channel.save()
+
+
+class Channel(CreateUpdateTracker):
+    channel_id = models.CharField(max_length=128, unique=True)
+    channel_url = models.URLField(unique=True)
+
+    live_title = models.CharField(max_length=256, **nb)
+    is_live = models.BooleanField(default=False, **nb)
+
+    def __str__(self):
+        return f'{self.channel_id}'

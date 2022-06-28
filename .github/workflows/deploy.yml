@@ -1,4 +1,4 @@
-name: 'Deploy Dokku'
+name: "Deploy Dokku"
 
 # yamllint disable-line rule:truthy
 on:
@@ -18,5 +18,5 @@ jobs:
       - name: Push to dokku
         uses: dokku/github-action@master
         with:
-          git_remote_url: 'ssh://dokku@telegram-notification.com/telegram-notification'
+          git_remote_url: "ssh://dokku@telegram-notification.com/telegram-notification"
           ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}

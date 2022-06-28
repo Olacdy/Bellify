@@ -44,8 +44,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_celery_beat',
+    'polymorphic',
     'telegram_bot',
-    'youtube'
+    'youtube',
+    'twitch',
 ]
 
 MIDDLEWARE = [
@@ -137,9 +139,11 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-YOUTUBE_API_KEY = env.str('YOUTUBE_API_KEY')
-
 TOKEN = env.str('TELEGRAM_TOKEN')
+
+PROVIDER_TOKEN = env.str('PROVIDER_TOKEN')
+
+# Celery section
 
 CELERY_BROKER_URL = os.environ.get("REDIS_URL", "") + "/1"
 CELERY_RESULT_BACKEND = os.environ.get("REDIS_URL", "") + "/1"
@@ -147,12 +151,64 @@ CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 
 CELERY_BEAT_SCHEDULE = {
-    "check_channels": {
-        "task": "telegram_notification.tasks.check_channels",
+    "check_channels_for_video_youtube": {
+        "task": "telegram_notification.tasks.check_channels_for_video_youtube",
         "schedule": crontab(minute="*/5"),
     },
+    "check_channels_for_live_stream_youtube": {
+        "task": "telegram_notification.tasks.check_channels_for_live_stream_youtube",
+        "schedule": crontab(minute="*/1"),
+    },
+    "check_channels_for_live_stream_twitch": {
+        "task": "telegram_notification.tasks.check_channels_for_live_stream_twitch",
+        "schedule": crontab(minute="*/1"),
+    },
 }
+
+# Configuration settings
+
+TWITCH_TRIES_NUMBER = 15
 
 PAGINATION_SIZE = 5
 
 SPLITTING_CHARACTER = 'ø'
+
+SESSION_CLIENT_COOKIES = {"CONSENT": "YES+cb"}
+
+REQUESTS_DELAY = 0.05
+
+# Upgrades section
+
+CURRENCY = 'USD'
+PREMIUM_PRICE = 400
+
+INCREASE_PRICES = {
+    'youtube': 50,
+    'twitch': 100
+}
+
+INITIAL_CHANNELS_NUMBER = {
+    'YouTube': 5,
+    'Twitch': 0
+}
+
+INCREASE_CHANNELS_PREMIUM = {
+    'YouTube': 3,
+    'Twitch': 3
+}
+
+INCREASE_CHANNELS_AMOUNT = [1, 2, 3, 4, 5, 10]
+
+FREE_CHANNELS_TYPES = ['YouTube']
+
+# Help section
+
+SAMPLE_CHANNELS_IDS = [
+    'UCcAd5Np7fO8SeejB1FVKcYw',
+    'UCNruPWfg4GUGw3RcwaKtsXQ',
+    'UCbBiC9us6srqQytH22wD7Zw',
+    'UC9XTzwex6rGLVUGS9cLKFLw',
+    'UCBU8GKSd4NY0wCdcalbaltw',
+    'UCggHsHce2n3vvbJf_8YKrMA',
+    'UCgPClNr5VSYC3syrDUIlzLw'
+]
