@@ -15,5 +15,6 @@ SECRET_KEY = env('SECRET_KEY')
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS')
 
 if "DATABASE_URL" in env:
+    print(env.db('DATABASE_URL'))
     DATABASES['default'] = env.db('DATABASE_URL')
     DATABASES['default']['ATOMIC_REQUESTS'] = True
