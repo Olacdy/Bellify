@@ -1,5 +1,5 @@
 """
-Production Settings for Heroku
+Production Settings for Dokku
 """
 
 import environ
@@ -12,8 +12,8 @@ DEBUG = env.bool('DEBUG', False)
 
 SECRET_KEY = env('SECRET_KEY')
 
-ALLOWED_HOSTS = env.list("ALLOWED_HOSTS")
+ALLOWED_HOSTS = env.list('ALLOWED_HOSTS')
 
 if "DATABASE_URL" in env:
     DATABASES['default'] = env.db('DATABASE_URL')
-    DATABASES["default"]["ATOMIC_REQUESTS"] = True
+    DATABASES['default']['ATOMIC_REQUESTS'] = True
