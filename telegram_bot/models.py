@@ -13,6 +13,11 @@ PLAN_CHOICES = (
     ('P', 'Premium')
 )
 
+LANGUAGE_CHOICES = (
+    ('en', 'English'),
+    ('ru', 'Russian')
+)
+
 
 class AdminUserManager(Manager):
     def get_queryset(self):
@@ -24,13 +29,14 @@ class User(CreateUpdateTracker):
     username = models.CharField(max_length=64, **nb)
     first_name = models.CharField(max_length=256, **nb)
     last_name = models.CharField(max_length=256, **nb)
-    language = models.CharField(
-        max_length=8, default=None, help_text="Telegram client's lang", **nb)
     deep_link = models.CharField(max_length=64, **nb)
     menu = models.CharField(max_length=64, **nb)
 
     status = models.CharField(
-        max_length=1, choices=PLAN_CHOICES, default='B', **nb)
+        max_length=1, choices=PLAN_CHOICES, default='B')
+
+    language = models.CharField(
+        max_length=2, choices=LANGUAGE_CHOICES, default=None, help_text="Telegram client's lang", **nb)
 
     max_youtube_channels_number = models.PositiveIntegerField(
         default=settings.INITIAL_CHANNELS_NUMBER['YouTube'], **nb)

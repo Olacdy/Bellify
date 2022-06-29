@@ -16,6 +16,7 @@ def index(request):
 
 class TelegramBotWebhookView(View):
     def post(self, request, *args, **kwargs):
+        print(json.loads(request.body))
         if settings.DEBUG:
             process_telegram_event(json.loads(request.body))
         else:
