@@ -3,7 +3,7 @@ from typing import Optional
 import telegram_notification.tasks as tasks
 from django.conf import settings
 from telegram import (InlineKeyboardButton, InlineKeyboardMarkup, LabeledPrice,
-                      Message, ReplyKeyboardMarkup, Update)
+                      Message, Update)
 from telegram_bot.localization import localization
 from telegram_bot.models import ChannelUserItem, User
 from twitch.models import TwitchChannel, TwitchChannelUserItem
@@ -16,7 +16,6 @@ from youtube.utils import (get_channels_and_videos_info,
 
 from utils.keyboards import (_get_notification_reply_markup, get_html_link,
                              get_manage_inline_keyboard,
-                             get_reply_markup_keyboard,
                              get_upgrade_inline_keyboard, log_errors)
 
 
@@ -158,8 +157,6 @@ def _add_twitch_channel(channel_id: str, message: Message, u: User, name: Option
                 message.reply_text(
                     text=localization[u.language]['help'][3],
                     parse_mode='HTML',
-                    reply_markup=ReplyKeyboardMarkup(
-                        get_reply_markup_keyboard(u.language), one_time_keyboard=True, resize_keyboard=True)
                 )
         else:
             message.reply_text(
@@ -221,8 +218,6 @@ def _add_youtube_channel(channel_id: str, message: Message, u: User, name: Optio
                 message.reply_text(
                     text=localization[u.language]['help'][3],
                     parse_mode='HTML',
-                    reply_markup=ReplyKeyboardMarkup(
-                        get_reply_markup_keyboard(u.language), one_time_keyboard=True, resize_keyboard=True)
                 )
         else:
             message.reply_text(
