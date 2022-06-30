@@ -49,7 +49,7 @@ def get_html_link(url: str, title: str) -> str:
 def tutorial_reply(query: CallbackQuery, language: str, u: User) -> None:
     query.delete_message()
     query.message.reply_text(
-        text=f'{localization[language]["help"][1]}\n`{[f"https://www.youtube.com/channel/{channel_id}" for channel_id in settings.SAMPLE_CHANNELS_IDS if not ChannelUserItem.is_user_subscribed_to_channel(u, channel_id)][0]}`',
+        text=f'{localization[language]["help"][1]}\n\n`{[f"https://www.youtube.com/channel/{channel_id}" for channel_id in settings.SAMPLE_CHANNELS_IDS if not ChannelUserItem.is_user_subscribed_to_channel(u, channel_id)][0]}`',
         parse_mode='MARKDOWN',
     )
 
