@@ -18,5 +18,7 @@ jobs:
       - name: Push to dokku
         uses: dokku/github-action@master
         with:
+          branch: "main"
+          git_push_flags: "--force"
           git_remote_url: "ssh://dokku@bellify.pp.ua/bellify"
           ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
