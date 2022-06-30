@@ -8,7 +8,7 @@ from telegram_bot.localization import localization
 from telegram_bot.models import User
 from twitch.models import ChannelUserItem
 
-from utils.general_utils import channels_type_name
+from utils.general_utils import channels_type_name, tutorial_reply
 
 
 @log_errors
@@ -28,14 +28,10 @@ def inline_language_handler(update: Update, context: CallbackContext) -> None:
 
     User.set_language(u, query_data[0])
 
-    # reply_markup = ReplyKeyboardMarkup(
-    #     get_reply_markup_keyboard(query_data[0]), resize_keyboard=True)
-
     query.delete_message()
     query.message.reply_text(
         text=localization[query_data[0]]['language_command'][1],
         parse_mode='HTML',
-        # reply_markup=reply_markup
     )
 
 
@@ -47,18 +43,7 @@ def inline_start_handler(update: Update, context: CallbackContext) -> None:
     User.set_tutorial_state(u, False)
     User.set_language(u, query_data[0])
 
-    query.delete_message()
-    query.message.reply_text(
-        text=localization[u.language if u.language else query_data[0]]['help'][1],
-        parse_mode='HTML',
-    )
-    for channel_id in settings.SAMPLE_CHANNELS_IDS:
-        if not ChannelUserItem.is_user_subscribed_to_channel(u, channel_id):
-            query.message.reply_text(
-                text=f'https://www.youtube.com/channel/{channel_id}',
-                parse_mode='HTML',
-            )
-            break
+    tutorial_reply(query, u.language if u.language else query_data[0], u)
 
 
 @log_errors
@@ -68,18 +53,7 @@ def inline_tutorial_handler(update: Update, context: CallbackContext) -> None:
 
     User.set_tutorial_state(u, False)
 
-    query.delete_message()
-    query.message.reply_text(
-        text=localization[u.language]['help'][1],
-        parse_mode='HTML',
-    )
-    for channel_id in settings.SAMPLE_CHANNELS_IDS:
-        if not ChannelUserItem.is_user_subscribed_to_channel(u, channel_id):
-            query.message.reply_text(
-                text=f'https://www.youtube.com/channel/{channel_id}',
-                parse_mode='HTML',
-            )
-            break
+    tutorial_reply(query, u.language, u)
 
 
 @log_errors
