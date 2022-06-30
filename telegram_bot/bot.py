@@ -4,8 +4,8 @@ import sys
 from typing import Dict
 
 from django.conf import settings
-from telegram import (Bot, BotCommand, InlineKeyboardMarkup,
-                      ReplyKeyboardMarkup, Update)
+from telegram import (Bot, BotCommand, InlineKeyboardButton,
+                      InlineKeyboardMarkup, Update)
 from telegram.error import Unauthorized
 from telegram.ext import (CallbackContext, CallbackQueryHandler,
                           CommandHandler, Dispatcher, Filters, MessageHandler,
@@ -13,20 +13,19 @@ from telegram.ext import (CallbackContext, CallbackQueryHandler,
 from telegram_notification.celery import app
 from utils.keyboards import get_language_inline_keyboard
 
-from telegram_bot.handlers.bot_handlers.echo_handler import (
-    echo_handler, help_reply_command_handler, language_reply_command_handler,
-    manage_reply_command_handler, upgrade_reply_command_handler)
+from telegram_bot.handlers.bot_handlers.echo_handler import echo_handler
 from telegram_bot.handlers.bot_handlers.inline_handler import (
     inline_add_handler, inline_language_handler, inline_link_handler,
     inline_manage_handler, inline_pagination_handler, inline_start_handler,
     inline_tutorial_handler, inline_upgrade_handler)
-from utils.keyboards import get_reply_markup_keyboard, get_language_inline_keyboard, log_errors
-from telegram_bot.localization import localization, reply_commands
-from telegram_bot.models import User
+from telegram_bot.handlers.bot_handlers.utils import (log_errors, manage,
+                                                      upgrade)
+from telegram_bot.localization import localization
+from telegram_bot.models import Message, User
 
 
 @log_errors
-def start_callback(update: Update, context: CallbackContext) -> None:
+def start_command_handler(update: Update, context: CallbackContext) -> None:
     u, _ = User.get_or_create_profile(update.message.chat_id,
                                       update.message.from_user.username)
 
@@ -46,18 +45,64 @@ def start_callback(update: Update, context: CallbackContext) -> None:
 
 
 @log_errors
-def menu_callback(update: Update, context: CallbackContext) -> None:
-    u, _ = User.get_or_create_profile(update.message.chat_id,
-                                      update.message.from_user.username)
+def manage_command_handler(update: Update, context: CallbackContext) -> None:
+    u, _ = User.get_or_create_profile(
+        update.message.chat_id, update.message.from_user.username, False)
+    user_text = update.message.text
 
-    reply_markup = ReplyKeyboardMarkup(
-        get_reply_markup_keyboard(u.language), one_time_keyboard=True,  resize_keyboard=True)
+    Message.get_or_create_message(u, user_text)
+
+    manage(update, u)
+
+
+@log_errors
+def language_command_handler(update: Update, context: CallbackContext) -> None:
+    u, _ = User.get_or_create_profile(
+        update.message.chat_id, update.message.from_user.username, False)
+    user_text = update.message.text
+
+    Message.get_or_create_message(u, user_text)
+
+    reply_markup = InlineKeyboardMarkup(get_language_inline_keyboard())
 
     update.message.reply_text(
-        text=localization[u.language]['keyboard_command'][0],
+        text=localization[u.language]['language_command'][0],
         parse_mode='HTML',
-        reply_markup=reply_markup
+        reply_markup=reply_markup)
+
+
+@log_errors
+def help_command_handler(update: Update, context: CallbackContext) -> None:
+    u, _ = User.get_or_create_profile(
+        update.message.chat_id, update.message.from_user.username, False)
+    user_text = update.message.text
+
+    Message.get_or_create_message(u, user_text)
+
+    reply_markup = InlineKeyboardMarkup(
+        [
+            [
+                InlineKeyboardButton(
+                    localization[u.language]['help'][0][1], callback_data='tutorial'),
+            ]
+        ]
     )
+
+    update.message.reply_text(
+        text=localization[u.language]['help'][0][0],
+        parse_mode='HTML',
+        reply_markup=reply_markup)
+
+
+@log_errors
+def upgrade_command_handler(update: Update, context: CallbackContext) -> None:
+    u, _ = User.get_or_create_profile(
+        update.message.chat_id, update.message.from_user.username, False)
+    user_text = update.message.text
+
+    Message.get_or_create_message(u, user_text)
+
+    upgrade(update.message, u)
 
 
 @log_errors
@@ -97,10 +142,16 @@ def successful_payment_callback(update: Update, context: CallbackContext) -> Non
 def set_up_commands(bot_instance: Bot) -> None:
     langs_with_commands: Dict[str, Dict[str, str]] = {
         'en': {
-            'menu': 'Get the menu keyboard ⌨️',
+            'manage': '⚙️ Channels list',
+            'language': '🌐 Change language',
+            'help': '📑 Bot manual',
+            'upgrade': '⭐ Upgrade Your profile'
         },
         'ru': {
-            'menu': 'Получить клавиатуру меню ⌨️',
+            'menu': '⚙️ Список каналов',
+            'language': '🌐 Смена языка',
+            'help': '📑 Манула бота',
+            'upgrade': '⭐ Прокачать аккаунт'
         }
     }
 
@@ -115,24 +166,11 @@ def set_up_commands(bot_instance: Bot) -> None:
 
 
 def setup_dispatcher(dp):
-    dp.add_handler(CommandHandler('start', start_callback))
-    dp.add_handler(CommandHandler('menu', menu_callback))
-    dp.add_handler(
-        MessageHandler(Filters.regex(
-            rf'^{"(" + ")|(".join(reply_commands["manage_command_text"]) + ")"}(/s)?.*'), manage_reply_command_handler)
-    )
-    dp.add_handler(
-        MessageHandler(Filters.regex(
-            rf'^{"(" + ")|(".join(reply_commands["language_command_text"]) + ")"}(/s)?.*'), language_reply_command_handler)
-    )
-    dp.add_handler(
-        MessageHandler(Filters.regex(
-            rf'^{"(" + ")|(".join(reply_commands["help_command_text"]) + ")"}(/s)?.*'), help_reply_command_handler)
-    )
-    dp.add_handler(
-        MessageHandler(Filters.regex(
-            rf'^{"(" + ")|(".join(reply_commands["upgrade_command_text"]) + ")"}(/s)?.*'), upgrade_reply_command_handler)
-    )
+    dp.add_handler(CommandHandler('start', start_command_handler))
+    dp.add_handler(CommandHandler('manage', manage_command_handler))
+    dp.add_handler(CommandHandler('language', language_command_handler))
+    dp.add_handler(CommandHandler('help', help_command_handler))
+    dp.add_handler(CommandHandler('upgrade', upgrade_command_handler))
     dp.add_handler(MessageHandler(
         Filters.text & ~Filters.command, echo_handler))
     dp.add_handler(CallbackQueryHandler(
