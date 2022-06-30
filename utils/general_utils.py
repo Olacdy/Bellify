@@ -2,10 +2,12 @@ from typing import Dict, List, Optional, Union
 
 import telegram
 from django.conf import settings
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, MessageEntity
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, MessageEntity, CallbackQuery
 from telegram_bot.models import User
 from twitch.utils import _is_twitch_channel_url
 from youtube.utils import _is_youtube_channel_url
+from telegram_bot.localization import localization
+from telegram_bot.models import ChannelUserItem
 
 
 # Channgels in lowercase аccording to their name
@@ -42,6 +44,14 @@ def get_channel_url_type(string: str) -> Union[str, None]:
 @log_errors
 def get_html_link(url: str, title: str) -> str:
     return f'<a href=\"{url}\">{title}</a>'
+
+
+def tutorial_reply(query: CallbackQuery, language: str, u: User) -> None:
+    query.delete_message()
+    query.message.reply_text(
+        text=f'{localization[language]["help"][1]}\n`{[f"https://www.youtube.com/channel/{channel_id}" for channel_id in settings.SAMPLE_CHANNELS_IDS if not ChannelUserItem.is_user_subscribed_to_channel(u, channel_id)][0]}`',
+        parse_mode='MARKDOWN',
+    )
 
 
 # Sends message to user

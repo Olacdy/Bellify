@@ -54,10 +54,6 @@ localization = {
             'Please, select a language.',
             'Thanks, You will continue to work in 🇬🇧English.',
         ],
-        'keyboard_command':
-        [
-            'Sending a keyboard...'
-        ],
         'echo':
         [
             ['The channel will be saved under name: ',
@@ -118,10 +114,6 @@ localization = {
         [
             'Пожалуйста, выберите язык.',
             'Спасибо, теперь работа будет продолжена на 🇷🇺Русском.',
-        ],
-        'keyboard_command':
-        [
-            'Присылаем клавиатуру...'
         ],
         'echo':
         [
