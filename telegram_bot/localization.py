@@ -29,7 +29,8 @@ localization = {
              """
                 Notifies You when YouTube and Twitch channels go live.
                 Increases max YouTube channels (+{}).
-                """.format(settings.INCREASE_CHANNELS_PREMIUM['YouTube']), 'Upgrade'],
+                Increases max Twitch channels (+{})
+                """.format(settings.INCREASE_CHANNELS_PREMIUM['YouTube'], settings.INCREASE_CHANNELS_PREMIUM['Twitch']), 'Upgrade'],
             'Select the number of channels you would like to increase your quota by:',
             [['Increase', 'channels'],
                 ['Increases max amount of', 'channels'], 'Increase'],
@@ -40,10 +41,10 @@ localization = {
         'help':
         [
             ['Bellify Bot manual\n\nThis bot is capable of storing and notifying users when a new video is uploaded on the YouTube channel.\n\nIn premium mode, live stream notifications functionality is available for YouTube and Twitch channels.\n\nDeveloper contacts:\nTelegram - https://t.me/golovakanta\nGmail - dbofury@gmail.com\n\nTo start tutorial click on the button below.', 'Start tutorial'],
-            'To start using this bot is recommended to complete a little tutorial. It will help You to familiarize the main functionality and using the bot right away.\n\nFirst things first, let\'s send a link to a sample YouTube channel.\nCopy the link below and send it to a bot.\n\nExample link:',
+            'To start using this bot is recommended to complete a little tutorial. It will help You to familiarize the main functionality and using the bot right away.\n\nFirst things first, let\'s send a link to a sample YouTube channel.\nCopy the link below and send it to a bot.\n\nExample link (click on it):',
             ['At this point, You can decide whether You want to change the default channel name to Your custom one.\nChannel default name is: ',
                 '\n\nWould You like to change it?'],
-            f'To review added channels, You should use the \n/manage command, which is available in the "Menu" section.\n\nTry to click on it.',
+            f'To review added channels, You should use the /manage command, which is available in the "Menu" section.\n\nTry to click on it.',
             'Here You can review Your channels.\n\nIf the channel has 🔔 state You will get an unmuted notification, which means a message with sound, but if the channel has 🔕 state You will get only messages, but no sound with it.\n\nTry to mute the channel and You\'ll see that icon will change its appearance (click on bell icon).',
             f'Consider that the tutorial is done, now You can leave the channel in Your list or delete it with ❌ button.\n\nBy default You have a quota for {settings.INITIAL_CHANNELS_NUMBER["YouTube"]} YouTube channels, You can increase it with /upgrade command.\n\nThe main feature of the bot is a new video notification, when a channel uploads a new video, You will get a notification. By upgrading to a premium, You will unlock Twitch and YouTube live stream functionality, which means notifications when channels start a live stream. Hoping You will be satisfied with this bot ❤️.\n\nTo start the tutorial again, use /help command.',
             'For now, let\'s focus on 🔔 button.',
@@ -90,7 +91,7 @@ localization = {
             'Перейти на Премиум (Уведомления, при начале трансляции)',
             ['Увеличить максимальное количество', 'каналов'],
             ['Переход на Премиум',
-                f'Уведомляет Вас, когда YouTube или Twitch канал начинает трансляцию. Увеличивает максимальное количество YouTube каналов (+{settings.INCREASE_CHANNELS_PREMIUM["YouTube"]}).', 'Перейти'],
+                f'Уведомляет Вас, когда YouTube или Twitch канал начинает трансляцию. Увеличивает максимальное количество YouTube каналов (+{settings.INCREASE_CHANNELS_PREMIUM["YouTube"]}). Добавляет максимальное количество Twitch каналов (+{settings.INCREASE_CHANNELS_PREMIUM["Twitch"]})', 'Перейти'],
             'Выберите число каналов, на которое Вы бы хотели увеличить свою квоту:',
             [['Увеличить', 'каналы'],
                 ['Увеличивает максимальное количество', 'каналов'], 'Увеличить'],
@@ -101,7 +102,7 @@ localization = {
         'help':
         [
             ['Bellify Bot мануал\n\nЭтот бот сохраняет пользовательские каналы и уведомляет их о выходе нового видео.\n\nВ премиум моде пользователи также будут получать уведомления о начале трансляции на YouTube и Twitch каналах.\n\nКонтакты разработчика:\nTelegram - https://t.me/golovakanta\nGmail - dbofury@gmail.com\n\nЧтобы начать обучение, нажмите на кнопку снизу.', 'Начать обучение'],
-            'Для того чтобы начать пользоваться этим ботом, рекомендуется пройти небольшое обучение. Оно поможет Вам ознакомиться с основной функциональностью и пользоваться ботом без задержек.\n\nПрежде всего, давайте пришлем боту ссылку-пример.\nСкопируйте и пришлите ссылку ниже.\n\nСсылка-пример:',
+            'Для того чтобы начать пользоваться этим ботом, рекомендуется пройти небольшое обучение. Оно поможет Вам ознакомиться с основной функциональностью и пользоваться ботом без задержек.\n\nПрежде всего, давайте пришлем боту ссылку-пример.\nСкопируйте и пришлите ссылку ниже.\n\nСсылка-пример (нажмите, чтобы скопировать):',
             ['На этом моменте Вы можете решить, хотите ли Вы поменять имя канала на Ваше собственное.\nИмя канала сейчас: ',
                 '\n\nХотите его поменять?'],
             f'Чтобы просмотреть добавленные каналы, Вам нужно воспользоваться командой /manage, которая находиться в "Menu".\n\nПопробуйте на нее нажать.',
