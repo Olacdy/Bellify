@@ -28,14 +28,10 @@ def inline_language_handler(update: Update, context: CallbackContext) -> None:
 
     User.set_language(u, query_data[0])
 
-    # reply_markup = ReplyKeyboardMarkup(
-    #     get_reply_markup_keyboard(query_data[0]), resize_keyboard=True)
-
     query.delete_message()
     query.message.reply_text(
         text=localization[query_data[0]]['language_command'][1],
         parse_mode='HTML',
-        # reply_markup=reply_markup
     )
 
 
