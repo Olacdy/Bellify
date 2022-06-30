@@ -2,75 +2,13 @@ from django.conf import settings
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import CallbackContext
 from telegram_bot.handlers.bot_handlers.utils import (
-    add, get_upgrade_inline_keyboard, log_errors, manage, upgrade)
+    add, get_upgrade_inline_keyboard, log_errors)
 from telegram_bot.localization import localization
 from telegram_bot.models import ChannelUserItem, Message, User
 from twitch.utils import get_twitch_channel_info
 from youtube.utils import get_channels_and_videos_info, scrape_id_by_url
 
 from utils.general_utils import get_channel_url_type
-from utils.keyboards import get_language_inline_keyboard
-
-
-@log_errors
-def manage_reply_command_handler(update: Update, context: CallbackContext) -> None:
-    u, _ = User.get_or_create_profile(
-        update.message.chat_id, update.message.from_user.username, False)
-    user_text = update.message.text
-
-    Message.get_or_create_message(u, user_text)
-
-    manage(update, u)
-
-
-@log_errors
-def language_reply_command_handler(update: Update, context: CallbackContext) -> None:
-    u, _ = User.get_or_create_profile(
-        update.message.chat_id, update.message.from_user.username, False)
-    user_text = update.message.text
-
-    Message.get_or_create_message(u, user_text)
-
-    reply_markup = InlineKeyboardMarkup(get_language_inline_keyboard())
-
-    update.message.reply_text(
-        text=localization[u.language]['language_command'][0],
-        parse_mode='HTML',
-        reply_markup=reply_markup)
-
-
-@log_errors
-def help_reply_command_handler(update: Update, context: CallbackContext) -> None:
-    u, _ = User.get_or_create_profile(
-        update.message.chat_id, update.message.from_user.username, False)
-    user_text = update.message.text
-
-    Message.get_or_create_message(u, user_text)
-
-    reply_markup = InlineKeyboardMarkup(
-        [
-            [
-                InlineKeyboardButton(
-                    localization[u.language]['help'][0][1], callback_data='tutorial'),
-            ]
-        ]
-    )
-
-    update.message.reply_text(
-        text=localization[u.language]['help'][0][0],
-        parse_mode='HTML',
-        reply_markup=reply_markup)
-
-
-@log_errors
-def upgrade_reply_command_handler(update: Update, context: CallbackContext) -> None:
-    u, _ = User.get_or_create_profile(
-        update.message.chat_id, update.message.from_user.username, False)
-    user_text = update.message.text
-
-    Message.get_or_create_message(u, user_text)
-
-    upgrade(update.message, u)
 
 
 @log_errors

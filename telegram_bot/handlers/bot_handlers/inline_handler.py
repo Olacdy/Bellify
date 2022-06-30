@@ -1,11 +1,9 @@
 from django.conf import settings
-from telegram import (CallbackQuery, InlineKeyboardMarkup,
-                      Update, error)
+from telegram import CallbackQuery, InlineKeyboardMarkup, Update, error
 from telegram.ext import CallbackContext
 from telegram_bot.handlers.bot_handlers.utils import (
-    get_reply_markup_keyboard, add, get_manage_inline_keyboard,
-    get_upgrade_inline_keyboard, log_errors, mute, remove, reply_invoice,
-    upgrade)
+    add, get_manage_inline_keyboard, get_upgrade_inline_keyboard, log_errors,
+    mute, remove, reply_invoice, upgrade)
 from telegram_bot.localization import localization
 from telegram_bot.models import User
 from twitch.models import ChannelUserItem

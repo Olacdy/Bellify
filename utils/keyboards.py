@@ -112,20 +112,3 @@ def _get_notification_reply_markup(title: str, url: str):
     return InlineKeyboardMarkup([
         [InlineKeyboardButton(text=title, url=url)]
     ])
-
-
-# Returns keyboard with all basic commands
-@log_errors
-def get_reply_markup_keyboard(language):
-    keyboard = [
-        [KeyboardButton(localization[language]['commands']
-                        ['manage_command_text'])],
-        [KeyboardButton(localization[language]['commands']
-                        ['language_command_text'])],
-        [KeyboardButton(localization[language]
-                        ['commands']['help_command_text'])],
-        [KeyboardButton(localization[language]['commands']
-                        ['upgrade_command_text'])]
-    ]
-
-    return keyboard
