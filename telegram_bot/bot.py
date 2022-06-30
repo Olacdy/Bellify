@@ -140,18 +140,29 @@ def successful_payment_callback(update: Update, context: CallbackContext) -> Non
 
 
 def set_up_commands(bot_instance: Bot) -> None:
-    commands: Dict[str] = {
-        'manage': 'Channels list ⚙️',
-        'language': 'Change language 🌐',
-        'help': 'Bot manual 📑',
-        'upgrade': 'Upgrade profile ⭐'
+    langs_with_commands: Dict[str, Dict[str, str]] = {
+        'en': {
+            'manage': 'Channels list ⚙️',
+            'language': 'Change language 🌐',
+            'help': 'Bot manual 📑',
+            'upgrade': 'Upgrade profile ⭐'
+        },
+        'ru': {
+            'manage': 'Список каналов ⚙️',
+            'language': 'Смена языка 🌐',
+            'help': 'Мануал бота 📑',
+            'upgrade': 'Прокачать профиль ⭐'
+        }
     }
+
     bot_instance.delete_my_commands()
-    bot_instance.set_my_commands(
-        commands=[
-            BotCommand(command, description) for command, description in commands.items()
-        ]
-    )
+    for language_code in langs_with_commands:
+        bot_instance.set_my_commands(
+            language_code=language_code,
+            commands=[
+                BotCommand(command, description) for command, description in langs_with_commands[language_code].items()
+            ]
+        )
 
 
 def setup_dispatcher(dp):
