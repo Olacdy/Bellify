@@ -142,16 +142,16 @@ def successful_payment_callback(update: Update, context: CallbackContext) -> Non
 def set_up_commands(bot_instance: Bot) -> None:
     langs_with_commands: Dict[str, Dict[str, str]] = {
         'en': {
-            'manage': '⚙️ Channels list',
-            'language': '🌐 Change language',
-            'help': '📑 Bot manual',
-            'upgrade': '⭐ Upgrade Your profile'
+            'manage': 'Channels list ⚙️',
+            'language': 'Change language 🌐',
+            'help': 'Bot manual 📑',
+            'upgrade': 'Upgrade profile ⭐'
         },
         'ru': {
-            'menu': '⚙️ Список каналов',
-            'language': '🌐 Смена языка',
-            'help': '📑 Манула бота',
-            'upgrade': '⭐ Прокачать аккаунт'
+            'menu': 'Список каналов ⚙️',
+            'language': 'Смена языка 🌐',
+            'help': 'Манула бота 📑',
+            'upgrade': 'Прокачать аккаунт ⭐'
         }
     }
 
