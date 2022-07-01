@@ -21,7 +21,7 @@ from telegram_bot.handlers.bot_handlers.inline_handler import (
 from telegram_bot.handlers.bot_handlers.utils import (log_errors, manage,
                                                       upgrade)
 from telegram_bot.localization import localization
-from telegram_bot.models import Message, User
+from telegram_bot.models import Message, User, LANGUAGE_CHOICES
 
 
 @log_errors
@@ -39,7 +39,8 @@ def start_command_handler(update: Update, context: CallbackContext) -> None:
             reply_markup=reply_markup)
     else:
         update.message.reply_text(
-            text=f"{localization['en']['language_command'][0]}\n{localization['ru']['language_command'][0]}",
+            text='\n'.join([localization[language[0]]['language_command'][0]
+                           for language in LANGUAGE_CHOICES]),
             parse_mode='HTML',
             reply_markup=reply_markup)
 
@@ -152,6 +153,12 @@ def set_up_commands(bot_instance: Bot) -> None:
             'language': 'Смена языка 🌐',
             'help': 'Мануал бота 📑',
             'upgrade': 'Прокачать профиль ⭐'
+        },
+        'ua': {
+            'manage': 'Список каналів ⚙️',
+            'language': 'Зміна мови 🌐',
+            'help': 'Мануал бота 📑',
+            'upgrade': 'Прокачати профіль ⭐'
         }
     }
 

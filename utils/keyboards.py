@@ -1,11 +1,11 @@
 from typing import List, Optional
 
 from django.conf import settings
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, KeyboardButton
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram_bot.localization import localization
 from telegram_bot.models import ChannelUserItem, User
 
-from utils.general_utils import channels_type_name, get_html_link, log_errors
+from utils.general_utils import channels_type_name, log_errors
 
 
 # Returns Language inline keyboard
@@ -14,9 +14,13 @@ def get_language_inline_keyboard(command: Optional[str] = 'language') -> List[Li
     keyboard = [
         [
             InlineKeyboardButton(
-                '🇬🇧English', callback_data=f'{command}{settings.SPLITTING_CHARACTER}en'),
+                '🇬🇧English', callback_data=f'{command}{settings.SPLITTING_CHARACTER}en')
+        ],
+        [
             InlineKeyboardButton(
-                '🇷🇺Русский', callback_data=f'{command}{settings.SPLITTING_CHARACTER}ru')
+                '🇷🇺Русский', callback_data=f'{command}{settings.SPLITTING_CHARACTER}ru'),
+            InlineKeyboardButton(
+                '🇺🇦Українська', callback_data=f'{command}{settings.SPLITTING_CHARACTER}ua'),
         ]
     ]
 

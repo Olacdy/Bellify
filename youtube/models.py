@@ -10,6 +10,9 @@ class YouTubeChannel(Channel):
     video_title = models.CharField(max_length=256, **nb)
     video_url = models.URLField(**nb)
 
+    old_video_title = models.CharField(max_length=256, **nb)
+    old_video_url = models.URLField(**nb)
+
     live_url = models.URLField(**nb)
 
     users = models.ManyToManyField(

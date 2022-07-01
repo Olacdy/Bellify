@@ -30,18 +30,20 @@ def get_channels_live_title_and_url(urls: List[str]):
     async def get_all(urls):
         async with aiohttp.ClientSession(cookies=settings.SESSION_CLIENT_COOKIES) as session:
             async def fetch(url):
-                async with session.get(url, headers=Headers().generate()) as response:
-                    text = await response.text()
-                    try:
-                        if not any(re.findall(r'(\"isUpcoming\":true)', text)):
-                            live_id = re.findall(
-                                r'\"liveStreamability\":{\"liveStreamabilityRenderer\":{\"videoId\":\"(\w+)\"', text)[0]
-                            return re.findall(
-                                r'<meta name=\"title\" content=\"(.*?)\"><meta', text)[0], f"https://www.youtube.com/watch?v={live_id}", False
-                        else:
-                            return None, None, True
-                    except:
-                        return None, None, None
+                for _ in range(settings.YOUTUBE_TRIES_NUMBER):
+                    async with session.get(url, headers=Headers().generate()) as response:
+                        text = await response.text()
+                        try:
+                            if not any(re.findall(r'(\"isUpcoming\":true)', text)):
+                                live_id = re.findall(
+                                    r'\"liveStreamability\":{\"liveStreamabilityRenderer\":{\"videoId\":\"(\w+)\"', text)[0]
+                                return re.findall(
+                                    r'<meta name=\"title\" content=\"(.*?)\"><meta', text)[0], f"https://www.youtube.com/watch?v={live_id}", False
+                            else:
+                                return None, None, True
+                        except:
+                            continue
+                return None, None, None
             return await asyncio.gather(*[
                 fetch(url) for url in urls
             ])
