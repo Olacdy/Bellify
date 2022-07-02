@@ -109,7 +109,7 @@ class User(CreateUpdateTracker):
 
 class Message(CreateUpdateTracker):
     user = models.ForeignKey(
-        to='telegram_bot.User',
+        to='bellify_bot.User',
         verbose_name='User name',
         on_delete=models.CASCADE,
     )

@@ -2,8 +2,8 @@ from typing import List, Optional
 
 from django.conf import settings
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-from telegram_bot.localization import localization
-from telegram_bot.models import ChannelUserItem, User
+from bellify_bot.localization import localization
+from bellify_bot.models import ChannelUserItem, User
 
 from utils.general_utils import channels_type_name, log_errors
 

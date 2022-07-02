@@ -9,36 +9,40 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('telegram_bot', '0001_initial'),
+        ('bellify_bot', '0001_initial'),
     ]
 
     operations = [
         migrations.CreateModel(
             name='TwitchChannel',
             fields=[
-                ('channel_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='telegram_bot.channel')),
+                ('channel_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE,
+                 parent_link=True, primary_key=True, serialize=False, to='bellify_bot.channel')),
             ],
             options={
                 'verbose_name': 'Twitch Channel',
                 'verbose_name_plural': 'Twitch Channels',
             },
-            bases=('telegram_bot.channel',),
+            bases=('bellify_bot.channel',),
         ),
         migrations.CreateModel(
             name='TwitchChannelUserItem',
             fields=[
-                ('channeluseritem_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='telegram_bot.channeluseritem')),
-                ('channel', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='twitch.twitchchannel')),
+                ('channeluseritem_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE,
+                 parent_link=True, primary_key=True, serialize=False, to='bellify_bot.channeluseritem')),
+                ('channel', models.ForeignKey(
+                    on_delete=django.db.models.deletion.CASCADE, to='twitch.twitchchannel')),
             ],
             options={
                 'ordering': ('-created_at',),
                 'abstract': False,
             },
-            bases=('telegram_bot.channeluseritem',),
+            bases=('bellify_bot.channeluseritem',),
         ),
         migrations.AddField(
             model_name='twitchchannel',
             name='users',
-            field=models.ManyToManyField(through='twitch.TwitchChannelUserItem', to='telegram_bot.User'),
+            field=models.ManyToManyField(
+                through='twitch.TwitchChannelUserItem', to='bellify_bot.User'),
         ),
     ]

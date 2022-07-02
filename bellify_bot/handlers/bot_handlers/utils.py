@@ -1,12 +1,12 @@
 from calendar import c
 from typing import Optional
 
-import telegram_notification.tasks as tasks
+import bellify.tasks as tasks
 from django.conf import settings
 from telegram import (InlineKeyboardButton, InlineKeyboardMarkup, LabeledPrice,
                       Message, Update)
-from telegram_bot.localization import localization
-from telegram_bot.models import ChannelUserItem, User
+from bellify_bot.localization import localization
+from bellify_bot.models import ChannelUserItem, User
 from twitch.models import TwitchChannel, TwitchChannelUserItem
 from twitch.utils import (get_channel_url_from_title,
                           get_channels_title_and_is_live,

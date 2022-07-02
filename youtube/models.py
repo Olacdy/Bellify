@@ -1,5 +1,5 @@
 from django.db import models
-from telegram_bot.models import User, Channel, ChannelUserItem
+from bellify_bot.models import User, Channel, ChannelUserItem
 from utils.models import nb
 
 

@@ -1,5 +1,5 @@
 from django.core.management import BaseCommand
-from telegram_bot.handlers.bot_handlers.utils import check_for_live_stream_twitch
+from bellify_bot.handlers.bot_handlers.utils import check_for_live_stream_twitch
 
 
 class Command(BaseCommand):

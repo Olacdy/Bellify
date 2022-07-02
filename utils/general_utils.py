@@ -3,11 +3,11 @@ from typing import Dict, List, Optional, Union
 import telegram
 from django.conf import settings
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, MessageEntity, CallbackQuery
-from telegram_bot.models import User
+from bellify_bot.models import User
 from twitch.utils import _is_twitch_channel_url
 from youtube.utils import _is_youtube_channel_url
-from telegram_bot.localization import localization
-from telegram_bot.models import ChannelUserItem
+from bellify_bot.localization import localization
+from bellify_bot.models import ChannelUserItem
 
 
 # Channgels in lowercase аccording to their name

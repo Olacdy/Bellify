@@ -10,18 +10,18 @@ from telegram.error import Unauthorized
 from telegram.ext import (CallbackContext, CallbackQueryHandler,
                           CommandHandler, Dispatcher, Filters, MessageHandler,
                           PreCheckoutQueryHandler, Updater)
-from telegram_notification.celery import app
+from bellify.celery import app
 from utils.keyboards import get_language_inline_keyboard
 
-from telegram_bot.handlers.bot_handlers.echo_handler import echo_handler
-from telegram_bot.handlers.bot_handlers.inline_handler import (
+from bellify_bot.handlers.bot_handlers.echo_handler import echo_handler
+from bellify_bot.handlers.bot_handlers.inline_handler import (
     inline_add_handler, inline_language_handler, inline_link_handler,
     inline_manage_handler, inline_pagination_handler, inline_start_handler,
     inline_tutorial_handler, inline_upgrade_handler)
-from telegram_bot.handlers.bot_handlers.utils import (log_errors, manage,
-                                                      upgrade)
-from telegram_bot.localization import localization
-from telegram_bot.models import Message, User, LANGUAGE_CHOICES
+from bellify_bot.handlers.bot_handlers.utils import (log_errors, manage,
+                                                     upgrade)
+from bellify_bot.localization import localization
+from bellify_bot.models import Message, User, LANGUAGE_CHOICES
 
 
 @log_errors
@@ -32,12 +32,7 @@ def start_command_handler(update: Update, context: CallbackContext) -> None:
     reply_markup = InlineKeyboardMarkup(
         get_language_inline_keyboard(command='start'))
 
-    if u.language:
-        update.message.reply_text(
-            text=localization[u.language]['language_command'][0],
-            parse_mode='HTML',
-            reply_markup=reply_markup)
-    else:
+    if not u.language:
         update.message.reply_text(
             text='\n'.join([localization[language[0]]['language_command'][0]
                            for language in LANGUAGE_CHOICES]),

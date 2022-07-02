@@ -9,18 +9,21 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('telegram_bot', '0001_initial'),
+        ('bellify_bot', '0001_initial'),
     ]
 
     operations = [
         migrations.CreateModel(
             name='YouTubeChannel',
             fields=[
-                ('channel_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='telegram_bot.channel')),
+                ('channel_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE,
+                 parent_link=True, primary_key=True, serialize=False, to='bellify_bot.channel')),
                 ('channel_title', models.CharField(max_length=256)),
-                ('video_title', models.CharField(blank=True, max_length=256, null=True)),
+                ('video_title', models.CharField(
+                    blank=True, max_length=256, null=True)),
                 ('video_url', models.URLField(blank=True, null=True)),
-                ('old_video_title', models.CharField(blank=True, max_length=256, null=True)),
+                ('old_video_title', models.CharField(
+                    blank=True, max_length=256, null=True)),
                 ('old_video_url', models.URLField(blank=True, null=True)),
                 ('live_url', models.URLField(blank=True, null=True)),
             ],
@@ -28,23 +31,26 @@ class Migration(migrations.Migration):
                 'verbose_name': 'YouTube Channel',
                 'verbose_name_plural': 'YouTube Channels',
             },
-            bases=('telegram_bot.channel',),
+            bases=('bellify_bot.channel',),
         ),
         migrations.CreateModel(
             name='YouTubeChannelUserItem',
             fields=[
-                ('channeluseritem_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='telegram_bot.channeluseritem')),
-                ('channel', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='youtube.youtubechannel')),
+                ('channeluseritem_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE,
+                 parent_link=True, primary_key=True, serialize=False, to='bellify_bot.channeluseritem')),
+                ('channel', models.ForeignKey(
+                    on_delete=django.db.models.deletion.CASCADE, to='youtube.youtubechannel')),
             ],
             options={
                 'ordering': ('-created_at',),
                 'abstract': False,
             },
-            bases=('telegram_bot.channeluseritem',),
+            bases=('bellify_bot.channeluseritem',),
         ),
         migrations.AddField(
             model_name='youtubechannel',
             name='users',
-            field=models.ManyToManyField(through='youtube.YouTubeChannelUserItem', to='telegram_bot.User'),
+            field=models.ManyToManyField(
+                through='youtube.YouTubeChannelUserItem', to='bellify_bot.User'),
         ),
     ]

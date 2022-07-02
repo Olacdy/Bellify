@@ -1,5 +1,5 @@
 from django.core.management import BaseCommand
-from telegram_bot.handlers.bot_handlers.utils import check_for_new_video
+from bellify_bot.handlers.bot_handlers.utils import check_for_new_video
 
 
 class Command(BaseCommand):

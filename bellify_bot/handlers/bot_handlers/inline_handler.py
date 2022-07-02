@@ -1,11 +1,11 @@
 from django.conf import settings
 from telegram import CallbackQuery, InlineKeyboardMarkup, Update, error
 from telegram.ext import CallbackContext
-from telegram_bot.handlers.bot_handlers.utils import (
+from bellify_bot.handlers.bot_handlers.utils import (
     add, get_manage_inline_keyboard, get_upgrade_inline_keyboard, log_errors,
     mute, remove, reply_invoice, upgrade)
-from telegram_bot.localization import localization
-from telegram_bot.models import User
+from bellify_bot.localization import localization
+from bellify_bot.models import User
 from twitch.models import ChannelUserItem
 
 from utils.general_utils import channels_type_name, tutorial_reply

@@ -1,10 +1,10 @@
 from django.conf import settings
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import CallbackContext
-from telegram_bot.handlers.bot_handlers.utils import (
+from bellify_bot.handlers.bot_handlers.utils import (
     add, get_upgrade_inline_keyboard, log_errors)
-from telegram_bot.localization import localization
-from telegram_bot.models import ChannelUserItem, Message, User
+from bellify_bot.localization import localization
+from bellify_bot.models import ChannelUserItem, Message, User
 from twitch.utils import get_twitch_channel_info
 from youtube.utils import get_channels_and_videos_info, scrape_id_by_url
 

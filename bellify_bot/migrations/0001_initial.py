@@ -66,7 +66,7 @@ class Migration(migrations.Migration):
                 ('polymorphic_ctype', models.ForeignKey(editable=False, null=True, on_delete=django.db.models.deletion.CASCADE,
                  related_name='polymorphic_telegram_bot.message_set+', to='contenttypes.contenttype')),
                 ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE,
-                 to='telegram_bot.user', verbose_name='User name')),
+                 to='bellify_bot.user', verbose_name='User name')),
             ],
             options={
                 'verbose_name': 'Message',
@@ -87,7 +87,7 @@ class Migration(migrations.Migration):
                 ('polymorphic_ctype', models.ForeignKey(editable=False, null=True, on_delete=django.db.models.deletion.CASCADE,
                  related_name='polymorphic_telegram_bot.channeluseritem_set+', to='contenttypes.contenttype')),
                 ('user', models.ForeignKey(
-                    on_delete=django.db.models.deletion.CASCADE, to='telegram_bot.user')),
+                    on_delete=django.db.models.deletion.CASCADE, to='bellify_bot.user')),
             ],
             options={
                 'ordering': ('-created_at',),
