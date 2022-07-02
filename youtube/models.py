@@ -1,5 +1,5 @@
 from django.db import models
-from telegram_bot.models import User, Channel, ChannelUserItem
+from bellify_bot.models import User, Channel, ChannelUserItem
 from utils.models import nb
 
 
@@ -9,6 +9,9 @@ class YouTubeChannel(Channel):
 
     video_title = models.CharField(max_length=256, **nb)
     video_url = models.URLField(**nb)
+
+    old_video_title = models.CharField(max_length=256, **nb)
+    old_video_url = models.URLField(**nb)
 
     live_url = models.URLField(**nb)
 

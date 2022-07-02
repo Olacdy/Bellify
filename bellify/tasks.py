@@ -4,11 +4,11 @@ from typing import Dict, List, Optional, Union
 from utils.general_utils import _send_message, _from_celery_entities_to_entities, _from_celery_markup_to_markup
 from utils.keyboards import _get_notification_reply_markup
 from django.core.management import call_command
-from telegram_bot.localization import localization
-from telegram_bot.models import User, ChannelUserItem
+from bellify_bot.localization import localization
+from bellify_bot.models import User, ChannelUserItem
 
 from celery.utils.log import get_task_logger
-from telegram_notification.celery import app
+from bellify.celery import app
 
 logger = get_task_logger(__name__)
 

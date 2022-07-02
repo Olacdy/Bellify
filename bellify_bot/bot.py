@@ -10,18 +10,18 @@ from telegram.error import Unauthorized
 from telegram.ext import (CallbackContext, CallbackQueryHandler,
                           CommandHandler, Dispatcher, Filters, MessageHandler,
                           PreCheckoutQueryHandler, Updater)
-from telegram_notification.celery import app
+from bellify.celery import app
 from utils.keyboards import get_language_inline_keyboard
 
-from telegram_bot.handlers.bot_handlers.echo_handler import echo_handler
-from telegram_bot.handlers.bot_handlers.inline_handler import (
+from bellify_bot.handlers.bot_handlers.echo_handler import echo_handler
+from bellify_bot.handlers.bot_handlers.inline_handler import (
     inline_add_handler, inline_language_handler, inline_link_handler,
     inline_manage_handler, inline_pagination_handler, inline_start_handler,
     inline_tutorial_handler, inline_upgrade_handler)
-from telegram_bot.handlers.bot_handlers.utils import (log_errors, manage,
-                                                      upgrade)
-from telegram_bot.localization import localization
-from telegram_bot.models import Message, User
+from bellify_bot.handlers.bot_handlers.utils import (log_errors, manage,
+                                                     upgrade)
+from bellify_bot.localization import localization
+from bellify_bot.models import Message, User, LANGUAGE_CHOICES
 
 
 @log_errors
@@ -32,14 +32,10 @@ def start_command_handler(update: Update, context: CallbackContext) -> None:
     reply_markup = InlineKeyboardMarkup(
         get_language_inline_keyboard(command='start'))
 
-    if u.language:
+    if not u.language:
         update.message.reply_text(
-            text=localization[u.language]['language_command'][0],
-            parse_mode='HTML',
-            reply_markup=reply_markup)
-    else:
-        update.message.reply_text(
-            text=f"{localization['en']['language_command'][0]}\n{localization['ru']['language_command'][0]}",
+            text='\n'.join([localization[language[0]]['language_command'][0]
+                           for language in LANGUAGE_CHOICES]),
             parse_mode='HTML',
             reply_markup=reply_markup)
 
@@ -140,22 +136,36 @@ def successful_payment_callback(update: Update, context: CallbackContext) -> Non
 
 
 def set_up_commands(bot_instance: Bot) -> None:
+    commands: Dict[str] = {
+        'manage': 'Channels list ⚙️',
+        'language': 'Change language 🌐',
+        'help': 'Bot manual 📑',
+        'upgrade': 'Upgrade profile ⭐'
+    }
+
     langs_with_commands: Dict[str, Dict[str, str]] = {
-        'en': {
-            'manage': 'Channels list ⚙️',
-            'language': 'Change language 🌐',
-            'help': 'Bot manual 📑',
-            'upgrade': 'Upgrade profile ⭐'
-        },
         'ru': {
             'manage': 'Список каналов ⚙️',
             'language': 'Смена языка 🌐',
             'help': 'Мануал бота 📑',
             'upgrade': 'Прокачать профиль ⭐'
+        },
+        'uk': {
+            'manage': 'Список каналів ⚙️',
+            'language': 'Зміна мови 🌐',
+            'help': 'Мануал бота 📑',
+            'upgrade': 'Прокачати профіль ⭐'
         }
     }
 
     bot_instance.delete_my_commands()
+
+    bot_instance.set_my_commands(
+        commands=[
+            BotCommand(command, description) for command, description in commands.items()
+        ]
+    )
+
     for language_code in langs_with_commands:
         bot_instance.set_my_commands(
             language_code=language_code,

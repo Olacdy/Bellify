@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from telegram_bot.bot import run_pooling
+from bellify_bot.bot import run_pooling
 
 
 class Command(BaseCommand):

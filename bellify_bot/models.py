@@ -15,7 +15,8 @@ PLAN_CHOICES = (
 
 LANGUAGE_CHOICES = (
     ('en', 'English'),
-    ('ru', 'Russian')
+    ('ru', 'Russian'),
+    ('ua', 'Ukrainian')
 )
 
 
@@ -36,7 +37,7 @@ class User(CreateUpdateTracker):
         max_length=1, choices=PLAN_CHOICES, default='B')
 
     language = models.CharField(
-        max_length=2, choices=LANGUAGE_CHOICES, default=None, help_text="Telegram client's lang", **nb)
+        max_length=2, choices=LANGUAGE_CHOICES, default=None, help_text="Telegram client's language", **nb)
 
     max_youtube_channels_number = models.PositiveIntegerField(
         default=settings.INITIAL_CHANNELS_NUMBER['YouTube'], **nb)
@@ -108,7 +109,7 @@ class User(CreateUpdateTracker):
 
 class Message(CreateUpdateTracker):
     user = models.ForeignKey(
-        to='telegram_bot.User',
+        to='bellify_bot.User',
         verbose_name='User name',
         on_delete=models.CASCADE,
     )

@@ -5,21 +5,20 @@ from django.shortcuts import render
 from django_celery_beat.models import (ClockedSchedule, CrontabSchedule,
                                        IntervalSchedule, PeriodicTask,
                                        SolarSchedule)
-from telegram_notification.tasks import broadcast_message
+from bellify.tasks import broadcast_message
 
-from telegram_bot.forms import BroadcastForm
+from bellify_bot.forms import BroadcastForm
 from utils.general_utils import _send_message
-from telegram_bot.models import Message, User
+from bellify_bot.models import Message, User
 
 
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
     list_display = [
         'user_id', 'username', 'first_name', 'last_name',
-        'language', 'deep_link',
-        'created_at', 'updated_at', 'is_blocked_bot',
+        'language', 'status', 'is_blocked_bot',
     ]
-    list_filter = ['is_blocked_bot', 'language', ]
+    list_filter = ['is_blocked_bot', 'language', 'status', ]
     search_fields = ('username', 'user_id')
     actions = ['broadcast']
 

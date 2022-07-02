@@ -6,9 +6,9 @@ from celery import Celery
 
 # set the default Django settings module for the 'celery' program.
 os.environ.setdefault('DJANGO_SETTINGS_MODULE',
-                      'telegram_notification.settings.local')
+                      'bellify.settings.local')
 
-app = Celery('telegram_notification', include=['telegram_notification.tasks'])
+app = Celery('bellify', include=['bellify.tasks'])
 
 # Using a string here means the worker doesn't have to serialize
 # the configuration object to child processes.

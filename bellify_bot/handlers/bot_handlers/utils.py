@@ -1,11 +1,12 @@
+from calendar import c
 from typing import Optional
 
-import telegram_notification.tasks as tasks
+import bellify.tasks as tasks
 from django.conf import settings
 from telegram import (InlineKeyboardButton, InlineKeyboardMarkup, LabeledPrice,
                       Message, Update)
-from telegram_bot.localization import localization
-from telegram_bot.models import ChannelUserItem, User
+from bellify_bot.localization import localization
+from bellify_bot.models import ChannelUserItem, User
 from twitch.models import TwitchChannel, TwitchChannelUserItem
 from twitch.utils import (get_channel_url_from_title,
                           get_channels_title_and_is_live,
@@ -14,7 +15,8 @@ from youtube.models import YouTubeChannel, YouTubeChannelUserItem
 from youtube.utils import (get_channels_and_videos_info,
                            get_channels_live_title_and_url, get_url_from_id)
 
-from utils.keyboards import (_get_notification_reply_markup, get_html_link,
+from utils.general_utils import get_html_link
+from utils.keyboards import (_get_notification_reply_markup,
                              get_manage_inline_keyboard,
                              get_upgrade_inline_keyboard, log_errors)
 
@@ -51,9 +53,9 @@ def check_for_live_stream_youtube() -> None:
         f'https://www.youtube.com/channel/{channel.channel_id}/live' for channel in channels]
     live_info = get_channels_live_title_and_url(channels_live_urls)
     for channel, live_info_item, in zip(channels, live_info):
-        live_title, live_url, _ = live_info_item
+        live_title, live_url, is_upcoming = live_info_item
         if live_title and live_url:
-            if live_title != channel.live_title and live_url != channel.live_url:
+            if live_title != channel.live_title and live_url != channel.live_url and not is_upcoming:
                 channel.live_title = live_title
                 channel.live_url = live_url
                 channel.is_live = True
@@ -71,9 +73,6 @@ def check_for_live_stream_youtube() -> None:
 # Checks for new video and alerts every user if there is one
 @log_errors
 def check_for_new_video() -> None:
-    channels_live_urls = []
-    channels_with_new_video = []
-
     channels = list(YouTubeChannel.objects.all())
     channels_urls = [
         f'https://www.youtube.com/feeds/videos.xml?channel_id={channel.channel_id}' for channel in channels]
@@ -81,21 +80,19 @@ def check_for_new_video() -> None:
     video_info = get_channels_and_videos_info(
         channels_urls)
 
-    for channel, video_info_item in zip(channels, video_info):
-        video_title, video_url, _ = video_info_item
-        if video_url != channel.video_url:
-            channels_with_new_video.append(
-                (channel, video_title, video_url))
-            channels_live_urls.append(
-                f'https://www.youtube.com/channel/{channel.channel_id}/live')
+    channels_with_new_video = [(channel, video_info_item[0], video_info_item[1]) for channel, video_info_item in zip(
+        channels, video_info) if video_info_item[1] != channel.video_url]
+    channels_live_urls = [
+        f'https://www.youtube.com/channel/{channel.channel_id}/live' for channel in channels_with_new_video]
 
     live_info = get_channels_live_title_and_url(channels_live_urls)
 
-    for channel_with_new_video, live_info_item in zip(channels_with_new_video, live_info):
+    for channel_with_new_video, live_info_item in zip(channel_with_new_video, live_info):
         live_title, live_url, is_upcoming = live_info_item
         channel, video_title, video_url = channel_with_new_video
+        old_video_title, old_video_url = channel.video_title, channel.video_url
         if live_title and live_url:
-            if live_title != channel.live_title and live_url != channel.live_url:
+            if live_title != channel.live_title and live_url != channel.live_url and not is_upcoming:
                 channel.live_title = live_title
                 channel.live_url = live_url
                 channel.is_live = True
@@ -103,7 +100,17 @@ def check_for_new_video() -> None:
                     channel=channel, user__status='P')], channel_info={'id': channel.channel_id,
                                                                        'url': channel.live_url,
                                                                        'title': channel.live_title}, live=True)
-        elif not is_upcoming:
+                channel.video_title = video_title
+                channel.video_url = video_url
+                if video_title != channel.old_video_title:
+                    tasks.notify_users([item.user for item in YouTubeChannelUserItem.objects.filter(
+                        channel=channel, user__status='B')], channel_info={'id': channel.channel_id,
+                                                                           'url': channel.video_url,
+                                                                           'title': channel.video_title})
+                channel.old_video_title = old_video_title
+                channel.old_video_url = old_video_url
+
+        elif not (live_title and live_url) or is_upcoming:
             channel.video_title = video_title
             channel.video_url = video_url
             tasks.notify_users([item.user for item in YouTubeChannelUserItem.objects.filter(

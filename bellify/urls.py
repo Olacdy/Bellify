@@ -1,4 +1,4 @@
-"""telegram_notification URL Configuration
+"""bellify URL Configuration
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/3.2/topics/http/urls/
@@ -13,17 +13,18 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+from django.conf import settings
 from django.contrib import admin
 from django.urls import path
 from django.urls.conf import include
 
-admin.site.site_header = "Telegram Admin"
-admin.site.site_title = "Telegram Admin"
-admin.site.index_title = "Welcome to Telegram Admin Page"
-admin.site.site_url = 'https://t.me/BellifyBot'
-admin.site.site_header = 'Telegram Notification Bot Admin Page'
+admin.site.site_header = "Bellify Admin"
+admin.site.site_title = "Bellify Admin"
+admin.site.index_title = "Welcome to Bellify Admin Page"
+admin.site.site_url = settings.BELLIFY_LINK
+admin.site.site_header = 'Bellify Bot Admin Page'
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('', include('telegram_bot.urls')),
+    path(f'{settings.ADMIN_ENDPOINT}/', admin.site.urls),
+    path('', include('bellify_bot.urls')),
 ]
