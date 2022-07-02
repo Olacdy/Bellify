@@ -87,7 +87,7 @@ def check_for_new_video() -> None:
 
     live_info = get_channels_live_title_and_url(channels_live_urls)
 
-    for channel_with_new_video, live_info_item in zip(channel_with_new_video, live_info):
+    for channel_with_new_video, live_info_item in zip(channels_with_new_video, live_info):
         live_title, live_url, is_upcoming = live_info_item
         channel, video_title, video_url = channel_with_new_video
         old_video_title, old_video_url = channel.video_title, channel.video_url
