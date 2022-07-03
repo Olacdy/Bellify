@@ -31,7 +31,7 @@ def check_for_live_stream_twitch() -> None:
 
     for channel, live_info_item in zip(channels, live_info):
         live_title, is_live = live_info_item
-        if live_title:
+        if live_title and is_live:
             if live_title != channel.live_title and is_live != channel.is_live:
                 channel.live_title = live_title
                 channel.is_live = True
