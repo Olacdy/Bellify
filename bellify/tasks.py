@@ -1,7 +1,7 @@
 import time
 from typing import Dict, List, Optional, Union
 
-from utils.general_utils import _send_message, _from_celery_entities_to_entities, _from_celery_markup_to_markup
+from utils.general_utils import get_twitch_channel_message, _send_message, _from_celery_entities_to_entities, _from_celery_markup_to_markup
 from utils.keyboards import _get_notification_reply_markup
 from django.core.management import call_command
 from bellify_bot.localization import localization
@@ -15,19 +15,19 @@ logger = get_task_logger(__name__)
 
 @app.task(ignore_result=True)
 def notify_users(users: List[User], channel_info: dict, live: Optional[bool] = False) -> None:
-    for user in users:
+    for u in users:
         item = ChannelUserItem.get_user_channel_by_id(
-            user, channel_info['id'])
+            u, channel_info['id'])
         user_title, is_muted = item.channel_title, item.is_muted
         if not live:
             _send_message(
-                user.user_id, f"{localization[user.language]['notification'][0][0]} {user_title} {localization[user.language]['notification'][0][1]}\n<a href=\"{channel_info['url']}\">{channel_info['title']}</a>",
+                u.user_id, f"{localization[u.language]['notification'][0][0]} {user_title} {localization[u.language]['notification'][0][1]}\n<a href=\"{channel_info['url']}\">{channel_info['title']}</a>",
                 reply_markup=_get_notification_reply_markup(
                     channel_info['title'], channel_info['url']),
                 disable_notification=not is_muted)
         else:
             _send_message(
-                user.user_id, f"{user_title} {localization[user.language]['notification'][1]}\n<a href=\"{channel_info['url']}\">{channel_info['title']}</a>",
+                u.user_id, f"{user_title} {localization[u.language]['notification'][1]} {localization[u.language]['notification'][3]+channel_info['game_name'] if 'game_name' in channel_info else ''}\n<a href=\"{channel_info['url']}\">{channel_info['title']}</a>",
                 reply_markup=_get_notification_reply_markup(
                     channel_info['title'], channel_info['url']),
                 disable_notification=not is_muted)

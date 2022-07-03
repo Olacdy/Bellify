@@ -5,6 +5,9 @@ from utils.models import nb
 
 # TwitchChannel model
 class TwitchChannel(Channel):
+    channel_login = models.CharField(max_length=128)
+    game_name = models.CharField(max_length=128, **nb)
+
     users = models.ManyToManyField(
         User, through='TwitchChannelUserItem')
 

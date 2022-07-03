@@ -8,14 +8,12 @@ from telegram import (InlineKeyboardButton, InlineKeyboardMarkup, LabeledPrice,
 from bellify_bot.localization import localization
 from bellify_bot.models import ChannelUserItem, User
 from twitch.models import TwitchChannel, TwitchChannelUserItem
-from twitch.utils import (get_channel_url_from_title,
-                          get_channels_title_and_is_live,
-                          get_twitch_channel_info)
+from twitch.utils import get_users_info, get_channel_url_from_title, get_streams_info, get_streams_info_chunks_async
 from youtube.models import YouTubeChannel, YouTubeChannelUserItem
 from youtube.utils import (get_channels_and_videos_info,
                            get_channels_live_title_and_url, get_url_from_id)
 
-from utils.general_utils import get_html_link
+from utils.general_utils import get_twitch_channel_message
 from utils.keyboards import (_get_notification_reply_markup,
                              get_manage_inline_keyboard,
                              get_upgrade_inline_keyboard, log_errors)
@@ -25,28 +23,31 @@ from utils.keyboards import (_get_notification_reply_markup,
 @log_errors
 def check_for_live_stream_twitch() -> None:
     channels = list(TwitchChannel.objects.filter(users__status='P'))
-    channels_urls = [channel.channel_url for channel in channels]
+    channels_ids = [channel.channel_id for channel in channels]
+    channels_ids = [channels_ids[i * 100:(i + 1) * 100]
+                    for i in range((len(channels_ids) + 100 - 1) // 100)]
 
-    live_info = get_channels_title_and_is_live(channels_urls)
+    live_info = {stream_item[0]: stream_item[1:]
+                 for stream_item in get_streams_info_chunks_async(channels_ids)}
 
-    for channel, live_info_item in zip(channels, live_info):
-        live_title, is_live = live_info_item
-        if live_title and is_live:
-            if live_title != channel.live_title and is_live != channel.is_live:
-                channel.live_title = live_title
-                channel.is_live = True
+    for channel in channels:
+        if channel.channel_id in live_info:
+            stream_data = live_info[channel.channel_id]
+            if stream_data[0] != channel.live_title and stream_data[1] != channel.game_name and stream_data[2] != channel.is_live:
+                channel.live_title, channel.game_name, channel.is_live = stream_data[
+                    0], stream_data[1], stream_data[2]
                 tasks.notify_users([item.user for item in TwitchChannelUserItem.objects.filter(
                     channel=channel, user__status='P')], channel_info={'id': channel.channel_id,
                                                                        'url': channel.channel_url,
-                                                                       'title': channel.live_title}, live=True)
+                                                                       'title': channel.live_title,
+                                                                       'game_name': channel.game_name}, live=True)
         else:
-            channel.live_title = None
-            channel.is_live = False
+            channel.live_title, channel.game_name, channel.is_live = None, None, False
         channel.save()
 
 
 # Checks for streams and alerts every premium user if there is one
-@log_errors
+@ log_errors
 def check_for_live_stream_youtube() -> None:
     channels = list(YouTubeChannel.objects.filter(users__status='P'))
     channels_live_urls = [
@@ -71,7 +72,7 @@ def check_for_live_stream_youtube() -> None:
 
 
 # Checks for new video and alerts every user if there is one
-@log_errors
+@ log_errors
 def check_for_new_video() -> None:
     channels = list(YouTubeChannel.objects.all())
     channels_urls = [
@@ -83,7 +84,7 @@ def check_for_new_video() -> None:
     channels_with_new_video = [(channel, video_info_item[0], video_info_item[1]) for channel, video_info_item in zip(
         channels, video_info) if video_info_item[1] != channel.video_url]
     channels_live_urls = [
-        f'https://www.youtube.com/channel/{channel.channel_id}/live' for channel in channels_with_new_video]
+        f'https://www.youtube.com/channel/{channel.channel_id}/live' for channel, _, _ in channels_with_new_video]
 
     live_info = get_channels_live_title_and_url(channels_live_urls)
 
@@ -121,7 +122,7 @@ def check_for_new_video() -> None:
 
 
 # Checks channel url type and call add function accordingly
-@log_errors
+@ log_errors
 def add(channel_id: str, channel_type: str, message: Message, u: User, name: Optional[str] = None) -> None:
     if channel_type == 'YouTube':
         _add_youtube_channel(channel_id, message, u, name)
@@ -130,22 +131,30 @@ def add(channel_id: str, channel_type: str, message: Message, u: User, name: Opt
 
 
 # Adds Twitch channel to a given user
-@log_errors
+@ log_errors
 def _add_twitch_channel(channel_id: str, message: Message, u: User, name: Optional[str] = None) -> None:
-    channel_url = get_channel_url_from_title(channel_id)
+    _, channel_login, channel_title = get_users_info(ids=[channel_id])[0]
+
+    channel_url = get_channel_url_from_title(channel_title)
 
     if not TwitchChannel.objects.filter(channel_id=channel_id).exists():
-        _, live_title, is_live = get_twitch_channel_info(
-            channel_url)
+        stream_data = get_streams_info([channel_id])
+        if stream_data:
+            _, live_title, game_name, is_live = stream_data[0]
+        else:
+            live_title, game_name, is_live = None, None, False
     else:
         channel = TwitchChannel.objects.get(channel_id=channel_id)
-        live_title, is_live = channel.live_title, channel.is_live
+        live_title, game_name, is_live = channel.live_title, channel.game_name, channel.is_live
 
-    channel_name = name if name else channel_id
+    channel_name = name if name else channel_title
     channel, _ = TwitchChannel.objects.get_or_create(
         channel_id=channel_id,
+        channel_title=channel_title,
+        channel_login=channel_login,
         channel_url=channel_url,
-        live_title=live_title if is_live else None,
+        live_title=live_title,
+        game_name=game_name,
         is_live=is_live
     )
 
@@ -155,10 +164,11 @@ def _add_twitch_channel(channel_id: str, message: Message, u: User, name: Option
                 user=u, channel=channel, channel_title=channel_name)
 
             message.reply_text(
-                text=f"{localization[u.language]['add'][1][0]} {channel_name if is_live else get_html_link(channel_url, channel_id)}{localization[u.language]['add'][1][2 if is_live else 3]} {get_html_link(channel_url, live_title) if is_live else ''}",
+                text=get_twitch_channel_message(u, channel_url, channel_name,
+                                                live_title, game_name, is_live),
                 parse_mode='HTML',
                 reply_markup=_get_notification_reply_markup(
-                    live_title if is_live else channel_id, channel_url)
+                    live_title if is_live else channel_name, channel_url)
             )
             if not u.is_tutorial_finished:
                 message.reply_text(
@@ -173,7 +183,7 @@ def _add_twitch_channel(channel_id: str, message: Message, u: User, name: Option
 
 
 # Adds YouTube channel to a given user
-@log_errors
+@ log_errors
 def _add_youtube_channel(channel_id: str, message: Message, u: User, name: Optional[str] = None) -> None:
     if not YouTubeChannel.objects.filter(channel_id=channel_id).exists():
         video_title, video_url, channel_title = get_channels_and_videos_info(
@@ -234,21 +244,21 @@ def _add_youtube_channel(channel_id: str, message: Message, u: User, name: Optio
 
 
 # Removes given channel user item
-@log_errors
+@ log_errors
 def remove(update: Update, u: User, channel: ChannelUserItem) -> None:
     channel.delete() if u.is_tutorial_finished else None
     manage(update, u, mode="remove")
 
 
 # Mutes given channel user item
-@log_errors
+@ log_errors
 def mute(update: Update, u: User, channel: ChannelUserItem) -> None:
     ChannelUserItem.mute_channel(u, channel)
     manage(update, u, mode="mute")
 
 
 # Returns Manage replies according to call situation
-@log_errors
+@ log_errors
 def manage(update: Update, u: User, mode: Optional[str] = "echo") -> None:
     keyboard = get_manage_inline_keyboard(u)
 
@@ -283,7 +293,7 @@ def manage(update: Update, u: User, mode: Optional[str] = "echo") -> None:
 
 
 # First reply on Upgrade command
-@log_errors
+@ log_errors
 def upgrade(message: Message, u: User):
     message.reply_text(
         text=localization[u.language]["upgrade"][0],
@@ -293,7 +303,7 @@ def upgrade(message: Message, u: User):
 
 
 # Reply on user invoice
-@log_errors
+@ log_errors
 def reply_invoice(update: Update, u: User, title: str, description: str, payload: str, buy_button_label: str, price: int, mode: Optional[str] = 'upgrade'):
     keyboard = [
         [

@@ -46,12 +46,25 @@ def get_html_link(url: str, title: str) -> str:
     return f'<a href=\"{url}\">{title}</a>'
 
 
+# Makes a response on a tutorial start
 def tutorial_reply(query: CallbackQuery, language: str, u: User) -> None:
     query.delete_message()
     query.message.reply_text(
         text=f'{localization[language]["help"][1]}\n\n`{[f"https://www.youtube.com/channel/{channel_id}" for channel_id in settings.SAMPLE_CHANNELS_IDS if not ChannelUserItem.is_user_subscribed_to_channel(u, channel_id)][0]}`',
         parse_mode='MARKDOWN',
     )
+
+
+# Return Bot response message for Twitch channel adding
+def get_twitch_channel_message(u: User, channel_url: str, channel_name: str, live_title: str, game_name: str, is_live: bool) -> str:
+    general = f"{localization[u.language]['add'][1][0]} "
+    name = channel_name if is_live else get_html_link(
+        channel_url, channel_name)
+    is_streaming = localization[u.language]['add'][1][2 if is_live else 3]
+    game = f" {localization[u.language]['add'][1][4]} {game_name+'.'}" if (
+        is_live and not game_name == 'Just Chatting') else ''
+    title = f'\n{get_html_link(channel_url, live_title)}' if is_live else ''
+    return f"{general}{name}{is_streaming}{game}{title}"
 
 
 # Sends message to user

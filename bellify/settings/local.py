@@ -10,10 +10,12 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
+import os
 from pathlib import Path
+
 import environ
 from celery.schedules import crontab
-import os
+from twitch.utils import get_twitch_token
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -28,12 +30,10 @@ env.read_env(f'{BASE_DIR}/.env')
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = env.str('SECRET_KEY')
 
-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
 ALLOWED_HOSTS = []
-
 
 # Application definition
 
@@ -173,6 +173,9 @@ CELERY_BEAT_SCHEDULE = {
 }
 
 # Configuration settings
+
+TWITCH_CLIENT_ID = env.str('TWITCH_CLIENT_ID')
+TWITCH_CLIENT_SECRET = env.str('TWITCH_CLIENT_SECRET')
 
 TWITCH_TRIES_NUMBER = 15
 

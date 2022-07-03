@@ -1,79 +1,111 @@
 import asyncio
+import itertools
 import re
-from typing import List, Union
+from typing import List, Optional
 
 import aiohttp
-import bs4 as soup
 import requests
 from asgiref import sync
 from django.conf import settings
-from fake_headers import Headers
-from sqlalchemy import except_all
+
+TWITCH_BEARER_TOKEN = ''
 
 
-# Get channels live title and is_live
-def get_channels_title_and_is_live(urls: List[str]):
-    async def get_all(urls):
+# Returns OAuth2 Bearer Token
+def get_twitch_token():
+    headers = {
+        'Content-Type': 'application/x-www-form-urlencoded'
+    }
+
+    params = {
+        "client_id": settings.TWITCH_CLIENT_ID,
+        "client_secret": settings.TWITCH_CLIENT_SECRET,
+        "grant_type": "client_credentials"
+    }
+
+    response = requests.post(
+        "https://id.twitch.tv/oauth2/token", headers=headers, params=params)
+
+    return response.json()['access_token']
+
+
+# Returns Twitch streams info for a list of ids consisting of chunks of 100
+def get_streams_info_chunks_async(ids: List[List[str]]):
+    async def get_all(ids: List[List[str]]):
         async with aiohttp.ClientSession(cookies=settings.SESSION_CLIENT_COOKIES) as session:
-            async def fetch(url):
-                for _ in range(settings.TWITCH_TRIES_NUMBER):
-                    async with session.get(url, headers=Headers().generate()) as response:
-                        text = await response.text()
-                        try:
-                            live_title, is_live = re.search(
-                                r'<meta property=\"og:description\" content=\"((.*?))\"/>', text).group(1), any(re.findall(r'\"isLiveBroadcast\":true', text))
-                        except AttributeError as attr_error:
-                            continue
-                        else:
-                            return live_title, is_live
-                return None, None
+            async def fetch(ids_100: List[str]):
+                global TWITCH_BEARER_TOKEN
+
+                headers = {
+                    'Authorization': f'Bearer {TWITCH_BEARER_TOKEN}',
+                    'Client-Id': settings.TWITCH_CLIENT_ID,
+                }
+
+                params = {
+                    'user_id': ids_100
+                }
+
+                async with session.get('https://api.twitch.tv/helix/streams', headers=headers, params=params) as response:
+                    if response.status == 200:
+                        response_data = await response.json()
+                        return [(response_data_item['user_id'], response_data_item['title'],
+                                 response_data_item['game_name'], True) for response_data_item in response_data['data']]
+                    elif response.status == 401:
+                        TWITCH_BEARER_TOKEN = get_twitch_token()
+                        return get_streams_info(ids_100)
             return await asyncio.gather(*[
-                fetch(url) for url in urls
+                fetch(ids_100) for ids_100 in ids
             ])
-    return sync.async_to_sync(get_all)(urls)
+    return list(itertools.chain(*sync.async_to_sync(get_all)(ids)))
 
 
-# Returns BeautifulSoup object of given twitch channel url
-def get_html_of_twitch_url(url: str) -> soup.BeautifulSoup:
-    session = requests.Session()
-    response = session.get(url, headers=Headers().generate(), timeout=(1, 10))
-    if "uxe=" in response.request.url:
-        session.cookies.set("CONSENT", "YES+cb", domain=".twitch.tv")
-        response = session.get(url)
-    session.close()
+# Returns channel id, login, display_name from ids or usernames
+def get_users_info(ids: Optional[List[str]] = None, usernames: Optional[List[str]] = None) -> List[tuple]:
+    global TWITCH_BEARER_TOKEN
 
-    return soup.BeautifulSoup(response.content, 'lxml')
+    headers = {
+        'Authorization': f'Bearer {TWITCH_BEARER_TOKEN}',
+        'Client-Id': settings.TWITCH_CLIENT_ID,
+    }
+
+    params = {
+        'login' if usernames else 'id': usernames if usernames else ids
+    }
+
+    response = requests.get(
+        'https://api.twitch.tv/helix/users', params=params, headers=headers)
+
+    if response.status_code == 200:
+        response_data = response.json()['data']
+        return [(response_data_item['id'], response_data_item['login'], response_data_item['display_name']) for response_data_item in response_data]
+    elif response.status_code == 401:
+        TWITCH_BEARER_TOKEN = get_twitch_token()
+        return get_users_info(usernames=usernames)
 
 
-# Returns channel title, live title, is_live, if it exists
-def get_twitch_channel_info(url: str) -> Union[str, bool, None]:
-    for _ in range(settings.TWITCH_TRIES_NUMBER):
-        html = get_html_of_twitch_url(url)
-        try:
-            title = re.sub(r'\s-\sTwitch$', '',
-                           html.find('meta', {'name': 'title'})['content'])
-        except TypeError as e:
-            continue
-        else:
-            if title:
-                for _ in range(settings.TWITCH_TRIES_NUMBER):
-                    try:
-                        live_title = html.find(
-                            'meta', {'name': 'description'})['content']
-                    except Exception as e:
-                        continue
-                    else:
-                        for _ in range(settings.TWITCH_TRIES_NUMBER):
-                            try:
-                                is_live = any(re.findall(
-                                    r'\"isLiveBroadcast\":true', str(html)))
-                            except Exception as e:
-                                continue
-                            else:
-                                return title, live_title, is_live
-                        return title, live_title, False
-            else:
-                return None
+# Returns Twitch streams info from channels ids
+def get_streams_info(ids: List[str]) -> List[tuple]:
+    global TWITCH_BEARER_TOKEN
+
+    headers = {
+        'Authorization': f'Bearer {TWITCH_BEARER_TOKEN}',
+        'Client-Id': settings.TWITCH_CLIENT_ID,
+    }
+
+    params = {
+        'user_id': ids
+    }
+
+    response = requests.get(
+        'https://api.twitch.tv/helix/streams', headers=headers, params=params)
+
+    if response.status_code == 200:
+        response_data = response.json()['data']
+        return [(response_data_item['user_id'], response_data_item['title'],
+                 response_data_item['game_name'], True) for response_data_item in response_data]
+    elif response.status_code == 401:
+        TWITCH_BEARER_TOKEN = get_twitch_token()
+        return get_streams_info(ids)
 
 
 # Checks if given string is twitch channel url
