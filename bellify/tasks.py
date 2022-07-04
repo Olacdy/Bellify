@@ -1,8 +1,8 @@
 import time
 from typing import Dict, List, Optional, Union
 
-from utils.general_utils import _send_message, _from_celery_entities_to_entities, _from_celery_markup_to_markup
-from utils.keyboards import _get_notification_reply_markup
+from utils.general_utils import get_html_link, _send_message, _from_celery_entities_to_entities, _from_celery_markup_to_markup
+from utils.keyboards import get_notification_reply_markup
 from django.core.management import call_command
 from bellify_bot.localization import localization
 from bellify_bot.models import User, ChannelUserItem
@@ -14,21 +14,33 @@ logger = get_task_logger(__name__)
 
 
 @app.task(ignore_result=True)
-def notify_users(users: List[User], channel_info: dict, live: Optional[bool] = False) -> None:
-    for user in users:
+def notify_users(users: List[User], channel_info: dict, is_live: Optional[bool] = False) -> None:
+    def _get_message(user_title: str, channel_info: dict):
+        if is_live:
+            notification = f" {localization[u.language]['notification'][1]} "
+            game = f"{localization[u.language]['notification'][2]+channel_info['game_name'] if 'game_name' in channel_info else ''}"
+            href = f"{get_html_link(url=channel_info['thumbnail_url']) if 'thumbnail_url' in channel_info else get_html_link(url=channel_info['url'])}"
+            return f"{user_title}{notification}{game}{href}"
+        else:
+            notification = f"{localization[u.language]['notification'][0][0]} "
+            notification_continuation = f" {localization[u.language]['notification'][0][1]}"
+            href = f"\n{get_html_link(channel_info['url'])}"
+            return f"{notification}{user_title}{notification_continuation}{href}"
+
+    for u in users:
         item = ChannelUserItem.get_user_channel_by_id(
-            user, channel_info['id'])
+            u, channel_info['id'])
         user_title, is_muted = item.channel_title, item.is_muted
-        if not live:
+        if is_live:
             _send_message(
-                user.user_id, f"{localization[user.language]['notification'][0][0]} {user_title} {localization[user.language]['notification'][0][1]}\n<a href=\"{channel_info['url']}\">{channel_info['title']}</a>",
-                reply_markup=_get_notification_reply_markup(
+                u.user_id, _get_message(user_title, channel_info),
+                reply_markup=get_notification_reply_markup(
                     channel_info['title'], channel_info['url']),
                 disable_notification=not is_muted)
         else:
             _send_message(
-                user.user_id, f"{user_title} {localization[user.language]['notification'][1]}\n<a href=\"{channel_info['url']}\">{channel_info['title']}</a>",
-                reply_markup=_get_notification_reply_markup(
+                u.user_id, _get_message(user_title, channel_info),
+                reply_markup=get_notification_reply_markup(
                     channel_info['title'], channel_info['url']),
                 disable_notification=not is_muted)
 
@@ -65,8 +77,8 @@ def broadcast_message(
 
 
 @app.task(ignore_result=True)
-def check_channels_for_video_youtube():
-    call_command("check_channels_for_video_youtube", )
+def check_channels_for_new_video_youtube():
+    call_command("check_channels_for_new_video_youtube", )
 
 
 @app.task(ignore_result=True)

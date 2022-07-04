@@ -5,8 +5,6 @@ from utils.models import nb
 
 # YouTubeChannel model
 class YouTubeChannel(Channel):
-    channel_title = models.CharField(max_length=256)
-
     video_title = models.CharField(max_length=256, **nb)
     video_url = models.URLField(**nb)
 

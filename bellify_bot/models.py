@@ -134,7 +134,7 @@ class Message(CreateUpdateTracker):
 
 class ChannelUserItem(CreateUpdateTracker):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    channel_title = models.CharField(max_length=200, default='', **nb)
+    channel_title = models.CharField(max_length=128, default='', **nb)
     is_muted = models.BooleanField(default=False)
 
     def __str__(self) -> str:
@@ -164,6 +164,7 @@ class ChannelUserItem(CreateUpdateTracker):
 class Channel(CreateUpdateTracker):
     channel_id = models.CharField(max_length=128, unique=True)
     channel_url = models.URLField(unique=True)
+    channel_title = models.CharField(max_length=128)
 
     live_title = models.CharField(max_length=256, **nb)
     is_live = models.BooleanField(default=False, **nb)
