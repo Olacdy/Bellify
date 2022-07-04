@@ -13,7 +13,7 @@ from youtube.models import YouTubeChannel, YouTubeChannelUserItem
 from youtube.utils import (is_youtube_channel_url, get_channels_and_videos_info,
                            get_channels_live_title_and_url, get_url_from_id)
 
-from utils.general_utils import get_twitch_channel_message
+from utils.general_utils import get_html_link
 from utils.keyboards import (get_notification_reply_markup,
                              get_manage_inline_keyboard,
                              get_upgrade_inline_keyboard, log_errors)
@@ -40,7 +40,8 @@ def check_for_live_stream_twitch() -> None:
                     channel=channel, user__status='P')], channel_info={'id': channel.channel_id,
                                                                        'url': channel.channel_url,
                                                                        'title': channel.live_title,
-                                                                       'game_name': channel.game_name}, live=True)
+                                                                       'game_name': channel.game_name,
+                                                                       'thumbnail_url': channel.thumbnail_url}, is_live=True)
         else:
             channel.live_title, channel.game_name, channel.is_live = None, None, False
         channel.save()
@@ -65,7 +66,7 @@ def check_for_live_stream_youtube() -> None:
                 tasks.notify_users([item.user for item in YouTubeChannelUserItem.objects.filter(
                     channel=channel, user__status='P')], channel_info={'id': channel.channel_id,
                                                                        'url': channel.live_url,
-                                                                       'title': channel.live_title}, live=True)
+                                                                       'title': channel.live_title}, is_live=True)
         else:
             channel.live_title = None
             channel.live_url = None
@@ -111,6 +112,16 @@ def add(channel_id: str, channel_type: str, message: Message, u: User, name: Opt
 # Adds Twitch channel to a given user
 @ log_errors
 def _add_twitch_channel(channel_id: str, message: Message, u: User, name: Optional[str] = None) -> None:
+    def _get_twitch_channel_message(u: User, channel_url: str, channel_name: str, game_name: str, thumbnail_url: str, is_live: bool) -> str:
+        general = f"{localization[u.language]['add'][1][0]} "
+        name = channel_name if is_live else get_html_link(
+            channel_url, channel_name)
+        is_streaming = localization[u.language]['add'][1][2 if is_live else 3]
+        game = f" {localization[u.language]['add'][1][4]} {game_name+'.'}" if (
+            is_live and not game_name == 'Just Chatting') else ''
+        thumb_href = f"{get_html_link(url=thumbnail_url) if is_live else ''}"
+        return f"{general}{name}{is_streaming}{game}{thumb_href}"
+
     _, channel_login, channel_title = get_users_info(ids=[channel_id])[0]
 
     channel_url = get_channel_url_from_title(channel_title)
@@ -118,12 +129,12 @@ def _add_twitch_channel(channel_id: str, message: Message, u: User, name: Option
     if not TwitchChannel.objects.filter(channel_id=channel_id).exists():
         stream_data = get_streams_info([channel_id])
         if stream_data:
-            _, live_title, game_name, is_live = stream_data[0]
+            _, live_title, game_name, thumbnail_url, is_live = stream_data[0]
         else:
-            live_title, game_name, is_live = None, None, False
+            live_title, game_name, thumbnail_url, is_live = None, None, None, False
     else:
         channel = TwitchChannel.objects.get(channel_id=channel_id)
-        live_title, game_name, is_live = channel.live_title, channel.game_name, channel.is_live
+        live_title, game_name, thumbnail_url, is_live = channel.live_title, channel.game_name, channel.thumbnail_url, channel.is_live
 
     channel_name = name if name else channel_title
     channel, _ = TwitchChannel.objects.get_or_create(
@@ -133,6 +144,7 @@ def _add_twitch_channel(channel_id: str, message: Message, u: User, name: Option
         channel_url=channel_url,
         live_title=live_title,
         game_name=game_name,
+        thumbnail_url=thumbnail_url,
         is_live=is_live
     )
 
@@ -142,8 +154,8 @@ def _add_twitch_channel(channel_id: str, message: Message, u: User, name: Option
                 user=u, channel=channel, channel_title=channel_name)
 
             message.reply_text(
-                text=get_twitch_channel_message(u, channel_url, channel_name,
-                                                live_title, game_name, is_live),
+                text=_get_twitch_channel_message(
+                    u, channel_url, channel_name, game_name, thumbnail_url, is_live),
                 parse_mode='HTML',
                 reply_markup=get_notification_reply_markup(
                     live_title if is_live else channel_name, channel_url)
@@ -163,6 +175,12 @@ def _add_twitch_channel(channel_id: str, message: Message, u: User, name: Option
 # Adds YouTube channel to a given user
 @ log_errors
 def _add_youtube_channel(channel_id: str, message: Message, u: User, name: Optional[str] = None) -> None:
+    def _get_youtube_channel_message(u: User, channel_name: str, url: str, is_live: bool) -> str:
+        general = f"{localization[u.language]['add'][1][0]} "
+        is_streaming = localization[u.language]['add'][1][2 if is_live else 1]
+        href = f"{get_html_link(url=url)}"
+        return f"{general}{channel_name}{is_streaming}{href}"
+
     if not YouTubeChannel.objects.filter(channel_id=channel_id).exists():
         video_title, video_url, channel_title = get_channels_and_videos_info(
             [f'https://www.youtube.com/feeds/videos.xml?channel_id={channel_id}'])[0]
@@ -195,19 +213,21 @@ def _add_youtube_channel(channel_id: str, message: Message, u: User, name: Optio
             YouTubeChannelUserItem.objects.create(
                 user=u, channel=channel, channel_title=channel_name)
 
-            if not live_title:
+            if live_title:
                 message.reply_text(
-                    text=f"{localization[u.language]['add'][1][0]} {channel_name}{localization[u.language]['add'][1][1]} <a href=\"{video_url}\">{video_title}</a>",
-                    parse_mode='HTML',
-                    reply_markup=get_notification_reply_markup(
-                        video_title, video_url)
-                )
-            else:
-                message.reply_text(
-                    text=f"{localization[u.language]['add'][1][0]} {channel_name}{localization[u.language]['add'][1][2]} <a href=\"{live_url}\">{live_title}</a>",
+                    text=_get_youtube_channel_message(
+                        u, channel_name, video_url, True),
                     parse_mode='HTML',
                     reply_markup=get_notification_reply_markup(
                         live_title, live_url)
+                )
+            else:
+                message.reply_text(
+                    text=_get_youtube_channel_message(
+                        u, channel_name, video_url, False),
+                    parse_mode='HTML',
+                    reply_markup=get_notification_reply_markup(
+                        video_title, video_url)
                 )
             if not u.is_tutorial_finished:
                 message.reply_text(

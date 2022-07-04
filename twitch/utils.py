@@ -48,8 +48,9 @@ def get_streams_info_chunks_async(ids: List[List[str]]):
                 async with session.get('https://api.twitch.tv/helix/streams', headers=headers, params=params) as response:
                     if response.status == 200:
                         response_data = await response.json()
-                        return [(response_data_item['user_id'], response_data_item['title'],
-                                 response_data_item['game_name'], True) for response_data_item in response_data['data']]
+                        return [(response_data_item['user_id'], response_data_item['title'], response_data_item['game_name'],
+                                 get_formatted_thumbnail_url(response_data_item['thumbnail_url']), True)
+                                for response_data_item in response_data['data']]
                     elif response.status == 401:
                         TWITCH_BEARER_TOKEN = get_twitch_token()
                         return get_streams_info(ids_100)
@@ -101,8 +102,9 @@ def get_streams_info(ids: List[str]) -> List[tuple]:
 
     if response.status_code == 200:
         response_data = response.json()['data']
-        return [(response_data_item['user_id'], response_data_item['title'],
-                 response_data_item['game_name'], True) for response_data_item in response_data]
+        return [(response_data_item['user_id'], response_data_item['title'], response_data_item['game_name'],
+                get_formatted_thumbnail_url(response_data_item['thumbnail_url']), True)
+                for response_data_item in response_data]
     elif response.status_code == 401:
         TWITCH_BEARER_TOKEN = get_twitch_token()
         return get_streams_info(ids)
@@ -121,3 +123,8 @@ def get_channel_title_from_url(url: str) -> str:
 # Returns url of the Twitch channel from its title
 def get_channel_url_from_title(title: str) -> str:
     return f"https://www.twitch.tv/{title}"
+
+
+# Returns formatted thumbnail url with given width and height
+def get_formatted_thumbnail_url(url: str, width: Optional[int] = 1920, height: Optional[int] = 1080):
+    return f'{url.split("{")[0]}{width}x{height}.jpg'

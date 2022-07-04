@@ -35,8 +35,14 @@ def echo_handler(update: Update, context: CallbackContext) -> None:
         if channel_type:
             if channel_type == 'YouTube':
                 channel_id = scrape_id_by_url(user_text)
-                _, _, channel_title = get_channels_and_videos_info(
-                    [f'https://www.youtube.com/feeds/videos.xml?channel_id={channel_id}'])[0]
+                if channel_id:
+                    _, _, channel_title = get_channels_and_videos_info(
+                        [f'https://www.youtube.com/feeds/videos.xml?channel_id={channel_id}'])[0]
+                else:
+                    update.message.reply_text(
+                        text=localization[u.language]['echo'][5],
+                        parse_mode='HTML',)
+                    return
             elif channel_type == 'Twitch':
                 try:
                     channel_id, _, channel_title = get_users_info(
