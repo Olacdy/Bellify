@@ -159,16 +159,16 @@ CELERY_TASK_SERIALIZER = 'json'
 
 CELERY_BEAT_SCHEDULE = {
     "check_channels_for_video_youtube": {
-        "task": "bellify.tasks.check_channels_for_video_youtube",
+        "task": "bellify.tasks.check_channels_for_new_video_youtube",
         "schedule": crontab(minute="*/5"),
     },
     "check_channels_for_live_stream_youtube": {
         "task": "bellify.tasks.check_channels_for_live_stream_youtube",
-        "schedule": crontab(minute="*/1"),
+        "schedule": crontab(minute="*/3"),
     },
     "check_channels_for_live_stream_twitch": {
         "task": "bellify.tasks.check_channels_for_live_stream_twitch",
-        "schedule": crontab(minute="*/1"),
+        "schedule": crontab(minute="*/3"),
     },
 }
 
@@ -176,10 +176,6 @@ CELERY_BEAT_SCHEDULE = {
 
 TWITCH_CLIENT_ID = env.str('TWITCH_CLIENT_ID')
 TWITCH_CLIENT_SECRET = env.str('TWITCH_CLIENT_SECRET')
-
-TWITCH_TRIES_NUMBER = 15
-
-YOUTUBE_TRIES_NUMBER = 5
 
 PAGINATION_SIZE = 5
 

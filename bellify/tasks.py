@@ -2,7 +2,7 @@ import time
 from typing import Dict, List, Optional, Union
 
 from utils.general_utils import get_twitch_channel_message, _send_message, _from_celery_entities_to_entities, _from_celery_markup_to_markup
-from utils.keyboards import _get_notification_reply_markup
+from utils.keyboards import get_notification_reply_markup
 from django.core.management import call_command
 from bellify_bot.localization import localization
 from bellify_bot.models import User, ChannelUserItem
@@ -22,13 +22,13 @@ def notify_users(users: List[User], channel_info: dict, live: Optional[bool] = F
         if not live:
             _send_message(
                 u.user_id, f"{localization[u.language]['notification'][0][0]} {user_title} {localization[u.language]['notification'][0][1]}\n<a href=\"{channel_info['url']}\">{channel_info['title']}</a>",
-                reply_markup=_get_notification_reply_markup(
+                reply_markup=get_notification_reply_markup(
                     channel_info['title'], channel_info['url']),
                 disable_notification=not is_muted)
         else:
             _send_message(
                 u.user_id, f"{user_title} {localization[u.language]['notification'][1]} {localization[u.language]['notification'][3]+channel_info['game_name'] if 'game_name' in channel_info else ''}\n<a href=\"{channel_info['url']}\">{channel_info['title']}</a>",
-                reply_markup=_get_notification_reply_markup(
+                reply_markup=get_notification_reply_markup(
                     channel_info['title'], channel_info['url']),
                 disable_notification=not is_muted)
 
@@ -65,8 +65,8 @@ def broadcast_message(
 
 
 @app.task(ignore_result=True)
-def check_channels_for_video_youtube():
-    call_command("check_channels_for_video_youtube", )
+def check_channels_for_new_video_youtube():
+    call_command("check_channels_for_new_video_youtube", )
 
 
 @app.task(ignore_result=True)
