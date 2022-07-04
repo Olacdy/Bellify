@@ -5,7 +5,7 @@ from bellify_bot.handlers.bot_handlers.utils import (
     add, get_upgrade_inline_keyboard, log_errors)
 from bellify_bot.localization import localization
 from bellify_bot.models import ChannelUserItem, Message, User
-from twitch.utils import get_twitch_channel_info
+from twitch.utils import get_users_info, get_channel_title_from_url
 from youtube.utils import get_channels_and_videos_info, scrape_id_by_url
 
 from utils.general_utils import get_channel_url_type
@@ -35,13 +35,19 @@ def echo_handler(update: Update, context: CallbackContext) -> None:
         if channel_type:
             if channel_type == 'YouTube':
                 channel_id = scrape_id_by_url(user_text)
-                _, _, channel_title = get_channels_and_videos_info(
-                    [f'https://www.youtube.com/feeds/videos.xml?channel_id={channel_id}'])[0]
+                if channel_id:
+                    _, _, channel_title = get_channels_and_videos_info(
+                        [f'https://www.youtube.com/feeds/videos.xml?channel_id={channel_id}'])[0]
+                else:
+                    update.message.reply_text(
+                        text=localization[u.language]['echo'][5],
+                        parse_mode='HTML',)
+                    return
             elif channel_type == 'Twitch':
                 try:
-                    channel_id = channel_title = get_twitch_channel_info(user_text)[
-                        0]
-                except TypeError:
+                    channel_id, _, channel_title = get_users_info(
+                        usernames=[get_channel_title_from_url(user_text)])[0]
+                except IndexError as e:
                     update.message.reply_text(
                         text=localization[u.language]['echo'][5],
                         parse_mode='HTML',)
@@ -93,13 +99,13 @@ def echo_handler(update: Update, context: CallbackContext) -> None:
 
                 if u.is_tutorial_finished:
                     update.message.reply_text(
-                        text=f"{localization[u.language]['echo'][0][0]}<a href=\"{user_text}\">{channel_title} </a>{localization[u.language]['echo'][0][1]}",
+                        text=f"{localization[u.language]['echo'][0][0]}<a href=\"{user_text}\">{channel_title}</a>{localization[u.language]['echo'][0][1]}",
                         parse_mode='HTML',
                         disable_web_page_preview=True,
                         reply_markup=reply_markup)
                 else:
                     update.message.reply_text(
-                        text=f"{localization[u.language]['help'][2][0]}<a href=\"{user_text}\">{channel_title} </a>{localization[u.language]['help'][2][1]}",
+                        text=f"{localization[u.language]['help'][2][0]}<a href=\"{user_text}\">{channel_title}</a>{localization[u.language]['help'][2][1]}",
                         parse_mode='HTML',
                         disable_web_page_preview=True,
                         reply_markup=reply_markup)

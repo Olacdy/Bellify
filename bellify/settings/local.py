@@ -10,10 +10,12 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
+import os
 from pathlib import Path
+
 import environ
 from celery.schedules import crontab
-import os
+from twitch.utils import get_twitch_token
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -28,12 +30,10 @@ env.read_env(f'{BASE_DIR}/.env')
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = env.str('SECRET_KEY')
 
-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
 ALLOWED_HOSTS = []
-
 
 # Application definition
 
@@ -159,24 +159,23 @@ CELERY_TASK_SERIALIZER = 'json'
 
 CELERY_BEAT_SCHEDULE = {
     "check_channels_for_video_youtube": {
-        "task": "bellify.tasks.check_channels_for_video_youtube",
+        "task": "bellify.tasks.check_channels_for_new_video_youtube",
         "schedule": crontab(minute="*/5"),
     },
     "check_channels_for_live_stream_youtube": {
         "task": "bellify.tasks.check_channels_for_live_stream_youtube",
-        "schedule": crontab(minute="*/1"),
+        "schedule": crontab(minute="*/3"),
     },
     "check_channels_for_live_stream_twitch": {
         "task": "bellify.tasks.check_channels_for_live_stream_twitch",
-        "schedule": crontab(minute="*/1"),
+        "schedule": crontab(minute="*/3"),
     },
 }
 
 # Configuration settings
 
-TWITCH_TRIES_NUMBER = 15
-
-YOUTUBE_TRIES_NUMBER = 5
+TWITCH_CLIENT_ID = env.str('TWITCH_CLIENT_ID')
+TWITCH_CLIENT_SECRET = env.str('TWITCH_CLIENT_SECRET')
 
 PAGINATION_SIZE = 5
 
