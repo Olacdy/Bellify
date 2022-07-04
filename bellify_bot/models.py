@@ -40,9 +40,9 @@ class User(CreateUpdateTracker):
         max_length=2, choices=LANGUAGE_CHOICES, default=None, help_text="Telegram client's language", **nb)
 
     max_youtube_channels_number = models.PositiveIntegerField(
-        default=settings.INITIAL_CHANNELS_NUMBER['YouTube'], **nb)
+        default=settings.CHANNELS_INFO["youtube"]["initial_number"], **nb)
     max_twitch_channels_number = models.PositiveIntegerField(
-        default=settings.INITIAL_CHANNELS_NUMBER['Twitch'], **nb)
+        default=settings.CHANNELS_INFO["twitch"]["initial_number"], **nb)
 
     is_tutorial_finished = models.BooleanField(default=False)
 

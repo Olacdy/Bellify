@@ -5,7 +5,7 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from bellify_bot.localization import localization
 from bellify_bot.models import ChannelUserItem, User
 
-from utils.general_utils import channels_type_name, log_errors
+from utils.general_utils import log_errors
 
 
 # Returns Language inline keyboard
@@ -43,14 +43,14 @@ def get_upgrade_inline_keyboard(u: User, mode: Optional[str] = 'upgrade', channe
         keyboard.append(
             [
                 InlineKeyboardButton(
-                    f"{localization[u.language]['upgrade'][2][0]} {channels_type_name['youtube']} {localization[u.language]['upgrade'][2][1]}", callback_data=f'upgrade{settings.SPLITTING_CHARACTER}youtube')
+                    f"{localization[u.language]['upgrade'][2][0]} {settings.CHANNELS_INFO['youtube']['name']} {localization[u.language]['upgrade'][2][1]}", callback_data=f'upgrade{settings.SPLITTING_CHARACTER}youtube')
             ]
         )
 
         keyboard.append(
             [
                 InlineKeyboardButton(
-                    f"{localization[u.language]['upgrade'][2][0]} {channels_type_name['twitch']} {localization[u.language]['upgrade'][2][1]}", callback_data=f'upgrade{settings.SPLITTING_CHARACTER}twitch')
+                    f"{localization[u.language]['upgrade'][2][0]} {settings.CHANNELS_INFO['twitch']['name']} {localization[u.language]['upgrade'][2][1]}", callback_data=f'upgrade{settings.SPLITTING_CHARACTER}twitch')
             ]
         ) if u.status == 'P' else None
     elif mode == 'quota':
@@ -58,7 +58,7 @@ def get_upgrade_inline_keyboard(u: User, mode: Optional[str] = 'upgrade', channe
             keyboard.append(
                 [
                     InlineKeyboardButton(
-                        f"▶️ {amount}", callback_data=f'upgrade{settings.SPLITTING_CHARACTER}quota{settings.SPLITTING_CHARACTER}{channel_type}{settings.SPLITTING_CHARACTER}{amount}')
+                        f"{settings.CHANNELS_INFO[channel_type]['icon']} {amount}", callback_data=f'upgrade{settings.SPLITTING_CHARACTER}quota{settings.SPLITTING_CHARACTER}{channel_type}{settings.SPLITTING_CHARACTER}{amount}')
                 ]
             )
         keyboard.append(
@@ -93,7 +93,7 @@ def get_manage_inline_keyboard(u: User, page_num: Optional[int] = 0) -> List:
         for channel in channels[page_num]:
             keyboard.append([
                 InlineKeyboardButton(
-                    f'{channel.channel_title}', url=channel.channel.channel_url),
+                    f'{settings.CHANNELS_INFO[channel.type]["icon"]} {channel.channel_title}', url=channel.channel.channel_url),
                 InlineKeyboardButton(
                     f'🔕' if channel.is_muted else f'🔔', callback_data=f'manage{settings.SPLITTING_CHARACTER}{channel.channel.channel_id}{settings.SPLITTING_CHARACTER}mute'),
                 InlineKeyboardButton(

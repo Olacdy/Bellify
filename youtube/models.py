@@ -23,8 +23,16 @@ class YouTubeChannel(Channel):
     def __str__(self):
         return f'{self.channel_title}'
 
+    @property
+    def type(self) -> str:
+        return 'youtube'
+
 
 # Custom through model with title
 class YouTubeChannelUserItem(ChannelUserItem):
     channel = models.ForeignKey(
         YouTubeChannel, on_delete=models.CASCADE)
+
+    @property
+    def type(self) -> str:
+        return 'youtube'

@@ -8,7 +8,7 @@ from bellify_bot.localization import localization
 from bellify_bot.models import User
 from twitch.models import ChannelUserItem
 
-from utils.general_utils import channels_type_name, tutorial_reply
+from utils.general_utils import tutorial_reply
 
 
 @log_errors
@@ -126,31 +126,34 @@ def inline_upgrade_handler(update: Update, context: CallbackContext) -> None:
         reply_invoice(update, u, localization[u.language]['upgrade'][3][0], localization[u.language]
                       ['upgrade'][3][1], f'youtube{settings.SPLITTING_CHARACTER}premium', localization[u.language]['upgrade'][3][2], settings.PREMIUM_PRICE)
 
-    def _channel_increase():
+    def _channel_increase(channel_type: str):
         query.message.reply_text(
-            text=localization[u.language]['upgrade'][4],
+            text=f"{localization[u.language]['upgrade'][4][0]} {settings.CHANNELS_INFO[channel_type]['name']} {localization[u.language]['upgrade'][4][1]} {User.get_max_for_channel(u, settings.CHANNELS_INFO[channel_type]['name'])}.\n\n{localization[u.language]['upgrade'][4][2]}",
             parse_mode='HTML',
             reply_markup=InlineKeyboardMarkup(
-                get_upgrade_inline_keyboard(u, 'quota'))
+                get_upgrade_inline_keyboard(u, 'quota', channel_type))
         )
 
     def _quota():
-        reply_invoice(update, u, f"{localization[u.language]['upgrade'][5][0][0]} {channels_type_name[query_data[-2]]} {localization[u.language]['upgrade'][5][0][1]}",
-                      f"{localization[u.language]['upgrade'][5][1][0]} {channels_type_name[query_data[-2]]} {localization[u.language]['upgrade'][5][1][1]} (+{query_data[-1]}).",
+        reply_invoice(update, u, f"{localization[u.language]['upgrade'][5][0][0]} {settings.CHANNELS_INFO[query_data[-2]]['name']} {localization[u.language]['upgrade'][5][0][1]}",
+                      f"{localization[u.language]['upgrade'][5][1][0]} {settings.CHANNELS_INFO[query_data[-2]]['name']} {localization[u.language]['upgrade'][5][1][1]} (+{query_data[-1]}).",
                       f'{query_data[-2]}{settings.SPLITTING_CHARACTER}{query_data[-1]}', localization[u.language]['upgrade'][5][2], int(
-                          query_data[-1]) * settings.INCREASE_PRICES[query_data[-2]],
-                      'quota')
+                          query_data[-1]) * settings.CHANNELS_INFO[query_data[-2]]['increase_price'],
+                      query_data[-2])
 
-    query.delete_message()
+    try:
+        query.delete_message()
+    except error.BadRequest:
+        pass
     if 'back' in query_data:
         if query_data[-1] == 'upgrade':
             upgrade(query.message, u)
-        elif query_data[-1] == 'quota':
-            _channel_increase()
+        elif query_data[-1] in settings.CHANNELS_INFO:
+            _channel_increase(query_data[-1])
     elif query_data[-1] == 'premium':
         _premium()
-    elif query_data[-1] in channels_type_name:
-        _channel_increase()
+    elif query_data[-1] in settings.CHANNELS_INFO:
+        _channel_increase(query_data[-1])
     elif query_data[0] == 'quota':
         _quota()
 
