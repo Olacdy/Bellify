@@ -16,8 +16,19 @@ class TwitchChannel(Channel):
         verbose_name = 'Twitch Channel'
         verbose_name_plural = 'Twitch Channels'
 
+    def __str__(self):
+        return f'{self.channel_title}'
+
+    @property
+    def type(self) -> str:
+        return 'twitch'
+
 
 # Custom through model with title
 class TwitchChannelUserItem(ChannelUserItem):
     channel = models.ForeignKey(
         TwitchChannel, on_delete=models.CASCADE)
+
+    @property
+    def type(self) -> str:
+        return 'twitch'

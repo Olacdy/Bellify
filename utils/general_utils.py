@@ -10,13 +10,6 @@ from bellify_bot.localization import localization
 from bellify_bot.models import ChannelUserItem
 
 
-# Channgels in lowercase аccording to their name
-channels_type_name = {
-    'youtube': "Youtube",
-    'twitch': "Twitch"
-}
-
-
 def log_errors(f):
     def inner(*args, **kwargs):
         try:

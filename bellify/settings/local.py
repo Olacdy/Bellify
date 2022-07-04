@@ -190,24 +190,26 @@ REQUESTS_DELAY = 0.05
 CURRENCY = 'USD'
 PREMIUM_PRICE = 400
 
-INCREASE_PRICES = {
-    'youtube': 50,
-    'twitch': 100
-}
-
-INITIAL_CHANNELS_NUMBER = {
-    'YouTube': 5,
-    'Twitch': 0
-}
-
-INCREASE_CHANNELS_PREMIUM = {
-    'YouTube': 3,
-    'Twitch': 3
+CHANNELS_INFO = {
+    'youtube': {
+        'name': 'YouTube',
+        'initial_number': 5,
+        'premium_increase': 3,
+        'increase_price': 50,
+        'icon': '🟥',
+        'is_free': True
+    },
+    'twitch': {
+        'name': 'Twitch',
+        'initial_number': 0,
+        'premium_increase': 3,
+        'increase_price': 100,
+        'icon': '🟪',
+        'is_free': False
+    }
 }
 
 INCREASE_CHANNELS_AMOUNT = [1, 2, 3, 4, 5, 10]
-
-FREE_CHANNELS_TYPES = ['YouTube']
 
 # Help section
 
