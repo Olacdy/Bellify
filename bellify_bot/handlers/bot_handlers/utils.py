@@ -1,22 +1,23 @@
 from calendar import c
-from multiprocessing.reduction import steal_handle
 from typing import Optional
 
 import bellify.tasks as tasks
+from bellify_bot.localization import localization
+from bellify_bot.models import ChannelUserItem, User
 from django.conf import settings
 from telegram import (InlineKeyboardButton, InlineKeyboardMarkup, LabeledPrice,
                       Message, Update)
-from bellify_bot.localization import localization
-from bellify_bot.models import ChannelUserItem, User
 from twitch.models import TwitchChannel, TwitchChannelUserItem
-from twitch.utils import get_users_info, get_channel_url_from_title, get_streams_info, get_streams_info_chunks_async
+from twitch.utils import (get_channel_url_from_title, get_streams_info,
+                          get_streams_info_chunks_async, get_users_info)
 from youtube.models import YouTubeChannel, YouTubeChannelUserItem
-from youtube.utils import (is_youtube_channel_url, get_channels_and_videos_info,
-                           get_channels_live_title_and_url, get_url_from_id)
+from youtube.utils import (get_channels_and_videos_info,
+                           get_channels_live_title_and_url, get_url_from_id,
+                           is_youtube_channel_url)
 
 from utils.general_utils import get_html_link
-from utils.keyboards import (get_notification_reply_markup,
-                             get_manage_inline_keyboard,
+from utils.keyboards import (get_manage_inline_keyboard,
+                             get_notification_reply_markup,
                              get_upgrade_inline_keyboard, log_errors)
 
 
