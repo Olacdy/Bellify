@@ -3,6 +3,7 @@ from typing import Dict, List, Optional, Union
 import telegram
 from django.conf import settings
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, MessageEntity, CallbackQuery
+from bellify.settings.local import CHANNELS_INFO
 from bellify_bot.models import User
 from twitch.utils import is_twitch_channel_url
 from youtube.utils import is_youtube_channel_url
@@ -39,6 +40,22 @@ def get_html_link(url: str, title: Optional[str] = u'\u2060') -> str:
     return f'<a href=\"{url}\">{title}</a>'
 
 
+@log_errors
+def get_manage_message(u: User, mode: Optional[str] = None) -> str:
+    dict_of_quota_info = {settings.CHANNELS_INFO[channel]['name']: User.get_max_for_channel(
+        u, channel_type=settings.CHANNELS_INFO[channel]['name']) - ChannelUserItem.get_count_by_user_and_channel(u, channel_type=settings.CHANNELS_INFO[channel]['name']) for channel in settings.CHANNELS_INFO}
+
+    remaining_quota_message = '\n'.join(
+        filter(None, [f"{localization[u.language]['manage'][0][1]} {channel} {localization[u.language]['manage'][0][2]} {dict_of_quota_info[channel]}" if dict_of_quota_info[channel] > 0 else None for channel in dict_of_quota_info]))
+
+    if mode == 'echo' or mode == 'pagination':
+        help_message = localization[u.language]['help'][4]
+    else:
+        help_message = localization[u.language]['help'][5]
+
+    return f"{localization[u.language]['manage'][0][0]}\n\n{remaining_quota_message}" if u.is_tutorial_finished else help_message
+
+
 # Makes a response on a tutorial start
 def tutorial_reply(query: CallbackQuery, language: str, u: User) -> None:
     query.delete_message()
@@ -59,8 +76,6 @@ def _send_message(
     disable_notification: Optional[bool] = None,
     entities: Optional[List[MessageEntity]] = None,
     tg_token: str = settings.TOKEN,
-
-
 ) -> bool:
     bot = telegram.Bot(tg_token)
     try:
