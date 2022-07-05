@@ -43,12 +43,12 @@ def get_html_link(url: str, title: Optional[str] = u'\u2060') -> str:
 @log_errors
 def get_manage_message(u: User, mode: Optional[str] = None) -> str:
     dict_of_quota_info = {settings.CHANNELS_INFO[channel]['name']: User.get_max_for_channel(
-        u, channel_type=settings.CHANNELS_INFO[channel]['name']) - ChannelUserItem.get_count_by_user_and_channel(u, channel_type=settings.CHANNELS_INFO[channel]['name']) for channel in settings.CHANNELS_INFO}
+        u, channel_type=settings.CHANNELS_INFO[channel]['name']) - ChannelUserItem.get_count_by_user_and_channel(u, channel_type=settings.CHANNELS_INFO[channel]['name']) + 1 for channel in settings.CHANNELS_INFO}
 
     remaining_quota_message = '\n'.join(
         filter(None, [f"{localization[u.language]['manage'][0][1]} {channel} {localization[u.language]['manage'][0][2]} {dict_of_quota_info[channel]}" if dict_of_quota_info[channel] > 0 else None for channel in dict_of_quota_info]))
 
-    if mode == 'echo' or mode == 'pagination':
+    if mode in ['echo', 'pagination']:
         help_message = localization[u.language]['help'][4]
     else:
         help_message = localization[u.language]['help'][5]

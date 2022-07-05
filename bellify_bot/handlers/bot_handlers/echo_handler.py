@@ -24,7 +24,7 @@ def echo_handler(update: Update, context: CallbackContext) -> None:
     except Exception as e:
         echo_data = []
 
-    if not all(data == '' for data in echo_data):
+    if all(echo_data):
         if 'name' in echo_data:
             User.set_menu_field(u)
             channel_id, channel_type = echo_data[-2], echo_data[-1]
@@ -33,7 +33,7 @@ def echo_handler(update: Update, context: CallbackContext) -> None:
     else:
         channel_type = get_channel_url_type(user_text)
         if channel_type:
-            if channel_type == 'YouTube':
+            if 'YouTube' in channel_type:
                 channel_id = scrape_id_by_url(user_text)
                 if channel_id:
                     _, _, channel_title = get_channels_and_videos_info(
@@ -43,7 +43,7 @@ def echo_handler(update: Update, context: CallbackContext) -> None:
                         text=localization[u.language]['echo'][5],
                         parse_mode='HTML',)
                     return
-            elif channel_type == 'Twitch':
+            elif 'Twitch' in channel_type:
                 try:
                     channel_id, _, channel_title = get_users_info(
                         usernames=[get_channel_title_from_url(user_text)])[0]
@@ -76,7 +76,7 @@ def echo_handler(update: Update, context: CallbackContext) -> None:
                         parse_mode='HTML',
                         disable_web_page_preview=True,
                         reply_markup=reply_markup)
-            elif u.status == 'B' and channel_type != 'YouTube':
+            elif u.status == 'B' and not 'YouTube' in channel_type:
                 update.message.reply_text(
                     text=localization[u.language]['echo'][3],
                     parse_mode='HTML',
@@ -87,9 +87,9 @@ def echo_handler(update: Update, context: CallbackContext) -> None:
                 keyboard = [
                     [
                         InlineKeyboardButton(
-                            '✔️', callback_data=f'add{settings.SPLITTING_CHARACTER}{channel_id}{settings.SPLITTING_CHARACTER}{channel_type}{settings.SPLITTING_CHARACTER}yes'),
+                            '✔️', callback_data=f'add{settings.SPLITTING_CHARACTER}{channel_id}{settings.SPLITTING_CHARACTER}{channel_type}'),
                         InlineKeyboardButton(
-                            '❌', callback_data=f'add{settings.SPLITTING_CHARACTER}{channel_id}{settings.SPLITTING_CHARACTER}{channel_type}')
+                            '❌', callback_data=f'add{settings.SPLITTING_CHARACTER}{channel_id}{settings.SPLITTING_CHARACTER}{channel_type}{settings.SPLITTING_CHARACTER}no')
                     ]
                 ]
 
@@ -111,10 +111,10 @@ def echo_handler(update: Update, context: CallbackContext) -> None:
                         reply_markup=reply_markup)
             else:
                 update.message.reply_text(
-                    text=localization[u.language]['echo'][4],
+                    text=localization[u.language]['echo'][4][0 if u.is_tutorial_finished else 1],
                     parse_mode='HTML',
                     reply_markup=InlineKeyboardMarkup(get_upgrade_inline_keyboard(
-                        u, mode='quota'))
+                        u, mode='quota_echo', channel_type=channel_type.lower()))
                 )
         else:
             pass

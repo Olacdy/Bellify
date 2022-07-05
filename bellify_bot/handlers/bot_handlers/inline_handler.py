@@ -63,7 +63,7 @@ def inline_add_handler(update: Update, context: CallbackContext) -> None:
     query = update.callback_query
     query_data, u = get_query_data_and_user(query)
 
-    if query_data[-1] == 'yes':
+    if 'no' in query_data:
         query.edit_message_text(
             text=localization[u.language]['add'][0],
             parse_mode='HTML'
@@ -103,9 +103,9 @@ def inline_manage_handler(update: Update, context: CallbackContext) -> None:
     mode, page_num, channel_id = query_data[-1], int(
         query_data[-2]), query_data[-3]
     channel = ChannelUserItem.get_user_channel_by_id(u, channel_id)
-    if mode == 'mute':
+    if 'mute' in mode:
         mute(update, u, channel, page_num=page_num)
-    elif mode == 'remove' and u.is_tutorial_finished:
+    elif 'remove' in mode and u.is_tutorial_finished:
         remove(
             update, u, channel, page_num=page_num)
     else:
@@ -148,16 +148,17 @@ def inline_upgrade_handler(update: Update, context: CallbackContext) -> None:
         query.delete_message()
     except error.BadRequest:
         pass
+
     if 'back' in query_data:
-        if query_data[-1] == 'upgrade':
+        if 'upgrade' in query_data:
             upgrade(query.message, u)
         elif query_data[-1] in settings.CHANNELS_INFO:
             _channel_increase(query_data[-1])
-    elif query_data[-1] == 'premium':
+    elif 'premium' in query_data:
         _premium()
     elif query_data[-1] in settings.CHANNELS_INFO:
         _channel_increase(query_data[-1])
-    elif query_data[0] == 'quota':
+    elif 'quota' in query_data:
         _quota()
 
 

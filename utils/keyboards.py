@@ -32,7 +32,7 @@ def get_language_inline_keyboard(command: Optional[str] = 'language') -> List[Li
 def get_upgrade_inline_keyboard(u: User, mode: Optional[str] = 'upgrade', channel_type: Optional[str] = 'youtube') -> List[List[InlineKeyboardButton]]:
     keyboard = [[]]
 
-    if mode == 'upgrade':
+    if 'upgrade' in mode:
         keyboard.append(
             [
                 InlineKeyboardButton(
@@ -53,7 +53,7 @@ def get_upgrade_inline_keyboard(u: User, mode: Optional[str] = 'upgrade', channe
                     f"{localization[u.language]['upgrade'][2][0]} {settings.CHANNELS_INFO['twitch']['name']} {localization[u.language]['upgrade'][2][1]}", callback_data=f'upgrade{settings.SPLITTING_CHARACTER}twitch')
             ]
         ) if u.status == 'P' else None
-    elif mode == 'quota':
+    elif 'quota' in mode:
         for amount in settings.INCREASE_CHANNELS_AMOUNT:
             keyboard.append(
                 [
@@ -66,8 +66,8 @@ def get_upgrade_inline_keyboard(u: User, mode: Optional[str] = 'upgrade', channe
                 InlineKeyboardButton(
                     localization[u.language]['upgrade'][6], callback_data=f"upgrade{settings.SPLITTING_CHARACTER}back{settings.SPLITTING_CHARACTER}upgrade")
             ]
-        )
-    elif mode == 'premium':
+        ) if not 'echo' in mode else None
+    elif 'premium' in mode:
         keyboard.append(
             [
                 InlineKeyboardButton(
