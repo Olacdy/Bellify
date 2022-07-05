@@ -111,14 +111,14 @@ def precheckout_callback(update: Update, context: CallbackContext) -> None:
     payload_data = query.invoice_payload.split(
         f'{settings.SPLITTING_CHARACTER}')
 
-    if payload_data[0] == 'youtube':
-        if payload_data[-1] == 'premium':
+    if 'youtube' in payload_data:
+        if 'premium' in payload_data:
             u.status = 'P'
         elif payload_data[-1].isdigit():
             u.max_youtube_channels_number += int(payload_data[-1])
         u.save()
         query.answer(ok=True)
-    elif payload_data[0] == 'twitch':
+    elif 'twitch' in payload_data:
         u.max_twitch_channels_number += int(payload_data[-1])
         u.save()
         query.answer(ok=True)

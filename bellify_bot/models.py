@@ -62,9 +62,9 @@ class User(CreateUpdateTracker):
 
     @classmethod
     def get_max_for_channel(cls, u, channel_type: str) -> int:
-        if channel_type == 'YouTube':
+        if 'YouTube' in channel_type:
             return u.max_youtube_channels_number
-        elif channel_type == 'Twitch':
+        elif 'Twitch' in channel_type:
             return u.max_twitch_channels_number
 
     @classmethod
@@ -150,9 +150,9 @@ class ChannelUserItem(CreateUpdateTracker):
 
     @classmethod
     def get_count_by_user_and_channel(cls, u, channel_type: str) -> int:
-        if channel_type == 'YouTube':
+        if 'YouTube' in channel_type:
             return apps.get_model('youtube', 'YouTubeChannelUserItem').objects.filter(user=u).count() + 1
-        elif channel_type == 'Twitch':
+        elif 'Twitch' in channel_type:
             return apps.get_model('twitch', 'TwitchChannelUserItem').objects.filter(user=u).count() + 1
 
     @classmethod

@@ -101,9 +101,9 @@ def check_for_new_video_youtube() -> None:
 # Checks channel url type and call add function accordingly
 @ log_errors
 def add(channel_id: str, channel_type: str, message: Message, u: User, name: Optional[str] = None) -> None:
-    if channel_type == 'YouTube':
+    if 'YouTube' in channel_type:
         _add_youtube_channel(channel_id, message, u, name)
-    elif channel_type == 'Twitch':
+    elif 'Twitch' in channel_type:
         _add_twitch_channel(channel_id, message, u, name)
 
 
@@ -116,7 +116,7 @@ def _add_twitch_channel(channel_id: str, message: Message, u: User, name: Option
             channel_url, channel_name)
         is_streaming = localization[u.language]['add'][1][2 if is_live else 3]
         game = f" {localization[u.language]['add'][1][4]} {game_name+'.'}" if (
-            is_live and not game_name == 'Just Chatting') else ''
+            is_live and not 'Just Chatting' in game_name) else ''
         thumb_href = f"{get_html_link(url=thumbnail_url) if is_live else ''}"
         return f"{general}{name}{is_streaming}{game}{thumb_href}"
 
@@ -261,7 +261,7 @@ def manage(update: Update, u: User, mode: Optional[str] = 'echo', page_num: Opti
     if keyboard:
         reply_markup = InlineKeyboardMarkup(keyboard)
 
-        if mode == 'echo':
+        if 'echo' in mode:
             update.message.reply_text(
                 text=get_manage_message(u, mode='echo'),
                 reply_markup=reply_markup,
@@ -276,7 +276,7 @@ def manage(update: Update, u: User, mode: Optional[str] = 'echo', page_num: Opti
             User.set_tutorial_state(
                 u, True) if not u.is_tutorial_finished else None
     else:
-        if mode == 'echo':
+        if 'echo' in mode:
             update.message.reply_text(
                 text=localization[u.language]['manage'][1],
                 parse_mode='HTML'
