@@ -58,7 +58,7 @@ def get_upgrade_inline_keyboard(u: User, mode: Optional[str] = 'upgrade', channe
             keyboard.append(
                 [
                     InlineKeyboardButton(
-                        f"{settings.CHANNELS_INFO[channel_type]['icon']} {amount}", callback_data=f'upgrade{settings.SPLITTING_CHARACTER}quota{settings.SPLITTING_CHARACTER}{channel_type}{settings.SPLITTING_CHARACTER}{amount}')
+                        f"{settings.CHANNELS_INFO[channel_type]['icon']} {amount}", callback_data=f'upgrade{settings.SPLITTING_CHARACTER}{mode}{settings.SPLITTING_CHARACTER}{channel_type}{settings.SPLITTING_CHARACTER}{amount}')
                 ]
             )
         keyboard.append(

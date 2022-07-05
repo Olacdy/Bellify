@@ -1,4 +1,4 @@
-from typing import List, Union
+from typing import List, Union, Optional
 
 from bellify_bot.handlers.bot_handlers.utils import (
     add, get_manage_inline_keyboard, get_upgrade_inline_keyboard, log_errors,
@@ -125,24 +125,24 @@ def inline_upgrade_handler(update: Update, context: CallbackContext) -> None:
     query = update.callback_query
     query_data, u = get_query_data_and_user(query)
 
-    def _premium():
+    def _premium() -> None:
         reply_invoice(update, u, localization[u.language]['upgrade'][3][0], localization[u.language]
                       ['upgrade'][3][1], f'youtube{settings.SPLITTING_CHARACTER}premium', localization[u.language]['upgrade'][3][2], settings.PREMIUM_PRICE)
 
-    def _channel_increase(channel_type: str):
+    def _channel_increase(channel_type: str, mode: Optional[str] = 'quota') -> None:
         query.message.reply_text(
             text=f"{localization[u.language]['upgrade'][4][0]} {settings.CHANNELS_INFO[channel_type]['name']} {localization[u.language]['upgrade'][4][1]} {User.get_max_for_channel(u, settings.CHANNELS_INFO[channel_type]['name'])}.\n\n{localization[u.language]['upgrade'][4][2]}",
             parse_mode='HTML',
             reply_markup=InlineKeyboardMarkup(
-                get_upgrade_inline_keyboard(u, 'quota', channel_type))
+                get_upgrade_inline_keyboard(u, mode, channel_type))
         )
 
-    def _quota():
+    def _quota(is_echo: bool) -> None:
         reply_invoice(update, u, f"{localization[u.language]['upgrade'][5][0][0]} {settings.CHANNELS_INFO[query_data[-2]]['name']} {localization[u.language]['upgrade'][5][0][1]}",
                       f"{localization[u.language]['upgrade'][5][1][0]} {settings.CHANNELS_INFO[query_data[-2]]['name']} {localization[u.language]['upgrade'][5][1][1]} (+{query_data[-1]}).",
                       f'{query_data[-2]}{settings.SPLITTING_CHARACTER}{query_data[-1]}', localization[u.language]['upgrade'][5][2], int(
                           query_data[-1]) * settings.CHANNELS_INFO[query_data[-2]]['increase_price'],
-                      query_data[-2])
+                      f'{f"echo{settings.SPLITTING_CHARACTER}" if is_echo else ""}{query_data[-2]}')
 
     try:
         query.delete_message()
@@ -153,13 +153,16 @@ def inline_upgrade_handler(update: Update, context: CallbackContext) -> None:
         if 'upgrade' in query_data:
             upgrade(query.message, u)
         elif query_data[-1] in settings.CHANNELS_INFO:
-            _channel_increase(query_data[-1])
+            _channel_increase(
+                query_data[-1], 'quota_echo' if 'echo' in query_data else 'quota')
     elif 'premium' in query_data:
         _premium()
     elif query_data[-1] in settings.CHANNELS_INFO:
         _channel_increase(query_data[-1])
     elif 'quota' in query_data:
-        _quota()
+        _quota(False)
+    elif 'quota_echo' in query_data:
+        _quota(True)
 
 
 @log_errors
