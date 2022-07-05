@@ -37,12 +37,12 @@ class User(CreateUpdateTracker):
         max_length=1, choices=PLAN_CHOICES, default='B')
 
     language = models.CharField(
-        max_length=2, choices=LANGUAGE_CHOICES, default=None, help_text="Telegram client's language", **nb)
+        max_length=2, choices=LANGUAGE_CHOICES, default=None, help_text='Telegram client\'s language', **nb)
 
-    max_youtube_channels_number = models.PositiveIntegerField(
-        default=settings.CHANNELS_INFO["youtube"]["initial_number"], **nb)
-    max_twitch_channels_number = models.PositiveIntegerField(
-        default=settings.CHANNELS_INFO["twitch"]["initial_number"], **nb)
+    max_youtube_channels_number = models.PositiveIntegerField(verbose_name='YouTube Quota',
+                                                              default=settings.CHANNELS_INFO["youtube"]["initial_number"], **nb)
+    max_twitch_channels_number = models.PositiveIntegerField(verbose_name='Twitch Quota',
+                                                             default=settings.CHANNELS_INFO["twitch"]["initial_number"], **nb)
 
     is_tutorial_finished = models.BooleanField(default=False)
 
@@ -105,31 +105,6 @@ class User(CreateUpdateTracker):
         if self.username:
             return f'@{self.username}'
         return f"{self.first_name} {self.last_name}" if self.last_name else f"{self.first_name}"
-
-
-class Message(CreateUpdateTracker):
-    user = models.ForeignKey(
-        to='bellify_bot.User',
-        verbose_name='User name',
-        on_delete=models.CASCADE,
-    )
-    text = models.TextField(
-        verbose_name='Text',
-    )
-
-    def __str__(self):
-        return f'Message {self.pk} of {self.user}'
-
-    class Meta:
-        verbose_name = 'Message'
-        verbose_name_plural = 'Message'
-
-    @classmethod
-    def get_or_create_message(cls, u: User, text: str):
-        return cls.objects.get_or_create(
-            text=text,
-            user=u
-        )
 
 
 class ChannelUserItem(CreateUpdateTracker):
