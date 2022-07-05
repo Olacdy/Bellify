@@ -4,7 +4,7 @@ from telegram.ext import CallbackContext
 from bellify_bot.handlers.bot_handlers.utils import (
     add, get_upgrade_inline_keyboard, log_errors)
 from bellify_bot.localization import localization
-from bellify_bot.models import ChannelUserItem, Message, User
+from bellify_bot.models import ChannelUserItem, User
 from twitch.utils import get_users_info, get_channel_title_from_url
 from youtube.utils import get_channels_and_videos_info, scrape_id_by_url
 
@@ -16,8 +16,6 @@ def echo_handler(update: Update, context: CallbackContext) -> None:
     u, _ = User.get_or_create_profile(
         update.message.chat_id, update.message.from_user.username, False)
     user_text = update.message.text
-
-    Message.get_or_create_message(u, user_text)
 
     try:
         echo_data = u.menu.split(f'{settings.SPLITTING_CHARACTER}')

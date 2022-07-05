@@ -21,7 +21,7 @@ from bellify_bot.handlers.bot_handlers.inline_handler import (
 from bellify_bot.handlers.bot_handlers.utils import (log_errors, manage,
                                                      upgrade)
 from bellify_bot.localization import localization
-from bellify_bot.models import Message, User, LANGUAGE_CHOICES
+from bellify_bot.models import User, LANGUAGE_CHOICES
 
 
 @log_errors
@@ -46,8 +46,6 @@ def manage_command_handler(update: Update, context: CallbackContext) -> None:
         update.message.chat_id, update.message.from_user.username, False)
     user_text = update.message.text
 
-    Message.get_or_create_message(u, user_text)
-
     manage(update, u)
 
 
@@ -56,8 +54,6 @@ def language_command_handler(update: Update, context: CallbackContext) -> None:
     u, _ = User.get_or_create_profile(
         update.message.chat_id, update.message.from_user.username, False)
     user_text = update.message.text
-
-    Message.get_or_create_message(u, user_text)
 
     reply_markup = InlineKeyboardMarkup(get_language_inline_keyboard())
 
@@ -72,8 +68,6 @@ def help_command_handler(update: Update, context: CallbackContext) -> None:
     u, _ = User.get_or_create_profile(
         update.message.chat_id, update.message.from_user.username, False)
     user_text = update.message.text
-
-    Message.get_or_create_message(u, user_text)
 
     reply_markup = InlineKeyboardMarkup(
         [
@@ -95,8 +89,6 @@ def upgrade_command_handler(update: Update, context: CallbackContext) -> None:
     u, _ = User.get_or_create_profile(
         update.message.chat_id, update.message.from_user.username, False)
     user_text = update.message.text
-
-    Message.get_or_create_message(u, user_text)
 
     upgrade(update.message, u)
 

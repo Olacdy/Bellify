@@ -1,3 +1,4 @@
+from bellify.tasks import broadcast_message
 from django.conf import settings
 from django.contrib import admin
 from django.http import HttpResponseRedirect
@@ -5,22 +6,65 @@ from django.shortcuts import render
 from django_celery_beat.models import (ClockedSchedule, CrontabSchedule,
                                        IntervalSchedule, PeriodicTask,
                                        SolarSchedule)
-from bellify.tasks import broadcast_message
+from twitch.models import TwitchChannelUserItem
+from utils.general_utils import _send_message
+from youtube.models import YouTubeChannelUserItem
 
 from bellify_bot.forms import BroadcastForm
-from utils.general_utils import _send_message
-from bellify_bot.models import Message, User
+from bellify_bot.models import User
+
+
+class YouTubeChannelsInline(admin.TabularInline):
+    model = YouTubeChannelUserItem
+    readonly_fields = ('channel', 'is_muted')
+
+    verbose_name = 'YouTube Channel'
+    verbose_name_plural = 'YouTube Channels'
+
+    extra = 0
+
+    def has_add_permission(self, request, obj):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return True
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
+class TwitchChannelsInline(admin.TabularInline):
+    model = TwitchChannelUserItem
+    readonly_fields = ('channel', 'is_muted')
+
+    verbose_name = 'Twitch Channel'
+    verbose_name_plural = 'Twitch Channels'
+
+    extra = 0
+
+    def has_add_permission(self, request, obj):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return True
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
-    list_display = [
-        'user_id', 'username', 'first_name', 'last_name',
-        'language', 'status', 'is_blocked_bot',
+    inlines = [
+        YouTubeChannelsInline,
+        TwitchChannelsInline
     ]
-    list_filter = ['is_blocked_bot', 'language', 'status', ]
+    list_display = ('username', 'first_name',
+                    'last_name', 'language', 'max_youtube_channels_number', 'max_twitch_channels_number', 'status',)
+    list_filter = ('is_blocked_bot', 'language', 'status', )
     search_fields = ('username', 'user_id')
-    actions = ['broadcast']
+    actions = ('broadcast')
+    fields = ('user_id', 'username', 'first_name', 'last_name', 'deep_link', 'status',
+              'language', 'max_youtube_channels_number', 'max_twitch_channels_number', 'is_tutorial_finished', 'is_admin')
 
     @admin.action(description='Broadcast message to selected Users')
     def broadcast(self, request, queryset):
@@ -52,12 +96,6 @@ class UserAdmin(admin.ModelAdmin):
                 request, 'admin/broadcast_message.html', {
                     'form': form, 'title': u'Broadcast message'}
             )
-
-
-@admin.register(Message)
-class MessageAdmin(admin.ModelAdmin):
-    list_display = ('id', 'user', 'text', 'created_at')
-    search_fields = ('user__username', 'text')
 
 
 admin.site.unregister(SolarSchedule)
