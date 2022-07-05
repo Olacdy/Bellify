@@ -1,5 +1,8 @@
+from typing import Optional
+
+from bellify_bot.models import Channel, ChannelUserItem, User
 from django.db import models
-from bellify_bot.models import User, Channel, ChannelUserItem
+
 from utils.models import nb
 
 
@@ -26,6 +29,17 @@ class YouTubeChannel(Channel):
     @property
     def type(self) -> str:
         return 'youtube'
+
+    @classmethod
+    def update_live_info(cls, channel: 'YouTubeChannel', live_title: Optional[str] = None, live_url: Optional[str] = None, is_live: Optional[bool] = False):
+        channel.live_title, channel.live_url, channel.is_live = live_title, live_url, is_live
+
+    @classmethod
+    def update_video_info(cls, channel: 'YouTubeChannel', video_title: Optional[str] = None, video_url: Optional[str] = None, old_video_title: Optional[str] = None, old_video_url: Optional[str] = None):
+        if video_title and video_url:
+            channel.video_title, channel.video_url = video_title, video_url
+        elif old_video_title and old_video_url:
+            channel.old_video_title, channel.old_video_url = old_video_title, old_video_url
 
 
 # Custom through model with title

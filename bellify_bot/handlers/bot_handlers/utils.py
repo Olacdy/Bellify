@@ -1,4 +1,5 @@
 from calendar import c
+from multiprocessing.reduction import steal_handle
 from typing import Optional
 
 import bellify.tasks as tasks
@@ -33,9 +34,9 @@ def check_for_live_stream_twitch() -> None:
     for channel in channels:
         if channel.channel_id in live_info:
             stream_data = live_info[channel.channel_id]
-            if stream_data[0] != channel.live_title and stream_data[1] != channel.game_name and stream_data[2] != channel.is_live:
-                channel.live_title, channel.game_name, channel.is_live = stream_data[
-                    0], stream_data[1], stream_data[2]
+            if stream_data[0] != channel.live_title and stream_data[3] != channel.is_live:
+                TwitchChannel.update_live_info(
+                    channel, live_title=stream_data[0], game_name=stream_data[1], thumbnail_url=stream_data[2], is_live=stream_data[3])
                 tasks.notify_users([item.user for item in TwitchChannelUserItem.objects.filter(
                     channel=channel, user__status='P')], channel_info={'id': channel.channel_id,
                                                                        'url': channel.channel_url,
@@ -43,7 +44,7 @@ def check_for_live_stream_twitch() -> None:
                                                                        'game_name': channel.game_name,
                                                                        'thumbnail_url': channel.thumbnail_url}, is_live=True)
         else:
-            channel.live_title, channel.game_name, channel.is_live = None, None, False
+            TwitchChannel.update_live_info(channel)
         channel.save()
 
 
@@ -60,17 +61,14 @@ def check_for_live_stream_youtube() -> None:
         live_title, live_url, is_upcoming = live_info_item
         if live_title and live_url and not is_youtube_channel_url(live_url):
             if live_title != channel.live_title and live_url != channel.live_url and not is_upcoming:
-                channel.live_title = live_title
-                channel.live_url = live_url
-                channel.is_live = True
+                YouTubeChannel.update_live_info(
+                    channel, live_title=live_title, live_url=live_url, is_live=True)
                 tasks.notify_users([item.user for item in YouTubeChannelUserItem.objects.filter(
                     channel=channel, user__status='P')], channel_info={'id': channel.channel_id,
                                                                        'url': channel.live_url,
                                                                        'title': channel.live_title}, is_live=True)
         else:
-            channel.live_title = None
-            channel.live_url = None
-            channel.is_live = False
+            YouTubeChannel.update_live_info(channel)
         channel.save()
 
 
@@ -88,15 +86,15 @@ def check_for_new_video_youtube() -> None:
         video_title, video_url, _ = video_info_item
         old_video_title, old_video_url = channel.video_title, channel.video_url
         if channel.video_url != video_url and channel.live_url != video_url:
-            channel.video_title = video_title
-            channel.video_url = video_url
+            YouTubeChannel.update_video_info(
+                channel, video_title=video_title, video_url=video_url)
             if video_title != channel.old_video_title:
                 tasks.notify_users([item.user for item in YouTubeChannelUserItem.objects.filter(
                     channel=channel)], channel_info={'id': channel.channel_id,
                                                      'url': channel.video_url,
                                                      'title': channel.video_title})
-            channel.old_video_title = old_video_title
-            channel.old_video_url = old_video_url
+            YouTubeChannel.update_video_info(
+                channel, old_video_title=old_video_title, old_video_url=old_video_url)
             channel.save()
 
 

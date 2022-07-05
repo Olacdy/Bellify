@@ -203,7 +203,7 @@ CHANNELS_INFO = {
         'name': 'Twitch',
         'initial_number': 0,
         'premium_increase': 3,
-        'increase_price': 100,
+        'increase_price': 50,
         'icon': '🟪',
         'is_free': False
     }

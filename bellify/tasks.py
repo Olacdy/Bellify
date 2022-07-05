@@ -18,7 +18,8 @@ def notify_users(users: List[User], channel_info: dict, is_live: Optional[bool] 
     def _get_message(user_title: str, channel_info: dict):
         if is_live:
             notification = f" {localization[u.language]['notification'][1]} "
-            game = f"{localization[u.language]['notification'][2]+channel_info['game_name'] if 'game_name' in channel_info else ''}"
+            game = f"{localization[u.language]['add'][1][4]} {channel_info['game_name']+'.'}" if (
+                'game_name' in channel_info and not channel_info['game_name'] == 'Just Chatting') else ''
             href = f"{get_html_link(url=channel_info['thumbnail_url']) if 'thumbnail_url' in channel_info else get_html_link(url=channel_info['url'])}"
             return f"{user_title}{notification}{game}{href}"
         else:
