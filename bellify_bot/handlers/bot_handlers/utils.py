@@ -1,4 +1,3 @@
-from calendar import c
 from typing import Optional
 
 import bellify.tasks as tasks
@@ -242,22 +241,22 @@ def _add_youtube_channel(channel_id: str, message: Message, u: User, name: Optio
 
 # Removes given channel user item
 @ log_errors
-def remove(update: Update, u: User, channel: ChannelUserItem) -> None:
+def remove(update: Update, u: User, channel: ChannelUserItem, page_num: Optional[int] = 0) -> None:
     channel.delete() if u.is_tutorial_finished else None
-    manage(update, u, mode="remove")
+    manage(update, u, mode="remove", page_num=page_num)
 
 
 # Mutes given channel user item
 @ log_errors
-def mute(update: Update, u: User, channel: ChannelUserItem) -> None:
+def mute(update: Update, u: User, channel: ChannelUserItem, page_num: Optional[int] = 0) -> None:
     ChannelUserItem.mute_channel(u, channel)
-    manage(update, u, mode="mute")
+    manage(update, u, mode="mute", page_num=page_num)
 
 
 # Returns Manage replies according to call situation
 @ log_errors
-def manage(update: Update, u: User, mode: Optional[str] = "echo") -> None:
-    keyboard = get_manage_inline_keyboard(u)
+def manage(update: Update, u: User, mode: Optional[str] = "echo", page_num: Optional[int] = 0) -> None:
+    keyboard = get_manage_inline_keyboard(u, page_num=page_num)
 
     if keyboard:
         reply_markup = InlineKeyboardMarkup(keyboard)
