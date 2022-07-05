@@ -14,7 +14,7 @@ from youtube.utils import (get_channels_and_videos_info,
                            get_channels_live_title_and_url, get_url_from_id,
                            is_youtube_channel_url)
 
-from utils.general_utils import get_html_link
+from utils.general_utils import get_html_link, get_manage_message
 from utils.keyboards import (get_manage_inline_keyboard,
                              get_notification_reply_markup,
                              get_upgrade_inline_keyboard, log_errors)
@@ -243,47 +243,47 @@ def _add_youtube_channel(channel_id: str, message: Message, u: User, name: Optio
 @ log_errors
 def remove(update: Update, u: User, channel: ChannelUserItem, page_num: Optional[int] = 0) -> None:
     channel.delete() if u.is_tutorial_finished else None
-    manage(update, u, mode="remove", page_num=page_num)
+    manage(update, u, mode='remove', page_num=page_num)
 
 
 # Mutes given channel user item
 @ log_errors
 def mute(update: Update, u: User, channel: ChannelUserItem, page_num: Optional[int] = 0) -> None:
     ChannelUserItem.mute_channel(u, channel)
-    manage(update, u, mode="mute", page_num=page_num)
+    manage(update, u, mode='mute', page_num=page_num)
 
 
 # Returns Manage replies according to call situation
 @ log_errors
-def manage(update: Update, u: User, mode: Optional[str] = "echo", page_num: Optional[int] = 0) -> None:
+def manage(update: Update, u: User, mode: Optional[str] = 'echo', page_num: Optional[int] = 0) -> None:
     keyboard = get_manage_inline_keyboard(u, page_num=page_num)
 
     if keyboard:
         reply_markup = InlineKeyboardMarkup(keyboard)
 
-        if mode == "echo":
+        if mode == 'echo':
             update.message.reply_text(
-                text=localization[u.language]["manage"][0] if u.is_tutorial_finished else localization[u.language]["help"][4],
+                text=get_manage_message(u, mode='echo'),
                 reply_markup=reply_markup,
                 parse_mode='HTML'
             )
         else:
             update.callback_query.edit_message_text(
-                text=localization[u.language]["manage"][0] if u.is_tutorial_finished else localization[u.language]["help"][5],
+                text=get_manage_message(u),
                 reply_markup=reply_markup,
                 parse_mode='HTML'
             )
             User.set_tutorial_state(
                 u, True) if not u.is_tutorial_finished else None
     else:
-        if mode == "echo":
+        if mode == 'echo':
             update.message.reply_text(
-                text=localization[u.language]["manage"][1],
+                text=localization[u.language]['manage'][1],
                 parse_mode='HTML'
             )
         else:
             update.callback_query.edit_message_text(
-                text=localization[u.language]["manage"][2],
+                text=localization[u.language]['manage'][2],
                 parse_mode='HTML'
             )
 
@@ -292,7 +292,7 @@ def manage(update: Update, u: User, mode: Optional[str] = "echo", page_num: Opti
 @ log_errors
 def upgrade(message: Message, u: User):
     message.reply_text(
-        text=localization[u.language]["upgrade"][0],
+        text=localization[u.language]['upgrade'][0],
         reply_markup=InlineKeyboardMarkup(get_upgrade_inline_keyboard(u)),
         parse_mode='HTML'
     )
@@ -307,7 +307,7 @@ def reply_invoice(update: Update, u: User, title: str, description: str, payload
         ],
         [
             InlineKeyboardButton(
-                localization[u.language]['upgrade'][6], callback_data=f"upgrade{settings.SPLITTING_CHARACTER}back{settings.SPLITTING_CHARACTER}{mode}")
+                localization[u.language]['upgrade'][6], callback_data=f'upgrade{settings.SPLITTING_CHARACTER}back{settings.SPLITTING_CHARACTER}{mode}')
         ]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)

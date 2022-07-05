@@ -1,18 +1,20 @@
-from django.conf import settings
-from telegram import CallbackQuery, InlineKeyboardMarkup, Update, error
-from telegram.ext import CallbackContext
+from typing import List, Union
+
 from bellify_bot.handlers.bot_handlers.utils import (
     add, get_manage_inline_keyboard, get_upgrade_inline_keyboard, log_errors,
     mute, remove, reply_invoice, upgrade)
 from bellify_bot.localization import localization
 from bellify_bot.models import User
+from django.conf import settings
+from telegram import CallbackQuery, InlineKeyboardMarkup, Update, error
+from telegram.ext import CallbackContext
 from twitch.models import ChannelUserItem
 
-from utils.general_utils import tutorial_reply
+from utils.general_utils import get_manage_message, tutorial_reply
 
 
 @log_errors
-def get_query_data_and_user(query: CallbackQuery):
+def get_query_data_and_user(query: CallbackQuery) -> Union[List[str], User]:
     query.answer()
 
     u, _ = User.get_or_create_profile(
@@ -170,6 +172,6 @@ def inline_pagination_handler(update: Update, context: CallbackContext) -> None:
         get_manage_inline_keyboard(u, page_num))
 
     query.edit_message_text(
-        text=localization[u.language]['manage'][0] if u.is_tutorial_finished else localization[u.language]["help"][4],
+        text=get_manage_message(u, mode='pagination'),
         parse_mode='HTML',
         reply_markup=reply_markup)
