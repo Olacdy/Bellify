@@ -1,5 +1,8 @@
+from typing import Optional
+
+from bellify_bot.models import Channel, ChannelUserItem, User
 from django.db import models
-from bellify_bot.models import User, Channel, ChannelUserItem
+
 from utils.models import nb
 
 
@@ -22,6 +25,10 @@ class TwitchChannel(Channel):
     @property
     def type(self) -> str:
         return 'twitch'
+
+    @classmethod
+    def update_live_info(cls, channel: 'TwitchChannel', live_title: Optional[str] = None, game_name: Optional[str] = None, thumbnail_url: Optional[str] = None, is_live: Optional[bool] = False):
+        channel.live_title, channel.game_name, channel.thumbnail_url, channel.is_live = live_title, game_name, thumbnail_url, is_live
 
 
 # Custom through model with title
