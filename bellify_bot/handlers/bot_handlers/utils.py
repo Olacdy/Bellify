@@ -14,7 +14,7 @@ from youtube.utils import (get_channels_and_videos_info,
                            get_channels_live_title_and_url, get_url_from_id,
                            is_youtube_channel_url)
 
-from utils.general_utils import get_html_link, get_manage_message
+from utils.general_utils import get_html_link, get_html_bold, get_manage_message
 from utils.keyboards import (get_manage_inline_keyboard,
                              get_notification_reply_markup,
                              get_upgrade_inline_keyboard, log_errors)
@@ -113,7 +113,7 @@ def add(channel_id: str, channel_type: str, message: Message, u: User, name: Opt
 def _add_twitch_channel(channel_id: str, message: Message, u: User, name: Optional[str] = None) -> None:
     def _get_twitch_channel_message(u: User, channel_url: str, channel_name: str, game_name: str, thumbnail_url: str, is_live: bool) -> str:
         general = f"{localization[u.language]['add'][1][0]} "
-        name = channel_name if is_live else get_html_link(
+        name = get_html_bold(channel_name) if is_live else get_html_link(
             channel_url, channel_name)
         is_streaming = localization[u.language]['add'][1][2 if is_live else 3]
         game = f" {localization[u.language]['add'][1][4]} {game_name+'.'}" if (
@@ -176,6 +176,7 @@ def _add_twitch_channel(channel_id: str, message: Message, u: User, name: Option
 def _add_youtube_channel(channel_id: str, message: Message, u: User, name: Optional[str] = None) -> None:
     def _get_youtube_channel_message(u: User, channel_name: str, url: str, is_live: bool) -> str:
         general = f"{localization[u.language]['add'][1][0]} "
+        channel_name = get_html_bold(channel_name)
         is_streaming = localization[u.language]['add'][1][2 if is_live else 1]
         href = f"{get_html_link(url=url)}"
         return f"{general}{channel_name}{is_streaming}{href}"

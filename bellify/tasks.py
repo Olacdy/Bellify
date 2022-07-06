@@ -1,7 +1,7 @@
 import time
 from typing import Dict, List, Optional, Union
 
-from utils.general_utils import get_html_link, _send_message, _from_celery_entities_to_entities, _from_celery_markup_to_markup
+from utils.general_utils import get_html_link, get_html_bold, _send_message, _from_celery_entities_to_entities, _from_celery_markup_to_markup
 from utils.keyboards import get_notification_reply_markup
 from django.core.management import call_command
 from bellify_bot.localization import localization
@@ -16,6 +16,8 @@ logger = get_task_logger(__name__)
 @app.task(ignore_result=True)
 def notify_users(users: List[User], channel_info: dict, is_live: Optional[bool] = False) -> None:
     def _get_message(user_title: str, channel_info: dict):
+        user_title = get_html_bold(user_title)
+
         if is_live:
             notification = f" {localization[u.language]['notification'][1]} "
             game = f"{localization[u.language]['add'][1][4]} {channel_info['game_name']+'.'}" if (
