@@ -37,6 +37,7 @@ def check_for_live_stream_twitch() -> None:
             if stream_data[0] != channel.live_title and stream_data[3] != channel.is_live:
                 TwitchChannel.update_live_info(
                     channel, live_title=stream_data[0], game_name=stream_data[1], thumbnail_url=stream_data[2], is_live=stream_data[3])
+                TwitchChannel.update_thumbnail_image(channel)
                 tasks.notify_users([item.user for item in TwitchChannelUserItem.objects.filter(
                     channel=channel, user__status='P')], channel_info={'id': channel.channel_id,
                                                                        'url': channel.channel_url,
@@ -45,6 +46,7 @@ def check_for_live_stream_twitch() -> None:
                                                                        'thumbnail_url': channel.thumbnail_image.url}, is_live=True)
         else:
             TwitchChannel.update_live_info(channel)
+            TwitchChannel.update_thumbnail_image(channel, True)
         channel.save()
 
 

@@ -32,32 +32,23 @@ class TwitchChannel(Channel):
     def __str__(self):
         return f'{self.channel_title}'
 
-    def save(self, *args, **kwargs):
-        if self.thumbnail_url and self.is_5_minutes_expired:
-            self.thumbnail_image.save(
-                twitch_thumbnail_directory_path(self),
-                File(open(urllib.request.urlretrieve(
-                    self.thumbnail_url)[0], 'rb')), save=False
-            )
-        elif not self.thumbnail_url:
-            self.thumbnail_image.delete(save=False)
-        super(TwitchChannel, self).save(*args, **kwargs)
-
     @property
     def type(self) -> str:
         return 'twitch'
 
-    @property
-    def is_5_minutes_expired(self):
-        try:
-            old_datetime = self.thumbnail_image.name.split(
-                f'{settings.SPLITTING_CHARACTER}')[-1]
-            return old_datetime + timedelta(minutes=5) < datetime.now()
-        except:
-            return True
+    @classmethod
+    def update_thumbnail_image(cls, channel: 'TwitchChannel', delete: Optional[bool] = False) -> None:
+        if not delete:
+            channel.thumbnail_image.save(
+                twitch_thumbnail_directory_path(channel),
+                File(open(urllib.request.urlretrieve(
+                    channel.thumbnail_url)[0], 'rb')), save=False
+            )
+        else:
+            channel.thumbnail_image.delete(save=False)
 
     @classmethod
-    def update_live_info(cls, channel: 'TwitchChannel', live_title: Optional[str] = None, game_name: Optional[str] = None, thumbnail_url: Optional[str] = None, is_live: Optional[bool] = False):
+    def update_live_info(cls, channel: 'TwitchChannel', live_title: Optional[str] = None, game_name: Optional[str] = None, thumbnail_url: Optional[str] = None, is_live: Optional[bool] = False) -> None:
         channel.live_title, channel.game_name, channel.thumbnail_url, channel.is_live = live_title, game_name, thumbnail_url, is_live
 
 
