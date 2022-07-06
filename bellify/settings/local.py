@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'bellify_bot',
     'youtube',
     'twitch',
+    'django_cleanup.apps.CleanupConfig'
 ]
 
 MIDDLEWARE = [
@@ -129,6 +130,9 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
+
+MEDIA_ROOT = f'{BASE_DIR}/media/'
+MEDIA_URL = '/media/'
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')

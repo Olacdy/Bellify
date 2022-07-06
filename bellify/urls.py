@@ -14,6 +14,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.conf import settings
+from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path
 from django.urls.conf import include
@@ -27,4 +28,4 @@ admin.site.site_header = 'Bellify Bot Admin Page'
 urlpatterns = [
     path(f'{settings.ADMIN_ENDPOINT}/', admin.site.urls),
     path('', include('bellify_bot.urls')),
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
