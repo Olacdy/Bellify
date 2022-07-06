@@ -46,7 +46,7 @@ def check_for_live_stream_twitch() -> None:
                                                                        'thumbnail_url': channel.thumbnail_image.url}, is_live=True)
         else:
             TwitchChannel.update_live_info(channel)
-            TwitchChannel.update_thumbnail_image(channel, True)
+            TwitchChannel.update_thumbnail_image(channel, delete=True)
         channel.save()
 
 
@@ -149,7 +149,7 @@ def _add_twitch_channel(channel_id: str, message: Message, u: User, name: Option
         is_live=is_live
     )
 
-    thumbnail_url = channel.thumbnail_image.url if thumbnail_url else None
+    TwitchChannel.update_thumbnail_image(channel, save=True)
 
     if not u in channel.users.all():
         if not TwitchChannelUserItem.objects.filter(user=u, channel_title=channel_name).exists():
@@ -158,7 +158,7 @@ def _add_twitch_channel(channel_id: str, message: Message, u: User, name: Option
 
             message.reply_text(
                 text=_get_twitch_channel_message(
-                    u, channel_url, channel_name, game_name, thumbnail_url, is_live),
+                    u, channel_url, channel_name, game_name, channel.thumbnail_image.url, is_live),
                 parse_mode='HTML',
                 reply_markup=get_notification_reply_markup(
                     live_title if is_live else channel_name, channel_url)
