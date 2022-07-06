@@ -1,10 +1,11 @@
-from django.core.files import File
 from datetime import datetime, timedelta
 from typing import Optional
-from django.conf import settings
+
+import requests
 from bellify_bot.models import Channel, ChannelUserItem, User
+from django.conf import settings
+from django.core.files.base import ContentFile
 from django.db import models
-import urllib.request
 
 from utils.models import nb
 
@@ -36,14 +37,31 @@ class TwitchChannel(Channel):
     def type(self) -> str:
         return 'twitch'
 
+    @property
+    def thumbnail(self) -> str:
+        if self.thumbnail_url:
+            try:
+                return f'{settings.ABSOLUTE_URL}{self.thumbnail_image.url}'
+            except:
+                return self.thumbnail_url
+        else:
+            return ''
+
+    @property
+    def is_10_minutes_expired(self):
+        try:
+            old_datetime = datetime.strptime(self.thumbnail_image.name.split(
+                f'{settings.SPLITTING_CHARACTER}')[-1].replace('.jpg', ''), '%Y_%m_%d_%H_%M_%S')
+            return old_datetime + timedelta(minutes=10) < datetime.now()
+        except:
+            return True
+
     @classmethod
     def update_thumbnail_image(cls, channel: 'TwitchChannel', delete: Optional[bool] = False, save: Optional[bool] = False) -> None:
         if not delete:
-            channel.thumbnail_image.save(
-                twitch_thumbnail_directory_path(channel),
-                File(open(urllib.request.urlretrieve(
-                    channel.thumbnail_url)[0], 'rb')), save=save
-            )
+            if channel.is_10_minutes_expired:
+                channel.thumbnail_image.save(
+                    twitch_thumbnail_directory_path(channel), ContentFile(requests.get(channel.thumbnail_url).content), save=save)
         else:
             channel.thumbnail_image.delete(save=save)
 
