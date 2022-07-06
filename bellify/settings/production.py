@@ -16,6 +16,8 @@ ALLOWED_HOSTS = env.list('ALLOWED_HOSTS')
 
 MEDIA_ROOT = '/app/storage'
 
+ABSOLUTE_URL = f'https://{ALLOWED_HOSTS[0]}'
+
 if "DATABASE_URL" in env:
     DATABASES['default'] = env.db('DATABASE_URL')
     DATABASES['default']['ENGINE'] = 'django.db.backends.postgresql_psycopg2'

@@ -144,6 +144,8 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+ABSOLUTE_URL = f'http://127.0.0.1:8000'
+
 TOKEN = env.str('TELEGRAM_TOKEN')
 
 ADMIN_ENDPOINT = env.str('ADMIN_ENDPOINT')
