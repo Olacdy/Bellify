@@ -40,6 +40,13 @@ def get_html_link(url: str, title: Optional[str] = u'\u2060') -> str:
     return f'<a href=\"{url}\">{title}</a>'
 
 
+# Returns bold html text
+@log_errors
+def get_html_bold(text: str) -> str:
+    return f'<b>{text}</b>'
+
+
+# Return message for manage command
 @log_errors
 def get_manage_message(u: User, mode: Optional[str] = None) -> str:
     dict_of_quota_info = {settings.CHANNELS_INFO[channel]['name']: User.get_max_for_channel(
@@ -59,10 +66,16 @@ def get_manage_message(u: User, mode: Optional[str] = None) -> str:
 # Makes a response on a tutorial start
 def tutorial_reply(query: CallbackQuery, language: str, u: User) -> None:
     query.delete_message()
-    query.message.reply_text(
-        text=f'{localization[language]["help"][1]}\n\n`{[f"https://www.youtube.com/channel/{channel_id}" for channel_id in settings.SAMPLE_CHANNELS_IDS if not ChannelUserItem.is_user_subscribed_to_channel(u, channel_id)][0]}`',
-        parse_mode='MARKDOWN',
-    )
+    try:
+        query.message.reply_text(
+            text=f'{localization[language]["help"][1][0]}\n\n`{[f"https://www.youtube.com/channel/{channel_id}" for channel_id in settings.SAMPLE_CHANNELS_IDS if not ChannelUserItem.is_user_subscribed_to_channel(u, channel_id)][0]}`',
+            parse_mode='MARKDOWN',
+        )
+    except IndexError:
+        query.message.reply_text(
+            text=f'{localization[language]["help"][1][1]}',
+            parse_mode='MARKDOWN',
+        )
 
 
 # Sends message to user

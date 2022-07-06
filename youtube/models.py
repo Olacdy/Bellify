@@ -15,6 +15,7 @@ class YouTubeChannel(Channel):
     old_video_url = models.URLField(**nb)
 
     live_url = models.URLField(**nb)
+    is_upcoming = models.BooleanField(**nb)
 
     users = models.ManyToManyField(
         User, through='YouTubeChannelUserItem')
@@ -31,8 +32,8 @@ class YouTubeChannel(Channel):
         return 'youtube'
 
     @classmethod
-    def update_live_info(cls, channel: 'YouTubeChannel', live_title: Optional[str] = None, live_url: Optional[str] = None, is_live: Optional[bool] = False):
-        channel.live_title, channel.live_url, channel.is_live = live_title, live_url, is_live
+    def update_live_info(cls, channel: 'YouTubeChannel', live_title: Optional[str] = None, live_url: Optional[str] = None, is_upcoming: Optional[bool] = None, is_live: Optional[bool] = False):
+        channel.live_title, channel.live_url, channel.is_upcoming, channel.is_live = live_title, live_url, is_upcoming, is_live
 
     @classmethod
     def update_video_info(cls, channel: 'YouTubeChannel', video_title: Optional[str] = None, video_url: Optional[str] = None, old_video_title: Optional[str] = None, old_video_url: Optional[str] = None):
