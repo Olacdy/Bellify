@@ -37,14 +37,16 @@ def check_for_live_stream_twitch() -> None:
             if stream_data[0] != channel.live_title and stream_data[3] != channel.is_live:
                 TwitchChannel.update_live_info(
                     channel, live_title=stream_data[0], game_name=stream_data[1], thumbnail_url=stream_data[2], is_live=stream_data[3])
+                TwitchChannel.update_thumbnail_image(channel)
                 tasks.notify_users([item.user for item in TwitchChannelUserItem.objects.filter(
                     channel=channel, user__status='P')], channel_info={'id': channel.channel_id,
                                                                        'url': channel.channel_url,
                                                                        'title': channel.live_title,
                                                                        'game_name': channel.game_name,
-                                                                       'thumbnail_url': channel.thumbnail_url}, is_live=True)
+                                                                       'thumbnail_url': channel.thumbnail_image.url}, is_live=True)
         else:
             TwitchChannel.update_live_info(channel)
+            TwitchChannel.update_thumbnail_image(channel, True)
         channel.save()
 
 
@@ -60,7 +62,7 @@ def check_for_live_stream_youtube() -> None:
     for channel, live_info_item, in zip(channels, live_info):
         live_title, live_url, is_upcoming = live_info_item
         if live_title and live_url and not is_youtube_channel_url(live_url):
-            if live_title != channel.live_title and live_url != channel.live_url:
+            if live_title != channel.live_title and live_url != channel.live_url or is_upcoming != channel.is_upcoming:
                 YouTubeChannel.update_live_info(
                     channel, live_title=live_title, live_url=live_url, is_upcoming=is_upcoming, is_live=True)
                 if not is_upcoming:
@@ -146,6 +148,8 @@ def _add_twitch_channel(channel_id: str, message: Message, u: User, name: Option
         thumbnail_url=thumbnail_url,
         is_live=is_live
     )
+
+    thumbnail_url = channel.thumbnail_image.url if thumbnail_url else None
 
     if not u in channel.users.all():
         if not TwitchChannelUserItem.objects.filter(user=u, channel_title=channel_name).exists():
