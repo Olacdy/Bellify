@@ -15,7 +15,6 @@ SECRET_KEY = env('SECRET_KEY')
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS')
 
 MEDIA_ROOT = '/app/storage'
-MEDIA_URL = f'https://{ALLOWED_HOSTS[0]}/media/'
 
 if "DATABASE_URL" in env:
     DATABASES['default'] = env.db('DATABASE_URL')
