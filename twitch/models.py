@@ -57,11 +57,11 @@ class TwitchChannel(Channel):
             return True
 
     @classmethod
-    def update_thumbnail_image(cls, channel: 'TwitchChannel', delete: Optional[bool] = False, save: Optional[bool] = False) -> None:
+    def update_thumbnail_image(cls, channel: 'TwitchChannel', thumbnail_url: Optional[str] = '', delete: Optional[bool] = False, save: Optional[bool] = False) -> None:
         if not delete:
             if channel.is_10_minutes_expired:
                 channel.thumbnail_image.save(
-                    twitch_thumbnail_directory_path(channel), ContentFile(requests.get(channel.thumbnail_url).content), save=save)
+                    twitch_thumbnail_directory_path(channel), ContentFile(requests.get(thumbnail_url if thumbnail_url else channel.thumbnail_url).content), save=save)
         else:
             channel.thumbnail_image.delete(save=save)
 

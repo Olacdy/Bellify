@@ -44,7 +44,8 @@ def check_for_live_stream_twitch() -> None:
                                                                        'title': channel.live_title,
                                                                        'game_name': channel.game_name,
                                                                        'thumbnail_url': channel.thumbnail}, is_live=True)
-            TwitchChannel.update_thumbnail_image(channel)
+            TwitchChannel.update_thumbnail_image(
+                channel, thumbnail_url=stream_data[2])
         else:
             TwitchChannel.update_live_info(channel)
             TwitchChannel.update_thumbnail_image(channel, delete=True)
