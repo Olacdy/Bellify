@@ -80,15 +80,15 @@ def broadcast_message(
 
 
 @app.task(ignore_result=True)
-def check_channels_for_new_video_youtube():
-    call_command("check_channels_for_new_video_youtube", )
+def check_for_video_youtube():
+    call_command("check_for_video_youtube", )
 
 
 @app.task(ignore_result=True)
-def check_channels_for_live_stream_youtube():
-    call_command("check_channels_for_live_stream_youtube", )
+def check_for_live_youtube():
+    call_command("check_for_live_youtube", )
 
 
 @app.task(ignore_result=True)
-def check_channels_for_live_stream_twitch():
-    call_command("check_channels_for_live_stream_twitch",)
+def check_for_live_twitch():
+    call_command("check_for_live_twitch",)

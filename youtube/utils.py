@@ -11,18 +11,22 @@ from fake_headers import Headers
 
 
 # Gets videos info and channels title from given channel feeds urls
-def get_channels_and_videos_info(urls: List[str], video_num: Optional[int] = 0):
-    async def get_all(urls):
+def get_channels_and_videos_info(urls: List[str], live_urls: List[str]):
+    async def get_all(urls, live_urls):
         async with aiohttp.ClientSession(cookies=settings.SESSION_CLIENT_COOKIES) as session:
-            async def fetch(url):
+            async def fetch(url, live_url):
                 async with session.get(url, headers=Headers().generate()) as response:
                     html = soup.BeautifulSoup(await response.text(), 'xml')
-                    entry = html.find_all("entry")[video_num]
-                    return entry.find("title").text, f"https://www.youtube.com/watch?v={entry.videoId.text}", entry.find("author").find("name").text
+                    for entry in html.find_all("entry"):
+                        video_title = entry.find("title").text
+                        video_url = f"https://www.youtube.com/watch?v={entry.videoId.text}"
+                        channel_title = entry.find("author").find("name").text
+                        if entry.statistics['views'] != '0' and entry.starRating['count'] != '0' and video_url != live_url:
+                            return video_title, video_url, channel_title
             return await asyncio.gather(*[
-                fetch(url) for url in urls
+                fetch(url, live_url) for url, live_url in zip(urls, live_urls)
             ])
-    return sync.async_to_sync(get_all)(urls)
+    return sync.async_to_sync(get_all)(urls, live_urls)
 
 
 # Get channels live title and urls
