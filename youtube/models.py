@@ -51,3 +51,8 @@ class YouTubeChannelUserItem(ChannelUserItem):
     @property
     def type(self) -> str:
         return 'youtube'
+
+    def delete(self):
+        super(YouTubeChannelUserItem, self).delete()
+        if not self.channel.youtubechanneluseritem_set.all():
+            self.channel.delete()

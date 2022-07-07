@@ -78,3 +78,8 @@ class TwitchChannelUserItem(ChannelUserItem):
     @property
     def type(self) -> str:
         return 'twitch'
+
+    def delete(self):
+        super(TwitchChannelUserItem, self).delete()
+        if not self.channel.twitchchanneluseritem_set.all():
+            self.channel.delete()
