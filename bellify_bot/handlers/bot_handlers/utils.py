@@ -83,6 +83,7 @@ def check_for_video_youtube() -> None:
     channels = list(YouTubeChannel.objects.all())
     channels_urls = [
         f'https://www.youtube.com/feeds/videos.xml?channel_id={channel.channel_id}' for channel in channels]
+
     live_urls = [
         channel.live_url for channel in channels
     ]
@@ -93,7 +94,7 @@ def check_for_video_youtube() -> None:
     for channel, video_info_item in zip(channels, video_info):
         video_title, video_url, _ = video_info_item
         old_video_title, old_video_url = channel.video_title, channel.video_url
-        if channel.video_url != video_url and channel.live_url != video_url:
+        if channel.video_url != video_url:
             YouTubeChannel.update_video_info(
                 channel, video_title=video_title, video_url=video_url)
             if video_title != channel.old_video_title:
