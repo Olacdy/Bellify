@@ -87,9 +87,8 @@ def check_for_new_video_youtube() -> None:
     video_info = get_channels_and_videos_info(
         channels_urls)
 
-    print(video_info, channel.video_title, channel.video_url)
-
     for channel, video_info_item in zip(channels, video_info):
+        print(video_info, channel.video_title, channel.video_url)
         video_title, video_url, _ = video_info_item
         old_video_title, old_video_url = channel.video_title, channel.video_url
         if channel.video_url != video_url and channel.live_url != video_url:
