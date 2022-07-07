@@ -166,7 +166,7 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_BEAT_SCHEDULE = {
     "check_channels_for_video_youtube": {
         "task": "bellify.tasks.check_channels_for_new_video_youtube",
-        "schedule": crontab(minute="*/5"),
+        "schedule": crontab(minute="*/3"),
     },
     "check_channels_for_live_stream_youtube": {
         "task": "bellify.tasks.check_channels_for_live_stream_youtube",
