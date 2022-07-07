@@ -133,15 +133,11 @@ def _add_twitch_channel(channel_id: str, message: Message, u: User, name: Option
 
     channel_url = get_channel_url_from_title(channel_title)
 
-    if not TwitchChannel.objects.filter(channel_id=channel_id).exists():
-        stream_data = get_streams_info([channel_id])
-        if stream_data:
-            _, live_title, game_name, thumbnail_url, is_live = stream_data[0]
-        else:
-            live_title, game_name, thumbnail_url, is_live = None, None, None, False
+    stream_data = get_streams_info([channel_id])
+    if stream_data:
+        _, live_title, game_name, thumbnail_url, is_live = stream_data[0]
     else:
-        channel = TwitchChannel.objects.get(channel_id=channel_id)
-        live_title, game_name, thumbnail_url, is_live = channel.live_title, channel.game_name, channel.thumbnail_url, channel.is_live
+        live_title, game_name, thumbnail_url, is_live = None, None, None, False
 
     channel_name = name if name else channel_title
     channel, _ = TwitchChannel.objects.get_or_create(
@@ -192,16 +188,12 @@ def _add_youtube_channel(channel_id: str, message: Message, u: User, name: Optio
         href = f"{get_html_link(url=url)}"
         return f"{general}{channel_name}{is_streaming}{href}"
 
-    if not YouTubeChannel.objects.filter(channel_id=channel_id).exists():
-        live_title, live_url, is_upcoming = get_channels_live_title_and_url(
-            [f'https://www.youtube.com/channel/{channel_id}/live'])[0]
-        video_title, video_url, channel_title = get_channels_and_videos_info(
-            [f'https://www.youtube.com/feeds/videos.xml?channel_id={channel_id}'], [live_url])[0]
-        if is_youtube_channel_url(live_url):
-            live_title, live_url, is_upcoming = None, None, None
-    else:
-        channel = YouTubeChannel.objects.get(channel_id=channel_id)
-        video_title, video_url, channel_title, live_title, live_url, is_upcoming = channel.video_title, channel.video_url, channel.channel_title, channel.live_title, channel.live_url, channel.is_upcoming
+    live_title, live_url, is_upcoming = get_channels_live_title_and_url(
+        [f'https://www.youtube.com/channel/{channel_id}/live'])[0]
+    video_title, video_url, channel_title = get_channels_and_videos_info(
+        [f'https://www.youtube.com/feeds/videos.xml?channel_id={channel_id}'], [live_url])[0]
+    if is_youtube_channel_url(live_url):
+        live_title, live_url, is_upcoming = None, None, None
 
     channel_name = name if name else channel_title
     channel, _ = YouTubeChannel.objects.get_or_create(
