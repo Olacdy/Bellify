@@ -11,11 +11,11 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
 import os
+from datetime import timedelta
 from pathlib import Path
 
 import environ
 from celery.schedules import crontab
-from twitch.utils import get_twitch_token
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -166,15 +166,15 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_BEAT_SCHEDULE = {
     "check_channels_for_video_youtube": {
         "task": "bellify.tasks.check_channels_for_new_video_youtube",
-        "schedule": crontab(minute="*/3"),
+        "schedule": crontab(minute='0-57/3'),
     },
     "check_channels_for_live_stream_youtube": {
         "task": "bellify.tasks.check_channels_for_live_stream_youtube",
-        "schedule": crontab(minute="*/3"),
+        "schedule": crontab(minute='1-58/3'),
     },
     "check_channels_for_live_stream_twitch": {
         "task": "bellify.tasks.check_channels_for_live_stream_twitch",
-        "schedule": crontab(minute="*/3"),
+        "schedule": crontab(minute='2-59/3'),
     },
 }
 
