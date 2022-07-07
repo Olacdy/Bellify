@@ -224,7 +224,7 @@ def _add_youtube_channel(channel_id: str, message: Message, u: User, name: Optio
             YouTubeChannelUserItem.objects.create(
                 user=u, channel=channel, channel_title=channel_name)
 
-            if live_url and u.status == 'P':
+            if live_url and not is_upcoming and u.status == 'P':
                 message.reply_text(
                     text=_get_youtube_channel_message(
                         u, channel_name, live_url, True),
