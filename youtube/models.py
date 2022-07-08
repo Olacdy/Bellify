@@ -2,6 +2,7 @@ from typing import Optional
 
 from bellify_bot.models import Channel, ChannelUserItem, User
 from django.db import models
+from django.dispatch import receiver
 
 from utils.models import nb
 
@@ -52,7 +53,7 @@ class YouTubeChannelUserItem(ChannelUserItem):
     def type(self) -> str:
         return 'youtube'
 
-    def delete(self):
-        super(YouTubeChannelUserItem, self).delete()
-        if not self.channel.youtubechanneluseritem_set.all():
-            self.channel.delete()
+
+@receiver(models.signals.post_delete, sender=YouTubeChannelUserItem)
+def delete_channel_if_no_users_subscribed(sender, instance, *args, **kwargs):
+    YouTubeChannel.objects.filter(youtubechanneluseritem__isnull=True).delete()

@@ -30,8 +30,7 @@ def inline_language_handler(update: Update, context: CallbackContext) -> None:
 
     User.set_language(u, query_data[0])
 
-    query.delete_message()
-    query.message.reply_text(
+    query.edit_message_text(
         text=localization[query_data[0]]['language_command'][1],
         parse_mode='HTML',
     )
