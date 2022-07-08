@@ -6,6 +6,7 @@ from bellify_bot.models import Channel, ChannelUserItem, User
 from django.conf import settings
 from django.core.files.base import ContentFile
 from django.db import models
+from django.dispatch import receiver
 
 from utils.models import nb
 
@@ -79,7 +80,7 @@ class TwitchChannelUserItem(ChannelUserItem):
     def type(self) -> str:
         return 'twitch'
 
-    def delete(self):
-        super(TwitchChannelUserItem, self).delete()
-        if not self.channel.twitchchanneluseritem_set.all():
-            self.channel.delete()
+
+@receiver(models.signals.post_delete, sender=TwitchChannelUserItem)
+def delete_channel_if_no_users_subscribed(sender, instance, *args, **kwargs):
+    TwitchChannel.objects.filter(twitchchanneluseritem__isnull=True).delete()
