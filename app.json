@@ -1,8 +1,8 @@
 {
-  "name": "Telegram Notification Bot",
+  "name": "Bellify Bot",
   "description": "Saves preferred channels and notifies users, when a new video is out.",
   "keywords": ["python", "django", "celery", "telegram"],
-  "repository": "https://github.com/frikol3000/Telegram-Notification-Bot",
+  "repository": "https://github.com/frikol3000/Bellify",
   "image": "gliderlabs/herokuish",
   "addons": ["dokku-postgres", "dokku-redis"],
   "formation": {

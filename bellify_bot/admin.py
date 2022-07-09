@@ -58,13 +58,13 @@ class UserAdmin(admin.ModelAdmin):
         YouTubeChannelsInline,
         TwitchChannelsInline
     ]
-    list_display = ('username', 'first_name',
-                    'last_name', 'language', 'max_youtube_channels_number', 'max_twitch_channels_number', 'status',)
-    list_filter = ('is_blocked_bot', 'language', 'status', )
-    search_fields = ('username', 'user_id')
-    actions = ('broadcast')
-    fields = ('user_id', 'username', 'first_name', 'last_name', 'deep_link', 'status',
-              'language', 'max_youtube_channels_number', 'max_twitch_channels_number', 'is_tutorial_finished', 'is_admin')
+    list_display = ['username', 'first_name',
+                    'last_name', 'language', 'max_youtube_channels_number', 'max_twitch_channels_number', 'status', ]
+    list_filter = ['is_blocked_bot', 'language', 'status', ]
+    search_fields = ['username', 'user_id']
+    actions = ['broadcast']
+    fields = ['user_id', 'username', 'first_name', 'last_name', 'deep_link', 'status',
+              'language', 'max_youtube_channels_number', 'max_twitch_channels_number', 'is_tutorial_finished', 'is_admin']
 
     @admin.action(description='Broadcast message to selected Users')
     def broadcast(self, request, queryset):
