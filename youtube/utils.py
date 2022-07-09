@@ -21,7 +21,7 @@ def get_channels_and_videos_info(urls: List[str], live_urls: List[str]):
                         video_title = entry.find("title").text
                         video_url = f"https://www.youtube.com/watch?v={entry.videoId.text}"
                         channel_title = entry.find("author").find("name").text
-                        if entry.statistics['views'] != '0' and entry.starRating['count'] != '0' and video_url != live_url:
+                        if not (entry.statistics['views'] == '0' and entry.starRating['count'] != '0') and video_url != live_url:
                             return video_title, video_url, channel_title
             return await asyncio.gather(*[
                 fetch(url, live_url) for url, live_url in zip(urls, live_urls)
