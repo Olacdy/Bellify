@@ -24,5 +24,11 @@ class TwitchChannelUserItemInline(admin.TabularInline):
 
 @admin.register(TwitchChannel)
 class TwitchChannelAdmin(admin.ModelAdmin):
-    inlines = (TwitchChannelUserItemInline,)
-    list_display = ('channel_title', 'live_title', 'is_live')
+    inlines = [TwitchChannelUserItemInline, ]
+    list_display = ['channel_title', 'live_title', 'is_live']
+    fieldsets = [
+        [None, {'fields': ['channel_id', 'channel_url',
+                           'channel_title', 'channel_login']}],
+        ['Live Info', {'fields': [
+            'live_title', 'game_name', 'thumbnail_url', 'thumbnail_image', 'is_live']}]
+    ]

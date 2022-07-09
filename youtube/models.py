@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Optional
 
 from bellify_bot.models import Channel, ChannelUserItem, User
@@ -12,8 +13,7 @@ class YouTubeChannel(Channel):
     video_title = models.CharField(max_length=256, **nb)
     video_url = models.URLField(**nb)
 
-    old_video_title = models.CharField(max_length=256, **nb)
-    old_video_url = models.URLField(**nb)
+    video_published = models.DateTimeField(**nb)
 
     live_url = models.URLField(**nb)
     is_upcoming = models.BooleanField(**nb)
@@ -37,11 +37,8 @@ class YouTubeChannel(Channel):
         channel.live_title, channel.live_url, channel.is_upcoming, channel.is_live = live_title, live_url, is_upcoming, is_live
 
     @classmethod
-    def update_video_info(cls, channel: 'YouTubeChannel', video_title: Optional[str] = None, video_url: Optional[str] = None, old_video_title: Optional[str] = None, old_video_url: Optional[str] = None):
-        if video_title and video_url:
-            channel.video_title, channel.video_url = video_title, video_url
-        elif old_video_title and old_video_url:
-            channel.old_video_title, channel.old_video_url = old_video_title, old_video_url
+    def update_video_info(cls, channel: 'YouTubeChannel', video_title: Optional[str] = None, video_url: Optional[str] = None, video_published: Optional[datetime] = None):
+        channel.video_title, channel.video_url, channel.video_published = video_title, video_url, video_published
 
 
 # Custom through model with title

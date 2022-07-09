@@ -34,7 +34,7 @@ def echo_handler(update: Update, context: CallbackContext) -> None:
             if 'YouTube' in channel_type:
                 channel_id = scrape_id_by_url(user_text)
                 if channel_id:
-                    _, _, channel_title = get_channels_and_videos_info(
+                    _, _, _, channel_title = get_channels_and_videos_info(
                         [f'https://www.youtube.com/feeds/videos.xml?channel_id={channel_id}'], [''])[0]
                 else:
                     update.message.reply_text(
