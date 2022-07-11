@@ -82,7 +82,7 @@ class TwitchChannelUserItem(ChannelUserItem):
 
     @property
     def title_type(self) -> str:
-        return f'{settings.CHANNELS_INFO[self.type]["icon"]} {self.channel_title}'
+        return f'{settings.CHANNELS_INFO[self.type]["icon"]} {self.channel_title.replace(settings.CHANNELS_INFO[self.type]["icon"], "").strip()}'
 
 
 @receiver(models.signals.post_delete, sender=TwitchChannelUserItem)
