@@ -19,7 +19,7 @@ def notify_users(users: List[User], channel_info: dict, is_live: Optional[bool] 
         user_title = get_html_bold(user_title)
 
         if is_live:
-            notification = f" — {localization[u.language]['notification'][1] if 'game_name' in channel_info and channel_info['game_name'] == 'Just Chatting' else localization[u.language]['notification'][2]+' '+channel_info['game_name']+'!'}"
+            notification = f" — {localization[u.language]['notification'][1] if not 'game_name' in channel_info or channel_info['game_name'] == 'Just Chatting' else localization[u.language]['notification'][2]+' '+channel_info['game_name']+'!'}"
             href = f"{get_html_link(url=channel_info['thumbnail_url']) if 'thumbnail_url' in channel_info else get_html_link(url=channel_info['url'])}"
             return f"{user_title}{notification}{href}"
         else:

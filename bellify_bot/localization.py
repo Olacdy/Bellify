@@ -4,7 +4,7 @@ localization = {
     'en': {
         'notification':
         [
-            'the new video is out!',
+            'new video is out!',
             'is live now!',
             'is playing',
         ],
