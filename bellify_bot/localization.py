@@ -11,7 +11,7 @@ localization = {
         'add':
         [
             'Now send Your own name for the channel.',
-            ['The new channel under the name',
+            ['The new channel -',
                 ' has been added.', ' has been added.\nChannel is live now!', ' has been added.\nChannel is not currently live.', 'Playing'],
             'Cannot add a new channel because a channel with the same name already exists.\nTry coming up with a new name, or leave the name parameter blank.',
         ],
