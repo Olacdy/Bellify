@@ -19,21 +19,18 @@ def notify_users(users: List[User], channel_info: dict, is_live: Optional[bool] 
         user_title = get_html_bold(user_title)
 
         if is_live:
-            notification = f" {localization[u.language]['notification'][1]} "
-            game = f"{localization[u.language]['add'][1][4]} {channel_info['game_name']+'.'}" if (
-                'game_name' in channel_info and not channel_info['game_name'] == 'Just Chatting') else ''
+            notification = f" — {localization[u.language]['notification'][1] if 'game_name' in channel_info and channel_info['game_name'] == 'Just Chatting' else localization[u.language]['notification'][2]+' '+channel_info['game_name']+'!'}"
             href = f"{get_html_link(url=channel_info['thumbnail_url']) if 'thumbnail_url' in channel_info else get_html_link(url=channel_info['url'])}"
-            return f"{user_title}{notification}{game}{href}"
+            return f"{user_title}{notification}{href}"
         else:
-            notification = f"{localization[u.language]['notification'][0][0]} "
-            notification_continuation = f" {localization[u.language]['notification'][0][1]}"
+            notification = f" — {localization[u.language]['notification'][0]}"
             href = f"\n{get_html_link(channel_info['url'])}"
-            return f"{notification}{user_title}{notification_continuation}{href}"
+            return f"{user_title}{notification}{href}"
 
     for u in users:
         item = ChannelUserItem.get_user_channel_by_id(
             u, channel_info['id'])
-        user_title, is_muted = item.channel_title, item.is_muted
+        user_title, is_muted = item.title_type, item.is_muted
         if is_live:
             _send_message(
                 u.user_id, _get_message(user_title, channel_info),

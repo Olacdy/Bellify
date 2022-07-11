@@ -199,7 +199,7 @@ CHANNELS_INFO = {
     'youtube': {
         'name': 'YouTube',
         'initial_number': 5,
-        'premium_increase': 3,
+        'premium_increase': 5,
         'increase_price': 50,
         'icon': '🟥',
         'is_free': True
@@ -207,8 +207,8 @@ CHANNELS_INFO = {
     'twitch': {
         'name': 'Twitch',
         'initial_number': 0,
-        'premium_increase': 3,
-        'increase_price': 50,
+        'premium_increase': 5,
+        'increase_price': 25,
         'icon': '🟪',
         'is_free': False
     }

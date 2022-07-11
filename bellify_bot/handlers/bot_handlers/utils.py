@@ -126,7 +126,8 @@ def _add_twitch_channel(channel_id: str, message: Message, u: User, name: Option
         general = f"{localization[u.language]['add'][1][0]} "
         name = get_html_bold(channel_name) if is_live else get_html_link(
             channel_url, channel_name)
-        is_streaming = localization[u.language]['add'][1][2 if is_live else 3]
+        is_streaming = localization[u.language]['add'][1][
+            1 if is_live and not 'Just Chatting' in game_name else 2 if not is_live else 3]
         game = f" {localization[u.language]['add'][1][4]} {game_name+'.'}" if (
             is_live and not 'Just Chatting' in game_name) else ''
         thumb_href = f"{get_html_link(url=thumbnail_url) if is_live else ''}"
@@ -166,12 +167,12 @@ def _add_twitch_channel(channel_id: str, message: Message, u: User, name: Option
 
     if not u in channel.users.all():
         if not TwitchChannelUserItem.objects.filter(user=u, channel_title=channel_name).exists():
-            TwitchChannelUserItem.objects.create(
+            item = TwitchChannelUserItem.objects.create(
                 user=u, channel=channel, channel_title=channel_name)
 
             message.reply_text(
                 text=_get_twitch_channel_message(
-                    u, channel_url, channel_name, game_name, channel.thumbnail, is_live),
+                    u, channel_url, item.title_type, game_name, channel.thumbnail, is_live),
                 parse_mode='HTML',
                 reply_markup=get_notification_reply_markup(
                     live_title if is_live else channel_name, channel_url)
@@ -194,7 +195,7 @@ def _add_youtube_channel(channel_id: str, message: Message, u: User, name: Optio
     def _get_youtube_channel_message(u: User, channel_name: str, url: str, is_live: bool) -> str:
         general = f"{localization[u.language]['add'][1][0]} "
         channel_name = get_html_bold(channel_name)
-        is_streaming = localization[u.language]['add'][1][2 if is_live else 1]
+        is_streaming = localization[u.language]['add'][1][1 if not is_live else 3]
         href = f"{get_html_link(url=url)}"
         return f"{general}{channel_name}{is_streaming}{href}"
 
@@ -225,13 +226,13 @@ def _add_youtube_channel(channel_id: str, message: Message, u: User, name: Optio
 
     if not u in channel.users.all():
         if not YouTubeChannelUserItem.objects.filter(user=u, channel_title=channel_title).exists():
-            YouTubeChannelUserItem.objects.create(
+            item = YouTubeChannelUserItem.objects.create(
                 user=u, channel=channel, channel_title=channel_name)
 
             if live_url and not is_upcoming and u.status == 'P':
                 message.reply_text(
                     text=_get_youtube_channel_message(
-                        u, channel_name, live_url, True),
+                        u, item.title_type, live_url, True),
                     parse_mode='HTML',
                     reply_markup=get_notification_reply_markup(
                         live_title, live_url)
@@ -239,7 +240,7 @@ def _add_youtube_channel(channel_id: str, message: Message, u: User, name: Optio
             else:
                 message.reply_text(
                     text=_get_youtube_channel_message(
-                        u, channel_name, video_url, False),
+                        u, item.title_type, video_url, False),
                     parse_mode='HTML',
                     reply_markup=get_notification_reply_markup(
                         video_title, video_url)
@@ -335,6 +336,7 @@ def reply_invoice(update: Update, u: User, title: str, description: str, payload
         payload=payload,
         provider_token=settings.PROVIDER_TOKEN,
         currency=settings.CURRENCY,
-        prices=[LabeledPrice(description[:-1], price - 1)],
+        prices=[LabeledPrice(description[:-1], (price - 1)
+                             if not price in [25, 75] else price)],
         reply_markup=reply_markup
     )

@@ -80,6 +80,10 @@ class TwitchChannelUserItem(ChannelUserItem):
     def type(self) -> str:
         return 'twitch'
 
+    @property
+    def title_type(self) -> str:
+        return f'{settings.CHANNELS_INFO[self.type]["icon"]} {self.channel_title}'
+
 
 @receiver(models.signals.post_delete, sender=TwitchChannelUserItem)
 def delete_channel_if_no_users_subscribed(sender, instance, *args, **kwargs):

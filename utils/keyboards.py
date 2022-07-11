@@ -93,7 +93,7 @@ def get_manage_inline_keyboard(u: User, page_num: Optional[int] = 0) -> List:
         for channel in channels[page_num]:
             keyboard.append([
                 InlineKeyboardButton(
-                    f'{settings.CHANNELS_INFO[channel.type]["icon"]} {channel.channel_title}', url=channel.channel.channel_url),
+                    channel.title_type, url=channel.channel.channel_url),
                 InlineKeyboardButton(
                     f'🔕' if channel.is_muted else f'🔔', callback_data=f'manage{settings.SPLITTING_CHARACTER}{channel.channel.channel_id}{settings.SPLITTING_CHARACTER}{page_num}{settings.SPLITTING_CHARACTER}mute'),
                 InlineKeyboardButton(
