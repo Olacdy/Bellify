@@ -2,6 +2,7 @@ import datetime
 from typing import Optional
 
 from bellify_bot.models import Channel, ChannelUserItem, User
+from django.conf import settings
 from django.db import models
 from django.dispatch import receiver
 
@@ -49,6 +50,10 @@ class YouTubeChannelUserItem(ChannelUserItem):
     @property
     def type(self) -> str:
         return 'youtube'
+
+    @property
+    def title_type(self) -> str:
+        return f'{settings.CHANNELS_INFO[self.type]["icon"]} {self.channel_title}'
 
 
 @receiver(models.signals.post_delete, sender=YouTubeChannelUserItem)

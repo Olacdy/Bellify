@@ -4,15 +4,15 @@ localization = {
     'en': {
         'notification':
         [
-            ['New video from', 'is out!'],
+            'the new video is out!',
             'is live now!',
-            'Playing',
+            'is playing',
         ],
         'add':
         [
             'Now send Your own name for the channel.',
-            ['The new channel -',
-                ' has been added.', ' has been added.\nChannel is live now!', ' has been added.\nChannel is not currently live.', 'Playing'],
+            ['The new channel —',
+                ' has been added.', ' has been added.\nChannel is not currently live.', ' has been added.\nChannel is live now!', '\nPlaying'],
             'Cannot add a new channel because a channel with the same name already exists.\nTry coming up with a new name, or leave the name parameter blank.',
         ],
         'manage':
@@ -69,15 +69,15 @@ localization = {
     'ru': {
         'notification':
         [
-            ['Новое видео от', 'уже вышло!'],
+            'новое видео уже вышло!',
             'сейчас стримит!',
-            'Играет в',
+            'играет в',
         ],
         'add':
         [
             'Можете прислать имя, под которым хотите сохранить канал.',
-            ['Новый канал -', ' добавлен.',
-                ' добавлен.\nНа канале проходит трансляция!', ' добавлен.\nКанал не проводит трансляцию.', 'Играет в'],
+            ['Новый канал —', ' добавлен.',
+                ' добавлен.\nКанал не транслирует.', ' добавлен.\nКанал транслирует!', '\nИграет в'],
             'Невозможно добавить новый канал под этим именем.\nПопробуйте придумать новое имя или оставить параметр имени пустым.',
         ],
         'manage':
@@ -134,15 +134,15 @@ localization = {
     'ua': {
         'notification':
         [
-            ['Нове відео від', 'вже вийшло!'],
+            'нове відео вже вийшло!',
             'зараз транслює!',
-            'Грає в',
+            'грає в',
         ],
         'add':
         [
             'Можете прислати ім\'я, під яким Ви хочете зберегти канал.',
-            ['Новий канал -', ' додано.',
-                ' додано.\nКанал транслює!', ' додано.\nКанал не транслює.', 'Грає в'],
+            ['Новий канал —', ' додано.',
+                ' додано.\nКанал не транслює.', ' додано.\nКанал транслює!', '\nГрає в'],
             'Неможливо додати новий канал під цим ім\'ям.\nСпробуйте вигадати нове ім\'я або ж залишити цей параметр незаповнюючи.',
         ],
         'manage':
