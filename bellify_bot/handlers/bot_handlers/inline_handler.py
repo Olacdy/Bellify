@@ -186,7 +186,7 @@ def inline_settings_handler(update: Update, context: CallbackContext) -> None:
             get_settings_inline_keyboard(u))
 
         query.edit_message_text(
-            text=localization[query_data[-1]]['language_command'][1],
+            text=localization[query_data[-1]]['settings'][2],
             reply_markup=reply_markup,
             parse_mode='HTML'
         )
