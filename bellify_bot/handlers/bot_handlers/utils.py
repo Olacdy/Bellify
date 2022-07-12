@@ -35,7 +35,7 @@ def check_for_live_twitch() -> None:
     for channel in channels:
         if channel.channel_id in live_info:
             stream_data = live_info[channel.channel_id]
-            if stream_data[0] != channel.live_title and stream_data[3] != channel.is_live:
+            if stream_data[3] != channel.is_live and channel.is_live == False:
                 TwitchChannel.update_live_info(
                     channel, live_title=stream_data[0], game_name=stream_data[1], thumbnail_url=stream_data[2], is_live=stream_data[3])
                 tasks.notify_users([item.user for item in TwitchChannelUserItem.objects.filter(
@@ -60,11 +60,10 @@ def check_for_live_youtube() -> None:
         f'https://www.youtube.com/channel/{channel.channel_id}/live' for channel in channels]
 
     live_info = get_channels_live_title_and_url(channels_live_urls)
-
     for channel, live_info_item, in zip(channels, live_info):
         live_title, live_url, is_upcoming = live_info_item
         if live_title and live_url and not is_youtube_channel_url(live_url):
-            if live_title != channel.live_title and live_url != channel.live_url or is_upcoming != channel.is_upcoming:
+            if live_url != channel.live_url or (is_upcoming != channel.is_upcoming and channel.is_upcoming == True):
                 YouTubeChannel.update_live_info(
                     channel, live_title=live_title, live_url=live_url, is_upcoming=is_upcoming, is_live=True)
                 if not is_upcoming:
