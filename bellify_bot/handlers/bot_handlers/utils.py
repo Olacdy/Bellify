@@ -337,6 +337,6 @@ def reply_invoice(update: Update, u: User, title: str, description: str, payload
         provider_token=settings.PROVIDER_TOKEN,
         currency=settings.CURRENCY,
         prices=[LabeledPrice(description[:-1], (price - 1)
-                             if not price in [25, 75] else price)],
+                             if not repr(price)[-1] == '5' else price)],
         reply_markup=reply_markup
     )

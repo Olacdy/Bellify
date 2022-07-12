@@ -214,7 +214,7 @@ CHANNELS_INFO = {
     }
 }
 
-INCREASE_CHANNELS_AMOUNT = [1, 2, 3, 4, 5, 10]
+INCREASE_CHANNELS_AMOUNT = [5, 10, 15, 20, 50]
 
 # Help section
 
