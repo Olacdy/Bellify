@@ -43,7 +43,7 @@ localization = {
              'You have already added all of the sample channels.\n\nUse /manage command to continue the tutorial.'],
             ['At this point, You can decide whether You want to change the default channel name to Your custom one.\nChannel default name is: ',
                 '\n\nWould You like to keep this name?'],
-            f'To review added channels, You should use the /manage command, which is available in the "Menu" section.\n\nThe colored square next to the channel name means its type:\n\n{settings.CHANNELS_INFO["youtube"]["icon"]} - {settings.CHANNELS_INFO["youtube"]["name"]}, {settings.CHANNELS_INFO["twitch"]["icon"]} - {settings.CHANNELS_INFO["twitch"]["name"]}\n\nTo disable these icons use /settings command.\n\nTry to click on the /manage.',
+            f'To review added channels, You should use the /manage command, which is available in the "Menu" section.\n\nThe colored square next to the channel name means its type:\n\n{settings.CHANNELS_INFO["youtube"]["icon"]} - {settings.CHANNELS_INFO["youtube"]["name"]}, {settings.CHANNELS_INFO["twitch"]["icon"]} - {settings.CHANNELS_INFO["twitch"]["name"]}\n\nTo disable these icons or change Your language use /settings command.\n\nTry to click on the /manage.',
             'Here You can review Your channels.\n\nIf the channel has 🔔 state You will get an unmuted notification, which means a message with sound, but if the channel has 🔕 state You will get only messages, but no sound with it.\n\nTry to mute the channel and You\'ll see that icon will change its appearance (click on bell icon).',
             f'Consider that the tutorial is completed successfully.\n\nFrom now on, You can decide to leave the channel in Your list or delete it with ❌ button.\n\nBy default You have a quota for {settings.CHANNELS_INFO["youtube"]["initial_number"]} YouTube channels, You can increase it with /upgrade command.\n\nThe main feature of the bot is a new video notification, when a channel uploads a new video, You will get a notification. By upgrading to a premium, You will unlock Twitch and YouTube live stream functionality, which means notifications when channels start a live stream. Hoping You will be satisfied with this bot ❤️.\n\nTo start the tutorial again, use /help command.',
             'For now, let\'s focus on 🔔 button.',
@@ -113,7 +113,7 @@ localization = {
              'Вы уже добавили все ссылки-примеры.\n\nВоспользуйтесь командой /manage, чтобы продолжить обучение.'],
             ['На этом моменте Вы можете решить, хотите ли Вы поменять имя канала установив собственное.\nИмя канала сейчас: ',
                 '\n\nХотите оставить это имя?'],
-            f'Чтобы просмотреть добавленные каналы, Вам нужно воспользоваться командой /manage, которая находиться в "Меню".\n\nЦветные квадраты возле имени канала означают его тип:\n\n{settings.CHANNELS_INFO["youtube"]["icon"]} - {settings.CHANNELS_INFO["youtube"]["name"]}, {settings.CHANNELS_INFO["twitch"]["icon"]} - {settings.CHANNELS_INFO["twitch"]["name"]}\n\nЧтобы отключить их отображение воспользуйтесь командой /settings.\n\nПопробуйте нажать на /manage.',
+            f'Чтобы просмотреть добавленные каналы, Вам нужно воспользоваться командой /manage, которая находиться в "Меню".\n\nЦветные квадраты возле имени канала означают его тип:\n\n{settings.CHANNELS_INFO["youtube"]["icon"]} - {settings.CHANNELS_INFO["youtube"]["name"]}, {settings.CHANNELS_INFO["twitch"]["icon"]} - {settings.CHANNELS_INFO["twitch"]["name"]}\n\nЧтобы отключить их отображение или изменить язык воспользуйтесь командой /settings.\n\nПопробуйте нажать на /manage.',
             'Здесь Вы можете просмотреть добавленные Вами каналы.\n\nЕсли канал имеет свойство 🔔, то Вы будете получать сообщения в обычном режиме, в противном случае, если канал имеет свойство 🔕, Вы будете получать сообщения от канала без звука.\n\nПопробуйте изменить текущее свойство нажатием на иконку колокольчика.',
             f'Считайте, что обучение успешно завершено.\n\nТеперь Вы можете либо оставить канал в Вашем списке, либо удалить его с помощью ❌.\n\nПо умолчанию, квота YouTube каналов равна {settings.CHANNELS_INFO["youtube"]["initial_number"]}, Вы можете увеличить ее з помощью команды /upgrade.\n\nГлавная особенность бота - это уведомления при выходе нового видео. В премиум режиме Вам также будет доступна возможность получать уведомления о начале трансляции на Twitch и YouTube каналах. Надеюсь, что Вам придется по душе данный бот ❤️.\n\nЧтобы повторить обучение, воспользуйтесь командой /help.',
             'Пока пробуйте нажать 🔔',
@@ -183,7 +183,7 @@ localization = {
              'Ви вже додали усі посилання-приклади.\n\nДля того аби продовжити туторіал, скористайтеся командою /manage.'],
             ['На цьому етапі Ви можете вирішити, чи хочете змінити ім\'я канала, встановивши власне.\nІм\'я канала зараз: ',
                 '\n\nХочете залишити це ім\'я?'],
-            f'Для того аби продивитись додані Вами канали, Вам необхідно скористатись командою /manage, яка знаходиться в "Меню".\n\nКольорові квадрати біля імені каналу означають його тип:\n\n{settings.CHANNELS_INFO["youtube"]["icon"]} - {settings.CHANNELS_INFO["youtube"]["name"]}, {settings.CHANNELS_INFO["twitch"]["icon"]} - {settings.CHANNELS_INFO["twitch"]["name"]}\n\nДля того аби вимкнути їх відображення скористайтесь командою /settings.\n\nСпробуйте натиснути на /manage.',
+            f'Для того аби продивитись додані Вами канали, Вам необхідно скористатись командою /manage, яка знаходиться в "Меню".\n\nКольорові квадрати біля імені каналу означають його тип:\n\n{settings.CHANNELS_INFO["youtube"]["icon"]} - {settings.CHANNELS_INFO["youtube"]["name"]}, {settings.CHANNELS_INFO["twitch"]["icon"]} - {settings.CHANNELS_INFO["twitch"]["name"]}\n\nДля того аби вимкнути їх відображення або змінити мову скористайтесь командою /settings.\n\nСпробуйте натиснути на /manage.',
             'Тут Ви можете продивитись додані Вами канали.\n\nЯкщо канал має властивість 🔔, то Ви будете отримувати повідомлення у звичайному режимі, в іншому випадку, якщо канал має властивість 🔕, Ви будете отримувати повідомлення від цього каналу без звуку.\n\nСпробуйте змінити поточну властивість натисканням на дзвіночок.',
             f'Вважайте, що туторіал успішно закінчено.\n\nТеперь Ви можете або залишити канал у Вашому списку, або видалити його за допомогою ❌.\n\nЗа замовчуванням, квота YouTube каналів дорівнює {settings.CHANNELS_INFO["youtube"]["initial_number"]}, Ви можете збільшити її за допомогою команди /upgrade.\n\nГоловна особливість бота - це повідомлення при виході нового відео. У преміум режимі Вам також буде доступна можливість отримання повідомлень про початок трансляцій на Twitch та YouTube каналах. Сподіваюся, що Вам припаде до душі цей бот ❤️.\n\nЩоб повторити туторіал, скористайтесь командою /help.',
             'Поки спробуйте натиснути 🔔',
@@ -210,75 +210,7 @@ localization = {
             'Оберіть налаштування, яке Ви хотіли б змінити',
             'Іконки типів'
         ]
-    },
-    None: {
-        'notification':
-        [
-            'new video is out!',
-            'is live now!',
-            'is playing',
-        ],
-        'add':
-        [
-            'Now send Your own name for the channel.',
-            ['The new channel —',
-                ' has been added.', ' has been added.\nNot currently live.', ' has been added.\nLive now!', '\nPlaying'],
-            'Cannot add a new channel because a channel with the same name already exists.\nTry coming up with a new name, or leave the name parameter blank.',
-        ],
-        'manage':
-        [
-            ['⚙️ Manage Channels ⚙️', 'Remaining', 'quota:'],
-            'Sorry, but You have no added channels right now. Try to send a link.',
-            'Looks like You have deleted all of Your channels.',
-        ],
-        'upgrade':
-        [
-            'Select the product that You would like to purchase.\n\nBy clicking on the button, a payment form will be generated to pay with 💳 credit card.\n\nBy choosing/approving the payment/purchase you accept the \n<a href="https://telegra.ph/Bellify-Bot--Terms-and-Conditions-06-23-2">📃 Terms and Conditions</a>.',
-            'Upgrade to Premium (YouTube and Twitch live notifications)',
-            ['Increase', 'quota'],
-            ['Upgrade to Premium',
-                f'Notifies You when YouTube and Twitch channels go live. Increases YouTube and Twitch quota by {str(settings.CHANNELS_INFO["youtube"]["premium_increase"])+" and "+str(settings.CHANNELS_INFO["twitch"]["premium_increase"])+" respectively." if not settings.CHANNELS_INFO["youtube"]["premium_increase"] == settings.CHANNELS_INFO["twitch"]["premium_increase"] else str(settings.CHANNELS_INFO["youtube"]["premium_increase"])+"."}', 'Upgrade'],
-            ['Your', 'quota now equals',
-                'Select the number of channels you would like to increase your quota by.'],
-            [['Increase', 'quota'],
-                ['Increases max amount of', 'channels'], 'Increase'],
-            'Back',
-            'Oops, something went wrong...',
-            'Thank You! The payment was successful.'
-        ],
-        'help':
-        [
-            ['Bellify Bot manual\n\nThis bot is capable of storing and notifying users when a new video is uploaded on the YouTube channel.\n\nIn premium mode, live stream notifications functionality is available for YouTube and Twitch channels.\n\nDeveloper contacts:\nTelegram - https://t.me/golovakanta\nGmail - dbofury@gmail.com\n\nTo start tutorial click on the button below.', 'Start tutorial'],
-            ['To start using this bot is recommended to complete a little tutorial. It will help You to familiarize the main functionality and using the bot right away.\n\nFirst things first, let\'s send a link to a sample YouTube channel.\nCopy the link below and send it to a bot.\n\nExample link (click on it):',
-             'You have already added all of the sample channels.\n\nUse /manage command to continue the tutorial.'],
-            ['At this point, You can decide whether You want to change the default channel name to Your custom one.\nChannel default name is: ',
-                '\n\nWould You like to keep this name?'],
-            f'To review added channels, You should use the /manage command, which is available in the "Menu" section.\n\nThe colored square next to the channel name means its type:\n\n{settings.CHANNELS_INFO["youtube"]["icon"]} - {settings.CHANNELS_INFO["youtube"]["name"]}, {settings.CHANNELS_INFO["twitch"]["icon"]} - {settings.CHANNELS_INFO["twitch"]["name"]}\n\nTo disable these icons use /settings command.\n\nTry to click on the /manage.',
-            'Here You can review Your channels.\n\nIf the channel has 🔔 state You will get an unmuted notification, which means a message with sound, but if the channel has 🔕 state You will get only messages, but no sound with it.\n\nTry to mute the channel and You\'ll see that icon will change its appearance (click on bell icon).',
-            f'Consider that the tutorial is completed successfully.\n\nFrom now on, You can decide to leave the channel in Your list or delete it with ❌ button.\n\nBy default You have a quota for {settings.CHANNELS_INFO["youtube"]["initial_number"]} YouTube channels, You can increase it with /upgrade command.\n\nThe main feature of the bot is a new video notification, when a channel uploads a new video, You will get a notification. By upgrading to a premium, You will unlock Twitch and YouTube live stream functionality, which means notifications when channels start a live stream. Hoping You will be satisfied with this bot ❤️.\n\nTo start the tutorial again, use /help command.',
-            'For now, let\'s focus on 🔔 button.',
-            'If the channel is already on Your list and You have sent its link again, You will be proposed to delete it right away or do nothing.'
-        ],
-        'language_command':
-        [
-            'Please, select a language.',
-            'Thanks, the work will be continued in 🇬🇧English.',
-        ],
-        'echo':
-        [
-            ['The channel will be saved under name: ',
-                '\nWould You like to keep this name?'],
-            'This channel is already in your list. What You like to delete it?',
-            'No channel with such a name.',
-            'Sorry, You are do not have a premium account, so the Twitch channels is not availiable to You at the time.\n\nYou can support the project and upgrade to premium.',
-            ['Sorry, You have exceeded Your limit on the number of channels. Try to delete one of the channels You have already added.\n\nOr support the project and increase Your limit.',
-             'Looks like You are already have added channels.\n\nYou can increase Your quota or use /manage command to continue the tutorial.'],
-            'Doesn\'t look like a channel URL. Please review the URL You sent and try again.'
-        ],
-        'settings':
-        [
-            'Select the configuration that You would like to change',
-            'Type Icons'
-        ]
-    },
+    }
 }
+
+localization[None] = localization['en']

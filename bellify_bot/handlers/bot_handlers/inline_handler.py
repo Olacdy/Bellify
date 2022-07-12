@@ -29,10 +29,10 @@ def inline_language_handler(update: Update, context: CallbackContext) -> None:
     query = update.callback_query
     query_data, u = get_query_data_and_user(query)
 
-    User.set_language(u, query_data[0])
+    User.set_language(u, query_data[-1])
 
     query.edit_message_text(
-        text=localization[query_data[0]]['language_command'][1],
+        text=localization[query_data[-1]]['language_command'][1],
         parse_mode='HTML',
     )
 
@@ -43,9 +43,9 @@ def inline_start_handler(update: Update, context: CallbackContext) -> None:
     query_data, u = get_query_data_and_user(query)
 
     User.set_tutorial_state(u, False)
-    User.set_language(u, query_data[0])
+    User.set_language(u, query_data[-1])
 
-    tutorial_reply(query, u.language if u.language else query_data[0], u)
+    tutorial_reply(query, u.language if u.language else query_data[-1], u)
 
 
 @log_errors
@@ -173,12 +173,26 @@ def inline_settings_handler(update: Update, context: CallbackContext) -> None:
     if 'icons' in query_data:
         User.set_icons_state(u)
 
+        reply_markup = InlineKeyboardMarkup(
+            get_settings_inline_keyboard(u))
+
         query.edit_message_reply_markup(
-            reply_markup=InlineKeyboardMarkup(get_settings_inline_keyboard(u))
+            reply_markup=reply_markup
+        )
+    elif 'language' in query_data:
+        User.set_language(u, query_data[-1])
+
+        reply_markup = InlineKeyboardMarkup(
+            get_settings_inline_keyboard(u))
+
+        query.edit_message_text(
+            text=localization[query_data[-1]]['language_command'][1],
+            reply_markup=reply_markup,
+            parse_mode='HTML'
         )
 
 
-@log_errors
+@ log_errors
 def inline_pagination_handler(update: Update, context: CallbackContext) -> None:
     query = update.callback_query
     query_data, u = get_query_data_and_user(query)

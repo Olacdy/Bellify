@@ -55,10 +55,17 @@ def language_command_handler(update: Update, context: CallbackContext) -> None:
 
     reply_markup = InlineKeyboardMarkup(get_language_inline_keyboard())
 
-    update.message.reply_text(
-        text=localization[u.language]['language_command'][0],
-        parse_mode='HTML',
-        reply_markup=reply_markup)
+    if not u.language:
+        update.message.reply_text(
+            text='\n'.join([localization[language[0]]['language_command'][0]
+                           for language in LANGUAGE_CHOICES]),
+            parse_mode='HTML',
+            reply_markup=reply_markup)
+    else:
+        update.message.reply_text(
+            text=localization[u.language]['language_command'][0],
+            parse_mode='HTML',
+            reply_markup=reply_markup)
 
 
 @log_errors
@@ -137,23 +144,36 @@ def successful_payment_callback(update: Update, context: CallbackContext) -> Non
 
 
 def set_up_commands(bot_instance: Bot) -> None:
-    commands: Dict[str] = {
+    """
+    manage - Channels list ⚙️
+    settings - Personal settings 🔧
+    help - Bot manual 📑
+    upgrade - Upgrade profile ⭐
+    """
+
+    commands: Dict[str, str] = {
         'manage': 'Channels list ⚙️',
-        'language': 'Change language 🌐',
+        'settings': 'Personal settings 🔧',
         'help': 'Bot manual 📑',
         'upgrade': 'Upgrade profile ⭐'
     }
 
     langs_with_commands: Dict[str, Dict[str, str]] = {
+        'en': {
+            'manage': 'Channels list ⚙️',
+            'settings': 'Personal settings 🔧',
+            'help': 'Bot manual 📑',
+            'upgrade': 'Upgrade profile ⭐'
+        },
         'ru': {
             'manage': 'Список каналов ⚙️',
-            'language': 'Смена языка 🌐',
+            'settings': 'Настройки 🔧',
             'help': 'Мануал бота 📑',
             'upgrade': 'Прокачать профиль ⭐'
         },
         'uk': {
             'manage': 'Список каналів ⚙️',
-            'language': 'Зміна мови 🌐',
+            'settings': 'Налаштування 🔧',
             'help': 'Мануал бота 📑',
             'upgrade': 'Прокачати профіль ⭐'
         }
