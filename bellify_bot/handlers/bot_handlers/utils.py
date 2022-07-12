@@ -96,7 +96,7 @@ def check_for_video_youtube() -> None:
         if channel.video_url != video_url:
             # TODO: uncomment, check if going to notify 2 times on same video, check if notifies on prev video
             # if channel.video_published < video_published:
-            if channel.video_url != channel.live_url:
+            if video_url != channel.live_url:
                 tasks.notify_users([item.user for item in YouTubeChannelUserItem.objects.filter(
                     channel=channel)], channel_info={'id': channel.channel_id,
                                                      'url': video_url,
