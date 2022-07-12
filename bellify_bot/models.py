@@ -70,13 +70,11 @@ class User(CreateUpdateTracker):
 
     @classmethod
     def set_menu_field(cls, u: User, value: Optional[str] = '') -> None:
-        u = cls.objects.filter(user_id=u.user_id).first()
         u.menu = value
         u.save()
 
     @classmethod
     def set_language(cls, u: User, value: str) -> None:
-        u = cls.objects.filter(user_id=u.user_id).first()
         u.language = value
         u.save()
 
