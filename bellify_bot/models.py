@@ -45,6 +45,7 @@ class User(CreateUpdateTracker):
                                                              default=settings.CHANNELS_INFO["twitch"]["initial_number"], **nb)
 
     is_tutorial_finished = models.BooleanField(default=False)
+    is_icons_disabled = models.BooleanField(default=False)
 
     is_blocked_bot = models.BooleanField(default=False)
 
@@ -77,6 +78,11 @@ class User(CreateUpdateTracker):
     def set_language(cls, u: User, value: str) -> None:
         u = cls.objects.filter(user_id=u.user_id).first()
         u.language = value
+        u.save()
+
+    @classmethod
+    def set_icons_state(cls, u: User) -> None:
+        u.is_icons_disabled = not u.is_icons_disabled
         u.save()
 
     @classmethod
