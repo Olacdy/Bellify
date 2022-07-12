@@ -260,14 +260,14 @@ def _add_youtube_channel(channel_id: str, message: Message, u: User, name: Optio
 # Removes given channel user item
 @ log_errors
 def remove(update: Update, u: User, channel: ChannelUserItem, page_num: Optional[int] = 0) -> None:
-    channel.delete() if u.is_tutorial_finished else None
+    channel.delete() if u.is_tutorial_finished and channel else None
     manage(update, u, mode='remove', page_num=page_num)
 
 
 # Mutes given channel user item
 @ log_errors
 def mute(update: Update, u: User, channel: ChannelUserItem, page_num: Optional[int] = 0) -> None:
-    ChannelUserItem.mute_channel(u, channel)
+    ChannelUserItem.mute_channel(u, channel) if channel else None
     manage(update, u, mode='mute', page_num=page_num)
 
 

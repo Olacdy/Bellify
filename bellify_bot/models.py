@@ -6,7 +6,7 @@ from django.apps import apps
 from django.conf import settings
 from django.db import models
 from django.db.models import Manager, Q, QuerySet
-from utils.models import CreateUpdateTracker, GetOrNoneManager, nb
+from utils.models import CreateUpdateTracker, GetOrNoneManager, is_dict, nb
 
 PLAN_CHOICES = (
     ('B', 'Basic'),
@@ -45,6 +45,7 @@ class User(CreateUpdateTracker):
                                                              default=settings.CHANNELS_INFO["twitch"]["initial_number"], **nb)
 
     is_tutorial_finished = models.BooleanField(default=False)
+    is_icons_disabled = models.BooleanField(default=False)
 
     is_blocked_bot = models.BooleanField(default=False)
 
@@ -80,6 +81,11 @@ class User(CreateUpdateTracker):
         u.save()
 
     @classmethod
+    def set_icons_state(cls, u: User) -> None:
+        u.is_icons_disabled = not u.is_icons_disabled
+        u.save()
+
+    @classmethod
     def set_tutorial_state(cls, u: User, value: bool) -> None:
         u.is_tutorial_finished = value
         u.save()
@@ -89,9 +95,12 @@ class User(CreateUpdateTracker):
         user_data = cls.objects.get_or_create(
             user_id=chat_id,
             defaults={
-                'username': username,
+                'username': username if not is_dict(username) else '',
             }
         )
+        if not user_data[0].username and not is_dict(username):
+            user_data[0].username = username
+            user_data[0].save()
         if reset:
             User.set_menu_field(user_data[0])
         return user_data

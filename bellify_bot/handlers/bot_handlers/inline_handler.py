@@ -1,4 +1,4 @@
-from typing import List, Union, Optional
+from typing import List, Optional, Union
 
 from bellify_bot.handlers.bot_handlers.utils import (
     add, get_manage_inline_keyboard, get_upgrade_inline_keyboard, log_errors,
@@ -11,6 +11,7 @@ from telegram.ext import CallbackContext
 from twitch.models import ChannelUserItem
 
 from utils.general_utils import get_manage_message, tutorial_reply
+from utils.keyboards import get_settings_inline_keyboard
 
 
 @log_errors
@@ -72,7 +73,7 @@ def inline_add_handler(update: Update, context: CallbackContext) -> None:
     else:
         channel_id, channel_type = query_data[-2], query_data[-1]
         query.delete_message()
-        add(channel_id, channel_type, update.callback_query.message, u)
+        add(channel_id, channel_type, query.message, u)
 
 
 @log_errors
@@ -109,7 +110,7 @@ def inline_manage_handler(update: Update, context: CallbackContext) -> None:
             update, u, channel, page_num=page_num)
     else:
         try:
-            update.callback_query.edit_message_text(
+            query.edit_message_text(
                 text=localization[u.language]["help"][6],
                 reply_markup=InlineKeyboardMarkup(
                     get_manage_inline_keyboard(u)),
@@ -162,6 +163,19 @@ def inline_upgrade_handler(update: Update, context: CallbackContext) -> None:
         _quota(False)
     elif 'quota_echo' in query_data:
         _quota(True)
+
+
+@log_errors
+def inline_settings_handler(update: Update, context: CallbackContext) -> None:
+    query = update.callback_query
+    query_data, u = get_query_data_and_user(query)
+
+    if 'icons' in query_data:
+        User.set_icons_state(u)
+
+        query.edit_message_reply_markup(
+            reply_markup=InlineKeyboardMarkup(get_settings_inline_keyboard(u))
+        )
 
 
 @log_errors

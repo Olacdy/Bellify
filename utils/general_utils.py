@@ -1,14 +1,13 @@
 from typing import Dict, List, Optional, Union
 
 import telegram
+from bellify_bot.localization import localization
+from bellify_bot.models import ChannelUserItem, User
 from django.conf import settings
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, MessageEntity, CallbackQuery
-from bellify.settings.local import CHANNELS_INFO
-from bellify_bot.models import User
+from telegram import (CallbackQuery, InlineKeyboardButton,
+                      InlineKeyboardMarkup, MessageEntity)
 from twitch.utils import is_twitch_channel_url
 from youtube.utils import is_youtube_channel_url
-from bellify_bot.localization import localization
-from bellify_bot.models import ChannelUserItem
 
 
 def log_errors(f):

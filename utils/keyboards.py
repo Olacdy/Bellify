@@ -8,6 +8,17 @@ from bellify_bot.models import ChannelUserItem, User
 from utils.general_utils import log_errors
 
 
+# Return settings keyboard
+@log_errors
+def get_settings_inline_keyboard(u: User):
+    keyboard = [
+        [InlineKeyboardButton(
+            f'{"⚪️" if u.is_icons_disabled else "🔘"} {localization[u.language]["settings"][1]}', callback_data=f'settings{settings.SPLITTING_CHARACTER}icons')]
+    ]
+
+    return keyboard
+
+
 # Returns Language inline keyboard
 @log_errors
 def get_language_inline_keyboard(command: Optional[str] = 'language') -> List[List[InlineKeyboardButton]]:

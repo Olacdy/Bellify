@@ -11,13 +11,13 @@ from telegram.ext import (CallbackContext, CallbackQueryHandler,
                           CommandHandler, Dispatcher, Filters, MessageHandler,
                           PreCheckoutQueryHandler, Updater)
 from bellify.celery import app
-from utils.keyboards import get_language_inline_keyboard
+from utils.keyboards import get_language_inline_keyboard, get_settings_inline_keyboard
 
 from bellify_bot.handlers.bot_handlers.echo_handler import echo_handler
 from bellify_bot.handlers.bot_handlers.inline_handler import (
     inline_add_handler, inline_language_handler, inline_link_handler,
     inline_manage_handler, inline_pagination_handler, inline_start_handler,
-    inline_tutorial_handler, inline_upgrade_handler)
+    inline_tutorial_handler, inline_upgrade_handler, inline_settings_handler)
 from bellify_bot.handlers.bot_handlers.utils import (log_errors, manage,
                                                      upgrade)
 from bellify_bot.localization import localization
@@ -87,6 +87,19 @@ def upgrade_command_handler(update: Update, context: CallbackContext) -> None:
         update.message.chat_id, update.message.from_user.username, False)
 
     upgrade(update.message, u)
+
+
+@log_errors
+def settings_command_handler(update: Update, context: CallbackContext) -> None:
+    u, _ = User.get_or_create_profile(
+        update.message.chat_id, update.message.from_user.username, False)
+
+    reply_markup = InlineKeyboardMarkup(get_settings_inline_keyboard(u))
+
+    update.message.reply_text(
+        text=localization[u.language]['settings'][0],
+        parse_mode='HTML',
+        reply_markup=reply_markup)
 
 
 @log_errors
@@ -169,6 +182,7 @@ def setup_dispatcher(dp):
     dp.add_handler(CommandHandler('language', language_command_handler))
     dp.add_handler(CommandHandler('help', help_command_handler))
     dp.add_handler(CommandHandler('upgrade', upgrade_command_handler))
+    dp.add_handler(CommandHandler('settings', settings_command_handler))
     dp.add_handler(MessageHandler(
         Filters.text & ~Filters.command, echo_handler))
     dp.add_handler(CallbackQueryHandler(
@@ -185,6 +199,8 @@ def setup_dispatcher(dp):
         inline_manage_handler, pattern=r'^manage'))
     dp.add_handler(CallbackQueryHandler(
         inline_upgrade_handler, pattern=r'^upgrade'))
+    dp.add_handler(CallbackQueryHandler(
+        inline_settings_handler, pattern=r'^settings'))
     dp.add_handler(CallbackQueryHandler(
         inline_pagination_handler, pattern=r'^pagination'))
     dp.add_handler(PreCheckoutQueryHandler(precheckout_callback))
