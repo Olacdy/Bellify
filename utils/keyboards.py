@@ -54,7 +54,7 @@ def get_upgrade_inline_keyboard(u: User, mode: Optional[str] = 'upgrade', channe
             ]
         ) if u.status == 'P' else None
     elif 'quota' in mode:
-        for amount in settings.INCREASE_CHANNELS_AMOUNT:
+        for amount in settings.CHANNELS_INFO[channel_type]['increase_amount']:
             keyboard.append(
                 [
                     InlineKeyboardButton(
