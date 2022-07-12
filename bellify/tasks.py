@@ -30,7 +30,7 @@ def notify_users(users: List[User], channel_info: dict, is_live: Optional[bool] 
     for u in users:
         item = ChannelUserItem.get_user_channel_by_id(
             u, channel_info['id'])
-        user_title, is_muted = item.title_type, item.is_muted
+        user_title, is_muted = item.message_title_and_type, item.is_muted
         if is_live:
             _send_message(
                 u.user_id, _get_message(user_title, channel_info),

@@ -96,7 +96,7 @@ def check_for_video_youtube() -> None:
         if channel.video_url != video_url:
             # TODO: uncomment, check if going to notify 2 times on same video, check if notifies on prev video
             # if channel.video_published < video_published:
-            if video_url != channel.live_url:
+            if channel.live_url != video_url:
                 tasks.notify_users([item.user for item in YouTubeChannelUserItem.objects.filter(
                     channel=channel)], channel_info={'id': channel.channel_id,
                                                      'url': video_url,
@@ -171,7 +171,7 @@ def _add_twitch_channel(channel_id: str, message: Message, u: User, name: Option
 
             message.reply_text(
                 text=_get_twitch_channel_message(
-                    u, channel_url, item.title_type, game_name, channel.thumbnail, is_live),
+                    u, channel_url, item.message_title_and_type, game_name, channel.thumbnail, is_live),
                 parse_mode='HTML',
                 reply_markup=get_notification_reply_markup(
                     live_title if is_live else channel_name, channel_url)
@@ -231,7 +231,7 @@ def _add_youtube_channel(channel_id: str, message: Message, u: User, name: Optio
             if live_url and not is_upcoming and u.status == 'P':
                 message.reply_text(
                     text=_get_youtube_channel_message(
-                        u, item.title_type, live_url, True),
+                        u, item.message_title_and_type, live_url, True),
                     parse_mode='HTML',
                     reply_markup=get_notification_reply_markup(
                         live_title, live_url)
@@ -239,7 +239,7 @@ def _add_youtube_channel(channel_id: str, message: Message, u: User, name: Optio
             else:
                 message.reply_text(
                     text=_get_youtube_channel_message(
-                        u, item.title_type, video_url, False),
+                        u, item.message_title_and_type, video_url, False),
                     parse_mode='HTML',
                     reply_markup=get_notification_reply_markup(
                         video_title, video_url)

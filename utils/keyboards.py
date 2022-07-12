@@ -28,11 +28,11 @@ def get_language_inline_keyboard(user_lang: Optional[str] = 'en', command: Optio
     elif 'settings' in command:
         keyboard = [
             InlineKeyboardButton(
-                f'{"🔘" if user_lang == "en" else "⚪️"} 🇬🇧English', callback_data=f'{command}{settings.SPLITTING_CHARACTER}language{settings.SPLITTING_CHARACTER}en'),
+                f'{"🔘" if user_lang == "en" else "⚪️"} 🇬🇧', callback_data=f'{command}{settings.SPLITTING_CHARACTER}language{settings.SPLITTING_CHARACTER}en'),
             InlineKeyboardButton(
-                f'{"🔘" if user_lang == "ru" else "⚪️"} 🇷🇺Русский', callback_data=f'{command}{settings.SPLITTING_CHARACTER}language{settings.SPLITTING_CHARACTER}ru'),
+                f'{"🔘" if user_lang == "ru" else "⚪️"} 🇷🇺', callback_data=f'{command}{settings.SPLITTING_CHARACTER}language{settings.SPLITTING_CHARACTER}ru'),
             InlineKeyboardButton(
-                f'{"🔘" if user_lang == "ua" else "⚪️"} 🇺🇦Українська', callback_data=f'{command}{settings.SPLITTING_CHARACTER}language{settings.SPLITTING_CHARACTER}ua'),
+                f'{"🔘" if user_lang == "ua" else "⚪️"} 🇺🇦', callback_data=f'{command}{settings.SPLITTING_CHARACTER}language{settings.SPLITTING_CHARACTER}ua')
         ]
 
     return keyboard
@@ -42,8 +42,15 @@ def get_language_inline_keyboard(user_lang: Optional[str] = 'en', command: Optio
 @log_errors
 def get_settings_inline_keyboard(u: User):
     keyboard = [
-        [InlineKeyboardButton(
-            f'{"⚪️" if u.is_icons_disabled else "🔘"} {localization[u.language]["settings"][1]}', callback_data=f'settings{settings.SPLITTING_CHARACTER}icons')],
+        [
+            InlineKeyboardButton(
+                f'{"❌" if u.is_message_icons_disabled else "✔️"} {localization[u.language]["settings"][1][0]}', callback_data=f'settings{settings.SPLITTING_CHARACTER}message{settings.SPLITTING_CHARACTER}icons')
+
+        ],
+        [
+            InlineKeyboardButton(
+                f'{"❌" if u.is_manage_icons_disabled else "✔️"} {localization[u.language]["settings"][1][1]}', callback_data=f'settings{settings.SPLITTING_CHARACTER}manage{settings.SPLITTING_CHARACTER}icons')
+        ],
         get_language_inline_keyboard(user_lang=u.language, command='settings')
     ]
 
@@ -116,7 +123,7 @@ def get_manage_inline_keyboard(u: User, page_num: Optional[int] = 0) -> List:
         for channel in channels[page_num]:
             keyboard.append([
                 InlineKeyboardButton(
-                    channel.title_type, url=channel.channel.channel_url),
+                    channel.manage_title_and_type, url=channel.channel.channel_url),
                 InlineKeyboardButton(
                     f'🔕' if channel.is_muted else f'🔔', callback_data=f'manage{settings.SPLITTING_CHARACTER}{channel.channel.channel_id}{settings.SPLITTING_CHARACTER}{page_num}{settings.SPLITTING_CHARACTER}mute'),
                 InlineKeyboardButton(
