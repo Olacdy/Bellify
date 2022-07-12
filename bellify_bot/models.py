@@ -45,7 +45,8 @@ class User(CreateUpdateTracker):
                                                              default=settings.CHANNELS_INFO["twitch"]["initial_number"], **nb)
 
     is_tutorial_finished = models.BooleanField(default=False)
-    is_icons_disabled = models.BooleanField(default=False)
+    is_message_icons_disabled = models.BooleanField(default=False)
+    is_manage_icons_disabled = models.BooleanField(default=False)
 
     is_blocked_bot = models.BooleanField(default=False)
 
@@ -79,8 +80,13 @@ class User(CreateUpdateTracker):
         u.save()
 
     @classmethod
-    def set_icons_state(cls, u: User) -> None:
-        u.is_icons_disabled = not u.is_icons_disabled
+    def set_message_icons_state(cls, u: User) -> None:
+        u.is_message_icons_disabled = not u.is_message_icons_disabled
+        u.save()
+
+    @classmethod
+    def set_manage_icons_state(cls, u: User) -> None:
+        u.is_manage_icons_disabled = not u.is_manage_icons_disabled
         u.save()
 
     @classmethod
@@ -121,6 +127,14 @@ class ChannelUserItem(CreateUpdateTracker):
 
     def __str__(self) -> str:
         return self.channel_title
+
+    @property
+    def manage_title_and_type(self) -> str:
+        return f'{settings.CHANNELS_INFO[self.type]["icon"] if not self.user.is_manage_icons_disabled else ""} {self.channel_title.replace(settings.CHANNELS_INFO[self.type]["icon"], "").strip()}'.strip()
+
+    @property
+    def message_title_and_type(self) -> str:
+        return f'{settings.CHANNELS_INFO[self.type]["icon"] if not self.user.is_message_icons_disabled else ""} {self.channel_title.replace(settings.CHANNELS_INFO[self.type]["icon"], "").strip()}'.strip()
 
     @classmethod
     def is_user_subscribed_to_channel(cls, u: User, channel_id: str) -> bool:
