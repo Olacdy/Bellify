@@ -44,7 +44,6 @@ def start_command_handler(update: Update, context: CallbackContext) -> None:
 def manage_command_handler(update: Update, context: CallbackContext) -> None:
     u, _ = User.get_or_create_profile(
         update.message.chat_id, update.message.from_user.username, False)
-    user_text = update.message.text
 
     manage(update, u)
 
@@ -53,7 +52,6 @@ def manage_command_handler(update: Update, context: CallbackContext) -> None:
 def language_command_handler(update: Update, context: CallbackContext) -> None:
     u, _ = User.get_or_create_profile(
         update.message.chat_id, update.message.from_user.username, False)
-    user_text = update.message.text
 
     reply_markup = InlineKeyboardMarkup(get_language_inline_keyboard())
 
@@ -67,7 +65,6 @@ def language_command_handler(update: Update, context: CallbackContext) -> None:
 def help_command_handler(update: Update, context: CallbackContext) -> None:
     u, _ = User.get_or_create_profile(
         update.message.chat_id, update.message.from_user.username, False)
-    user_text = update.message.text
 
     reply_markup = InlineKeyboardMarkup(
         [
@@ -88,7 +85,6 @@ def help_command_handler(update: Update, context: CallbackContext) -> None:
 def upgrade_command_handler(update: Update, context: CallbackContext) -> None:
     u, _ = User.get_or_create_profile(
         update.message.chat_id, update.message.from_user.username, False)
-    user_text = update.message.text
 
     upgrade(update.message, u)
 
