@@ -205,7 +205,7 @@ CHANNELS_INFO = {
         'premium_increase': 5,
         'increase_price': 50,
         'icon': '🟥',
-        'increase_amount': [3, 5, 10, 15, 20],
+        'increase_amount': [5, 10, 15, 20, 30],
         'is_free': True
     },
     'twitch': {
@@ -214,7 +214,7 @@ CHANNELS_INFO = {
         'premium_increase': 5,
         'increase_price': 25,
         'icon': '🟪',
-        'increase_amount': [5, 10, 15, 20, 50],
+        'increase_amount': [10, 15, 20, 30, 50],
         'is_free': False
     }
 }
