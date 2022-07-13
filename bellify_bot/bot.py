@@ -27,7 +27,7 @@ from bellify_bot.models import User, LANGUAGE_CHOICES
 @log_errors
 def start_command_handler(update: Update, context: CallbackContext) -> None:
     u, _ = User.get_or_create_profile(update.message.chat_id,
-                                      update.message.from_user.username)
+                                      update.message.from_user)
 
     reply_markup = InlineKeyboardMarkup(
         get_language_inline_keyboard(command='start'))
@@ -43,7 +43,7 @@ def start_command_handler(update: Update, context: CallbackContext) -> None:
 @log_errors
 def manage_command_handler(update: Update, context: CallbackContext) -> None:
     u, _ = User.get_or_create_profile(
-        update.message.chat_id, update.message.from_user.username, False)
+        update.message.chat_id, update.message.from_user, False)
 
     manage(update, u)
 
@@ -51,7 +51,7 @@ def manage_command_handler(update: Update, context: CallbackContext) -> None:
 @log_errors
 def language_command_handler(update: Update, context: CallbackContext) -> None:
     u, _ = User.get_or_create_profile(
-        update.message.chat_id, update.message.from_user.username, False)
+        update.message.chat_id, update.message.from_user, False)
 
     reply_markup = InlineKeyboardMarkup(get_language_inline_keyboard())
 
@@ -71,7 +71,7 @@ def language_command_handler(update: Update, context: CallbackContext) -> None:
 @log_errors
 def help_command_handler(update: Update, context: CallbackContext) -> None:
     u, _ = User.get_or_create_profile(
-        update.message.chat_id, update.message.from_user.username, False)
+        update.message.chat_id, update.message.from_user, False)
 
     reply_markup = InlineKeyboardMarkup(
         [
@@ -91,7 +91,7 @@ def help_command_handler(update: Update, context: CallbackContext) -> None:
 @log_errors
 def upgrade_command_handler(update: Update, context: CallbackContext) -> None:
     u, _ = User.get_or_create_profile(
-        update.message.chat_id, update.message.from_user.username, False)
+        update.message.chat_id, update.message.from_user, False)
 
     upgrade(update.message, u)
 
@@ -99,7 +99,7 @@ def upgrade_command_handler(update: Update, context: CallbackContext) -> None:
 @log_errors
 def settings_command_handler(update: Update, context: CallbackContext) -> None:
     u, _ = User.get_or_create_profile(
-        update.message.chat_id, update.message.from_user.username, False)
+        update.message.chat_id, update.message.from_user, False)
 
     reply_markup = InlineKeyboardMarkup(get_settings_inline_keyboard(u))
 
@@ -112,7 +112,7 @@ def settings_command_handler(update: Update, context: CallbackContext) -> None:
 @log_errors
 def precheckout_callback(update: Update, context: CallbackContext) -> None:
     u, _ = User.get_or_create_profile(update.pre_checkout_query.from_user.id,
-                                      update.pre_checkout_query.from_user.username)
+                                      update.pre_checkout_query.from_user)
 
     query = update.pre_checkout_query
 
@@ -138,7 +138,7 @@ def precheckout_callback(update: Update, context: CallbackContext) -> None:
 @log_errors
 def successful_payment_callback(update: Update, context: CallbackContext) -> None:
     u, _ = User.get_or_create_profile(update.message.chat_id,
-                                      update.message.from_user.username)
+                                      update.message.from_user)
 
     update.message.reply_text(localization[u.language]['upgrade'][8])
 

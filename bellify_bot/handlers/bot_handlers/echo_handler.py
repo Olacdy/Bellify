@@ -14,7 +14,7 @@ from utils.general_utils import get_channel_url_type
 @log_errors
 def echo_handler(update: Update, context: CallbackContext) -> None:
     u, _ = User.get_or_create_profile(
-        update.message.chat_id, update.message.from_user.username, False)
+        update.message.chat_id, update.message.from_user, False)
     user_text = update.message.text
 
     try:

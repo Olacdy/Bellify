@@ -1,5 +1,3 @@
-import ast
-
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from polymorphic.managers import PolymorphicManager
@@ -29,10 +27,3 @@ class GetOrNoneManager(PolymorphicManager):
             return self.get(**kwargs)
         except ObjectDoesNotExist:
             return None
-
-
-def is_dict(potential_dictionary: str) -> bool:
-    try:
-        return isinstance(ast.literal_eval(str(potential_dictionary)), dict)
-    except Exception:
-        return False

@@ -6,7 +6,8 @@ from django.apps import apps
 from django.conf import settings
 from django.db import models
 from django.db.models import Manager, Q, QuerySet
-from utils.models import CreateUpdateTracker, GetOrNoneManager, is_dict, nb
+from telegram import User as TgUser
+from utils.models import CreateUpdateTracker, GetOrNoneManager, nb
 
 PLAN_CHOICES = (
     ('B', 'Basic'),
@@ -95,15 +96,19 @@ class User(CreateUpdateTracker):
         u.save()
 
     @classmethod
-    def get_or_create_profile(cls, chat_id: str, username: str, reset: Optional[bool] = True):
+    def get_or_create_profile(cls, chat_id: str, tg_user: TgUser, reset: Optional[bool] = True):
         user_data = cls.objects.get_or_create(
             user_id=chat_id,
             defaults={
-                'username': username if not is_dict(username) else '',
+                'username': tg_user.username,
+                'first_name': tg_user.first_name,
+                'last_name': tg_user.last_name
             }
         )
-        if not user_data[0].username and not is_dict(username):
-            user_data[0].username = username
+        if user_data[0].username == settings.BOT_NAME:
+            user_data[0].username = tg_user.username
+            user_data[0].first_name = tg_user.first_name
+            user_data[0].last_name = tg_user.last_name
             user_data[0].save()
         if reset:
             User.set_menu_field(user_data[0])

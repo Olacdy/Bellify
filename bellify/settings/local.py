@@ -153,7 +153,10 @@ TG_WEBHOOK_ENDPOINT = env.str('TG_WEBHOOK_ENDPOINT')
 
 PROVIDER_TOKEN = env.str('PROVIDER_TOKEN')
 
+BOT_NAME = 'BellifyBot' if not DEBUG else 'TestBellifyBot'
+
 BELLIFY_LINK = 'https://t.me/BellifyBot'
+
 
 # Celery section
 
