@@ -72,8 +72,11 @@ def check_for_live_youtube() -> None:
                                                                            'url': channel.live_url,
                                                                            'title': channel.live_title}, is_live=True)
         else:
-            YouTubeChannel.update_live_info(
-                channel, live_title=channel.live_title, live_url=channel.live_url, is_upcoming=channel.is_upcoming)
+            if channel.live_title:
+                YouTubeChannel.update_live_info(
+                    channel, live_url=channel.live_url, is_upcoming=channel.is_upcoming)
+            else:
+                YouTubeChannel.update_live_info(channel)
         channel.save()
 
 
@@ -88,24 +91,19 @@ def check_for_video_youtube() -> None:
         channel.live_url for channel in channels
     ]
 
-    video_info = get_channels_and_videos_info(
-        channels_urls, live_urls)
+    video_info = get_channels_and_videos_info(channels_urls, live_urls)
 
     for channel, video_info_item in zip(channels, video_info):
         video_title, video_url, video_published, _ = video_info_item
         if channel.video_url != video_url:
             # TODO: uncomment, check if going to notify 2 times on same video, check if notifies on prev video
             # if channel.video_published < video_published:
-            if channel.live_url != video_url:
-                tasks.notify_users([item.user for item in YouTubeChannelUserItem.objects.filter(
-                    channel=channel)], channel_info={'id': channel.channel_id,
-                                                     'url': video_url,
-                                                     'title': video_title})
-                YouTubeChannel.update_video_info(
-                    channel, video_title=video_title, video_url=video_url, video_published=video_published)
-            else:
-                if not channel.is_live:
-                    YouTubeChannel.update_live_info(channel)
+            tasks.notify_users([item.user for item in YouTubeChannelUserItem.objects.filter(
+                channel=channel)], channel_info={'id': channel.channel_id,
+                                                 'url': video_url,
+                                                 'title': video_title})
+            YouTubeChannel.update_video_info(
+                channel, video_title=video_title, video_url=video_url, video_published=video_published)
         channel.save()
 
 
