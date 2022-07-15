@@ -98,8 +98,8 @@ def check_for_video_youtube() -> None:
         if channel.video_url != video_url and channel.video_published < video_published:
             tasks.notify_users([item.user for item in YouTubeChannelUserItem.objects.filter(
                 channel=channel)], channel_info={'id': channel.channel_id,
-                                                    'url': video_url,
-                                                    'title': video_title})
+                                                 'url': video_url,
+                                                 'title': video_title})
             YouTubeChannel.update_video_info(
                 channel, video_title=video_title, video_url=video_url, video_published=video_published)
         channel.save()
@@ -197,10 +197,10 @@ def _add_youtube_channel(channel_id: str, message: Message, u: User, name: Optio
     if not YouTubeChannel.objects.filter(channel_id=channel_id).exists():
         live_title, live_url, is_upcoming = get_channels_live_title_and_url(
             [f'https://www.youtube.com/channel/{channel_id}/live'])[0]
-        video_title, video_url, video_published, channel_title = get_channels_and_videos_info(
-            [f'https://www.youtube.com/feeds/videos.xml?channel_id={channel_id}'], [live_url])[0]
         if is_youtube_channel_url(live_url):
             live_title, live_url, is_upcoming = None, None, None
+        video_title, video_url, video_published, channel_title = get_channels_and_videos_info(
+            [f'https://www.youtube.com/feeds/videos.xml?channel_id={channel_id}'], [live_url])[0]
     else:
         channel = YouTubeChannel.objects.get(channel_id=channel_id)
         channel_title, video_title, video_url, video_published, live_title, live_url, is_upcoming = channel.channel_title, channel.video_title, channel.video_url, channel.video_published, channel.live_title, channel.live_url, channel.is_upcoming
