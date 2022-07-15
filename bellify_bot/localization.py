@@ -23,13 +23,13 @@ localization = {
         ],
         'upgrade':
         [
-            'Select the product that You would like to purchase.\n\nBy clicking on the button, a payment form will be generated to pay with 💳 credit card.\n\nBy choosing/approving the payment/purchase you accept the \n<a href="https://telegra.ph/Bellify-Bot--Terms-and-Conditions-06-23-2">📃 Terms and Conditions</a>.',
+            'Select the product that You would like to purchase.\n\nBy clicking on the button, a payment form will be generated to pay with 💳 credit card.\n\nBy choosing/approving the payment/purchase You accept the \n<a href="https://telegra.ph/Bellify-Bot--Terms-and-Conditions-06-23-2">📃 Terms and Conditions</a>.',
             'Upgrade to Premium (YouTube and Twitch live notifications)',
             ['Increase', 'quota'],
             ['Upgrade to Premium',
                 f'Notifies You when YouTube and Twitch channels go live. Increases YouTube and Twitch quota by {str(settings.CHANNELS_INFO["youtube"]["premium_increase"])+" and "+str(settings.CHANNELS_INFO["twitch"]["premium_increase"])+" respectively." if not settings.CHANNELS_INFO["youtube"]["premium_increase"] == settings.CHANNELS_INFO["twitch"]["premium_increase"] else str(settings.CHANNELS_INFO["youtube"]["premium_increase"])+"."}', 'Upgrade'],
             ['Your', 'quota now equals',
-                'Select the number of channels you would like to increase your quota by.'],
+                'Select the number of channels You would like to increase a quota by.'],
             [['Increase', 'quota'],
                 ['Increases max amount of', 'channels'], 'Increase'],
             'Back',
@@ -58,7 +58,7 @@ localization = {
         [
             ['The channel will be saved under name: ',
                 '\nWould You like to keep this name?'],
-            'This channel is already in your list. What You like to delete it?',
+            'This channel is already in Your list. What You like to delete it?',
             'No channel with such a name.',
             'Sorry, You are do not have a premium account, so the Twitch channels is not availiable to You at the time.\n\nYou can support the project and upgrade to premium.',
             ['Sorry, You have exceeded Your limit on the number of channels. Try to delete one of the channels You have already added.\n\nOr support the project and increase Your limit.',
