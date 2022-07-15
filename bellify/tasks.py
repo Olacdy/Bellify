@@ -36,13 +36,13 @@ def notify_users(users: List[User], channel_info: dict, is_live: Optional[bool] 
                 u.user_id, _get_message(user_title, channel_info),
                 reply_markup=get_notification_reply_markup(
                     channel_info['title'], channel_info['url']),
-                disable_notification=not is_muted)
+                disable_notification=is_muted)
         else:
             _send_message(
                 u.user_id, _get_message(user_title, channel_info),
                 reply_markup=get_notification_reply_markup(
                     channel_info['title'], channel_info['url']),
-                disable_notification=not is_muted)
+                disable_notification=is_muted)
 
 
 @app.task(ignore_result=True)
