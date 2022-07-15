@@ -166,16 +166,16 @@ CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 
 CELERY_BEAT_SCHEDULE = {
-    "check_for_video_youtube": {
-        "task": "bellify.tasks.check_for_video_youtube",
+    "check_for_live_twitch": {
+        "task": "bellify.tasks.check_for_live_twitch",
         "schedule": crontab(minute='0-57/3'),
     },
     "check_for_live_youtube": {
         "task": "bellify.tasks.check_for_live_youtube",
         "schedule": crontab(minute='1-58/3'),
     },
-    "check_for_live_twitch": {
-        "task": "bellify.tasks.check_for_live_twitch",
+    "check_for_video_youtube": {
+        "task": "bellify.tasks.check_for_video_youtube",
         "schedule": crontab(minute='2-59/3'),
     },
 }
