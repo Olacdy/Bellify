@@ -95,13 +95,11 @@ def check_for_video_youtube() -> None:
 
     for channel, video_info_item in zip(channels, video_info):
         video_title, video_url, video_published, _ = video_info_item
-        if channel.video_url != video_url:
-            # TODO: uncomment, check if going to notify 2 times on same video, check if notifies on prev video
-            # if channel.video_published < video_published:
+        if channel.video_url != video_url and channel.video_published < video_published:
             tasks.notify_users([item.user for item in YouTubeChannelUserItem.objects.filter(
                 channel=channel)], channel_info={'id': channel.channel_id,
-                                                 'url': video_url,
-                                                 'title': video_title})
+                                                    'url': video_url,
+                                                    'title': video_title})
             YouTubeChannel.update_video_info(
                 channel, video_title=video_title, video_url=video_url, video_published=video_published)
         channel.save()
