@@ -227,6 +227,10 @@ SAMPLE_CHANNELS_IDS = [
     'UCbBiC9us6srqQytH22wD7Zw',
     'UC9XTzwex6rGLVUGS9cLKFLw',
     'UCBU8GKSd4NY0wCdcalbaltw',
-    'UCggHsHce2n3vvbJf_8YKrMA',
-    'UCgPClNr5VSYC3syrDUIlzLw'
+    'UCgPClNr5VSYC3syrDUIlzLw',
+    'UC1zZE_kJ8rQHgLTVfobLi_g',
+    'UC4PooiX37Pld1T8J5SYT-SQ',
+    'UCakgsb0w7QB0VHdnCc-OVEA',
+    'UCJFp8uSYCjXOMnkUyb3CQ3Q',
+    'UCBa659QWEk1AI4Tg--mrJ2A'
 ]
