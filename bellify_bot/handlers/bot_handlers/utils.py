@@ -8,11 +8,11 @@ from telegram import (InlineKeyboardButton, InlineKeyboardMarkup, LabeledPrice,
                       Message, Update)
 from twitch.models import TwitchChannel, TwitchChannelUserItem
 from twitch.utils import (get_channel_url_from_title, get_streams_info,
-                          get_streams_info_chunks_async, get_users_info)
+                          get_twitch_streams_info, get_users_info)
 from youtube.models import YouTubeChannel, YouTubeChannelUserItem
-from youtube.utils import (get_channels_and_videos_info,
-                           get_channels_live_title_and_url, get_url_from_id,
-                           is_youtube_channel_url)
+from youtube.utils import (get_url_from_id, get_youtube_channels_info,
+                           is_youtube_channel_url, scrape_channel_live,
+                           scrape_last_video_and_channel_title)
 
 from utils.general_utils import (get_html_bold, get_html_link,
                                  get_manage_message)
@@ -23,14 +23,14 @@ from utils.keyboards import (get_manage_inline_keyboard,
 
 # Checks for streams and alerts every premium user if there is one
 @log_errors
-def check_for_live_twitch() -> None:
+def check_twitch() -> None:
     channels = list(TwitchChannel.objects.filter(users__status='P'))
     channels_ids = [channel.channel_id for channel in channels]
     channels_ids = [channels_ids[i * 100:(i + 1) * 100]
                     for i in range((len(channels_ids) + 100 - 1) // 100)]
 
     live_info = {stream_item[0]: stream_item[1:]
-                 for stream_item in get_streams_info_chunks_async(channels_ids)}
+                 for stream_item in get_twitch_streams_info(channels_ids)}
 
     for channel in channels:
         if channel.channel_id in live_info:
@@ -52,16 +52,23 @@ def check_for_live_twitch() -> None:
         channel.save()
 
 
-# Checks for streams and alerts every premium user if there is one
+# Checks for livestreams and new videos and alerts users if the are some
 @ log_errors
-def check_for_live_youtube() -> None:
-    channels = list(YouTubeChannel.objects.filter(users__status='P'))
-    channels_live_urls = [
-        f'https://www.youtube.com/channel/{channel.channel_id}/live' for channel in channels]
+def check_youtube() -> None:
+    channels = list(YouTubeChannel.objects.all())
+    channels_info = get_youtube_channels_info(
+        [channel.channel_id for channel in channels])
 
-    live_info = get_channels_live_title_and_url(channels_live_urls)
-    for channel, live_info_item, in zip(channels, live_info):
-        live_title, live_url, is_upcoming = live_info_item
+    for channel, channel_info_item in zip(channels, channels_info):
+        video_title, video_url, video_published, live_title, live_url, is_upcoming, _ = channel_info_item
+        if channel.video_url != video_url and channel.video_title != video_title and channel.video_published < video_published:
+            tasks.notify_users([item.user for item in YouTubeChannelUserItem.objects.filter(
+                channel=channel)], channel_info={'id': channel.channel_id,
+                                                 'url': video_url,
+                                                 'title': video_title})
+            YouTubeChannel.update_video_info(
+                channel, video_title=video_title, video_url=video_url, video_published=video_published)
+
         if live_title and live_url and not is_youtube_channel_url(live_url):
             if live_url != channel.live_url or (is_upcoming != channel.is_upcoming and channel.is_upcoming == True):
                 YouTubeChannel.update_live_info(
@@ -77,31 +84,6 @@ def check_for_live_youtube() -> None:
                     channel, live_url=channel.live_url, is_upcoming=channel.is_upcoming)
             else:
                 YouTubeChannel.update_live_info(channel)
-        channel.save()
-
-
-# Checks for new video and alerts every user if there is one
-@ log_errors
-def check_for_video_youtube() -> None:
-    channels = list(YouTubeChannel.objects.all())
-    channels_urls = [
-        f'https://www.youtube.com/feeds/videos.xml?channel_id={channel.channel_id}' for channel in channels]
-
-    live_urls = [
-        channel.live_url for channel in channels
-    ]
-
-    video_info = get_channels_and_videos_info(channels_urls, live_urls)
-
-    for channel, video_info_item in zip(channels, video_info):
-        video_title, video_url, video_published, _ = video_info_item
-        if channel.video_url != video_url and channel.video_published < video_published:
-            tasks.notify_users([item.user for item in YouTubeChannelUserItem.objects.filter(
-                channel=channel)], channel_info={'id': channel.channel_id,
-                                                 'url': video_url,
-                                                 'title': video_title})
-            YouTubeChannel.update_video_info(
-                channel, video_title=video_title, video_url=video_url, video_published=video_published)
         channel.save()
 
 
@@ -195,12 +177,9 @@ def _add_youtube_channel(channel_id: str, message: Message, u: User, name: Optio
         return f"{general}{channel_name}{is_streaming}{href}"
 
     if not YouTubeChannel.objects.filter(channel_id=channel_id).exists():
-        live_title, live_url, is_upcoming = get_channels_live_title_and_url(
-            [f'https://www.youtube.com/channel/{channel_id}/live'])[0]
-        if is_youtube_channel_url(live_url):
-            live_title, live_url, is_upcoming = None, None, None
-        video_title, video_url, video_published, channel_title = get_channels_and_videos_info(
-            [f'https://www.youtube.com/feeds/videos.xml?channel_id={channel_id}'], [live_url])[0]
+        live_title, live_url, is_upcoming = scrape_channel_live(channel_id)
+        video_title, video_url, video_published, channel_title = scrape_last_video_and_channel_title(
+            channel_id, live_url)
     else:
         channel = YouTubeChannel.objects.get(channel_id=channel_id)
         channel_title, video_title, video_url, video_published, live_title, live_url, is_upcoming = channel.channel_title, channel.video_title, channel.video_url, channel.video_published, channel.live_title, channel.live_url, channel.is_upcoming

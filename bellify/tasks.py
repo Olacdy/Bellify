@@ -36,13 +36,13 @@ def notify_users(users: List[User], channel_info: dict, is_live: Optional[bool] 
                 u.user_id, _get_message(user_title, channel_info),
                 reply_markup=get_notification_reply_markup(
                     channel_info['title'], channel_info['url']),
-                disable_notification=not is_muted)
+                disable_notification=is_muted)
         else:
             _send_message(
                 u.user_id, _get_message(user_title, channel_info),
                 reply_markup=get_notification_reply_markup(
                     channel_info['title'], channel_info['url']),
-                disable_notification=not is_muted)
+                disable_notification=is_muted)
 
 
 @app.task(ignore_result=True)
@@ -77,15 +77,10 @@ def broadcast_message(
 
 
 @app.task(ignore_result=True)
-def check_for_video_youtube():
-    call_command("check_for_video_youtube", )
+def check_youtube():
+    call_command("check_youtube", )
 
 
 @app.task(ignore_result=True)
-def check_for_live_youtube():
-    call_command("check_for_live_youtube", )
-
-
-@app.task(ignore_result=True)
-def check_for_live_twitch():
-    call_command("check_for_live_twitch",)
+def check_twitch():
+    call_command("check_twitch",)

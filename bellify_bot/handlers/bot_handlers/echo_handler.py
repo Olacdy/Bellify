@@ -6,7 +6,7 @@ from bellify_bot.handlers.bot_handlers.utils import (
 from bellify_bot.localization import localization
 from bellify_bot.models import ChannelUserItem, User
 from twitch.utils import get_users_info, get_channel_title_from_url
-from youtube.utils import get_channels_and_videos_info, scrape_id_by_url
+from youtube.utils import scrape_last_video_and_channel_title, scrape_id_by_url
 
 from utils.general_utils import get_channel_url_type
 
@@ -24,18 +24,25 @@ def echo_handler(update: Update, context: CallbackContext) -> None:
 
     if all(echo_data):
         if 'name' in echo_data:
-            User.set_menu_field(u)
-            channel_id, channel_type = echo_data[-2], echo_data[-1]
-            add(channel_id, channel_type, update.message,
-                u, user_text.lstrip())
+            if not get_channel_url_type(user_text):
+                User.set_menu_field(u)
+                channel_id, channel_type = echo_data[-2], echo_data[-1]
+                add(channel_id, channel_type, update.message,
+                    u, user_text.lstrip())
+            else:
+                update.message.reply_text(
+                    text=localization[u.language]['help'][7],
+                    parse_mode='HTML',
+                    disable_web_page_preview=True,
+                    reply_markup=reply_markup)
     else:
         channel_type = get_channel_url_type(user_text)
         if channel_type:
             if 'YouTube' in channel_type:
                 channel_id = scrape_id_by_url(user_text)
                 if channel_id:
-                    _, _, _, channel_title = get_channels_and_videos_info(
-                        [f'https://www.youtube.com/feeds/videos.xml?channel_id={channel_id}'], [''])[0]
+                    channel_title = scrape_last_video_and_channel_title(
+                        channel_id)[-1]
                 else:
                     update.message.reply_text(
                         text=localization[u.language]['echo'][5],

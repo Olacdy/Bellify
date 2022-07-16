@@ -1,7 +1,7 @@
 import asyncio
 import itertools
 import re
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 import aiohttp
 import requests
@@ -30,7 +30,7 @@ def get_twitch_token():
 
 
 # Returns Twitch streams info for a list of ids consisting of chunks of 100
-def get_streams_info_chunks_async(ids: List[List[str]]):
+def get_twitch_streams_info(ids: List[List[str]]) -> List[Tuple[str]]:
     async def get_all(ids: List[List[str]]):
         async with aiohttp.ClientSession(cookies=settings.SESSION_CLIENT_COOKIES) as session:
             async def fetch(ids_100: List[str]):

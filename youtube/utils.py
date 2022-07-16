@@ -1,7 +1,7 @@
 import asyncio
 import re
 from datetime import datetime
-from typing import List, Union
+from typing import List, Optional, Union, Tuple
 
 import aiohttp
 import bs4 as soup
@@ -11,43 +11,34 @@ from django.conf import settings
 from fake_headers import Headers
 
 
-# Gets videos info and channels title from given channel feeds urls
-def get_channels_and_videos_info(urls: List[str], live_urls: List[str]):
-    async def get_all(urls, live_urls):
+# Return list of info about YouTube channels
+def get_youtube_channels_info(ids: List[str]) -> List[Tuple[str]]:
+    async def get_all(ids):
         async with aiohttp.ClientSession(cookies=settings.SESSION_CLIENT_COOKIES) as session:
-            async def fetch(url, live_url):
-                async with session.get(url, headers=Headers().generate()) as response:
-                    html = soup.BeautifulSoup(await response.text(), 'xml')
-                    for entry in html.find_all("entry"):
-                        video_title = entry.find("title").text
-                        video_url = f"https://www.youtube.com/watch?v={entry.videoId.text}"
-                        video_published = datetime.strptime(
-                            entry.find("published").text, "%Y-%m-%dT%H:%M:%S%z")
-                        channel_title = entry.find("author").find("name").text
-                        if not (entry.statistics['views'] == '0' and entry.starRating['count'] != '0') and video_url != live_url:
-                            return video_title, video_url, video_published, channel_title
+            async def fetch(id):
+                async with session.get(f'https://www.youtube.com/channel/{id}/live', headers=Headers().generate()) as response:
+                    live_text = await response.text()
+                async with session.get(f'https://www.youtube.com/feeds/videos.xml?channel_id={id}', headers=Headers().generate()) as response:
+                    video_text = await response.text()
+                live_html = soup.BeautifulSoup(live_text, 'lxml')
+                videos_xml = soup.BeautifulSoup(video_text, 'xml')
+                try:
+                    live_title, live_url, is_upcoming = live_html.find("meta", {"name": "title"})['content'], live_html.find(
+                        "link", {"rel": "canonical"})['href'], any(re.findall(r'(\"isUpcoming\":true)', live_text))
+                except TypeError:
+                    live_title, live_url, is_upcoming = None, None, None
+                for entry in videos_xml.find_all("entry"):
+                    video_title = entry.title.text
+                    video_url = entry.link['href']
+                    video_published = datetime.strptime(
+                        entry.published.text, "%Y-%m-%dT%H:%M:%S%z")
+                    channel_title = entry.author.find('name').text
+                    if not (entry.statistics['views'] == '0' and entry.starRating['count'] != '0') and video_url != live_url:
+                        return video_title, video_url, video_published, live_title, live_url, is_upcoming, channel_title
             return await asyncio.gather(*[
-                fetch(url, live_url) for url, live_url in zip(urls, live_urls)
+                fetch(id) for id in ids
             ])
-    return sync.async_to_sync(get_all)(urls, live_urls)
-
-
-# Get channels live title and urls
-def get_channels_live_title_and_url(urls: List[str]):
-    async def get_all(urls):
-        async with aiohttp.ClientSession(cookies=settings.SESSION_CLIENT_COOKIES) as session:
-            async def fetch(url):
-                async with session.get(url, headers=Headers().generate()) as response:
-                    text = await response.text()
-                    html = soup.BeautifulSoup(text, 'lxml')
-                    try:
-                        return html.find("meta", {"name": "title"})['content'], html.find("link", {"rel": "canonical"})['href'], any(re.findall(r'(\"isUpcoming\":true)', text))
-                    except TypeError:
-                        return html.find("meta", property="og:title")['content'], html.find("link", {"rel": "canonical"})['href'], any(re.findall(r'(\"isUpcoming\":true)', text))
-            return await asyncio.gather(*[
-                fetch(url) for url in urls
-            ])
-    return sync.async_to_sync(get_all)(urls)
+    return sync.async_to_sync(get_all)(ids)
 
 
 # Checks if given string is youtube channel url
@@ -60,16 +51,47 @@ def get_url_from_id(channel_id: str) -> Union[str, None]:
     return f'https://www.youtube.com/channel/{channel_id}' if channel_id else None
 
 
-# Scrapes channel id from url
-def scrape_id_by_url(url: str) -> Union[str, bool]:
+# Returns html of a page by url
+def _get_html_response_youtube(url: str) -> str:
     session = requests.Session()
-    response = session.get(url)
-    if "uxe=" in response.request.url:
-        session.cookies.set("CONSENT", "YES+cb", domain=".youtube.com")
-        response = session.get(url)
+    session.cookies.set("CONSENT", "YES+cb", domain=".youtube.com")
+    response = session.get(url, headers=Headers().generate())
     session.close()
 
-    html = soup.BeautifulSoup(response.text, 'lxml')
+    return response.text
+
+
+# Scrapes channel videos info from id
+def scrape_last_video_and_channel_title(id: str, live_url: Optional[str] = None) -> Tuple[str]:
+    video_text = _get_html_response_youtube(
+        f'https://www.youtube.com/feeds/videos.xml?channel_id={id}')
+    videos_xml = soup.BeautifulSoup(video_text, 'xml')
+    for entry in videos_xml.find_all("entry"):
+        video_title = entry.title.text
+        video_url = entry.link['href']
+        video_published = datetime.strptime(
+            entry.published.text, "%Y-%m-%dT%H:%M:%S%z")
+        channel_title = entry.author.find('name').text
+        if not (entry.statistics['views'] == '0' and entry.starRating['count'] != '0') and video_url != live_url:
+            return video_title, video_url, video_published, channel_title
+
+
+# Scrapes channel live info from id
+def scrape_channel_live(id: str) -> Tuple[Union[str, None]]:
+    live_text = _get_html_response_youtube(
+        f'https://www.youtube.com/channel/{id}/live')
+    live_html = soup.BeautifulSoup(live_text, 'lxml')
+    try:
+        return live_html.find("meta", {"name": "title"})['content'], live_html.find(
+            "link", {"rel": "canonical"})['href'], any(re.findall(r'(\"isUpcoming\":true)', live_text))
+    except TypeError:
+        return None, None, None
+
+
+# Scrapes channel id from url
+def scrape_id_by_url(url: str) -> Union[str, bool]:
+    text = _get_html_response_youtube(url)
+    html = soup.BeautifulSoup(text, 'lxml')
     try:
         return html.find('meta', {'itemprop': 'channelId'})['content']
     except:
