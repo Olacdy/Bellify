@@ -14,7 +14,7 @@ logger = get_task_logger(__name__)
 
 
 @app.task(ignore_result=True)
-def notify_users(users: List[User], channel_info: dict, is_live: Optional[bool] = False) -> None:
+def notify_users(users: List[User], channel_info: dict, is_live: Optional[bool] = False, is_reuploaded: Optional[bool] = False) -> None:
     def _get_message(user_title: str, channel_info: dict):
         user_title = get_html_bold(user_title)
 
@@ -23,7 +23,7 @@ def notify_users(users: List[User], channel_info: dict, is_live: Optional[bool] 
             href = f"{get_html_link(url=channel_info['thumbnail_url']) if 'thumbnail_url' in channel_info else get_html_link(url=channel_info['url'])}"
             return f"{user_title}{notification}{href}"
         else:
-            notification = f" — {localization[u.language]['notification'][0]}"
+            notification = f" — {localization[u.language]['notification'][3 if is_reuploaded else 0]}"
             href = f"\n{get_html_link(channel_info['url'])}"
             return f"{user_title}{notification}{href}"
 

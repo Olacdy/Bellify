@@ -61,11 +61,12 @@ def check_youtube() -> None:
 
     for channel, channel_info_item in zip(channels, channels_info):
         video_title, video_url, video_published, live_title, live_url, is_upcoming, _ = channel_info_item
-        if channel.live_url != video_url and channel.video_url != video_url and channel.video_title != video_title and channel.video_published < video_published:
+
+        if channel.live_url != video_url and channel.video_url != video_url and channel.video_published < video_published:
             tasks.notify_users([item.user for item in YouTubeChannelUserItem.objects.filter(
                 channel=channel)], channel_info={'id': channel.channel_id,
                                                  'url': video_url,
-                                                 'title': video_title})
+                                                 'title': video_title}, is_reuploaded=channel.video_title == video_title)
             YouTubeChannel.update_video_info(
                 channel, video_title=video_title, video_url=video_url, video_published=video_published)
 
