@@ -53,6 +53,8 @@ class TwitchChannel(Channel):
         try:
             old_datetime = datetime.strptime(self.thumbnail_image.name.split(
                 f'{settings.SPLITTING_CHARACTER}')[-1].replace('.jpg', ''), '%Y_%m_%d_%H_%M_%S')
+            print(old_datetime, datetime.now(), old_datetime +
+                  timedelta(minutes=10) < datetime.now())
             return old_datetime + timedelta(minutes=10) < datetime.now()
         except:
             return True

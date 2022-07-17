@@ -35,6 +35,8 @@ def check_twitch() -> None:
     for channel in channels:
         if channel.channel_id in live_info:
             stream_data = live_info[channel.channel_id]
+            TwitchChannel.update_thumbnail_image(
+                    channel, thumbnail_url=stream_data[2])
             if stream_data[3] != channel.is_live and channel.is_live == False:
                 TwitchChannel.update_live_info(
                     channel, live_title=stream_data[0], game_name=stream_data[1], thumbnail_url=stream_data[2], is_live=stream_data[3])
@@ -44,8 +46,6 @@ def check_twitch() -> None:
                                                                        'title': channel.live_title,
                                                                        'game_name': channel.game_name,
                                                                        'thumbnail_url': channel.thumbnail}, is_live=True)
-            TwitchChannel.update_thumbnail_image(
-                channel, thumbnail_url=stream_data[2])
         else:
             TwitchChannel.update_live_info(channel)
             TwitchChannel.update_thumbnail_image(channel, delete=True)
