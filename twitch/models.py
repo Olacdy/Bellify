@@ -13,7 +13,7 @@ from utils.models import nb
 
 # Returns a path to the image
 def twitch_thumbnail_directory_path(instance: 'TwitchChannel', filename: Optional[str] = ''):
-    return f'twitch_thumbnails/{instance.channel_login}{settings.SPLITTING_CHARACTER}{datetime.now().strftime("%Y_%m_%d_%H_%M_%S")}.jpg'
+    return f'twitch_thumbnails/{instance.channel_login}.jpg'
 
 
 # TwitchChannel model
@@ -48,29 +48,11 @@ class TwitchChannel(Channel):
         else:
             return ''
 
-    @property
-    def is_10_minutes_expired(self):
-        try:
-            old_datetime = datetime.strptime(self.thumbnail_image.name.split(
-                f'{settings.SPLITTING_CHARACTER}')[-1].replace('.jpg', ''), '%Y_%m_%d_%H_%M_%S')
-            print(old_datetime, datetime.now(), old_datetime +
-                  timedelta(minutes=10) < datetime.now())
-            return old_datetime + timedelta(minutes=10) < datetime.now()
-        except:
-            return True
-
-    @classmethod
-    def update_thumbnail_image(cls, channel: 'TwitchChannel', thumbnail_url: Optional[str] = '', delete: Optional[bool] = False, save: Optional[bool] = False) -> None:
-        if not delete:
-            if channel.is_10_minutes_expired:
-                channel.thumbnail_image.save(
-                    twitch_thumbnail_directory_path(channel), ContentFile(requests.get(thumbnail_url if thumbnail_url else channel.thumbnail_url).content), save=save)
-        else:
-            channel.thumbnail_image.delete(save=save)
-
     @classmethod
     def update_live_info(cls, channel: 'TwitchChannel', live_title: Optional[str] = None, game_name: Optional[str] = None, thumbnail_url: Optional[str] = None, is_live: Optional[bool] = False) -> None:
         channel.live_title, channel.game_name, channel.thumbnail_url, channel.is_live = live_title, game_name, thumbnail_url, is_live
+        channel.thumbnail_image.save(
+            twitch_thumbnail_directory_path(channel), ContentFile(requests.get(thumbnail_url if thumbnail_url else channel.thumbnail_url).content), save=False) if channel.thumbnail_url else channel.thumbnail_image.delete(save=False)
 
 
 # Custom through model with title
