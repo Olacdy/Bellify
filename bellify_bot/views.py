@@ -3,7 +3,7 @@ import logging
 
 from django.conf import settings
 from django.http import JsonResponse
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import redirect, render
 from django.views import View
 from twitch.models import TwitchChannel
 
@@ -16,9 +16,11 @@ class StreamPageView(View):
     template_name = "twitch/stream_page.html"
 
     def get(self, request, channel_login):
-        channel = get_object_or_404(TwitchChannel, channel_login=channel_login)
-        if channel:
+        try:
+            channel = TwitchChannel.objects.get(channel_login=channel_login)
             return render(request, self.template_name, {'name': channel, 'description': channel.live_title, 'thumbnail_url': channel.thumbnail})
+        except:
+            return redirect('/')
 
 
 class TelegramBotWebhookView(View):
