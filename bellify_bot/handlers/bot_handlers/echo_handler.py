@@ -81,7 +81,7 @@ def echo_handler(update: Update, context: CallbackContext) -> None:
                         parse_mode='HTML',
                         disable_web_page_preview=True,
                         reply_markup=reply_markup)
-            elif u.status == 'B' and not 'YouTube' in channel_type:
+            elif 'B' in u.status and not 'YouTube' in channel_type:
                 update.message.reply_text(
                     text=localization[u.language]['echo'][3],
                     parse_mode='HTML',

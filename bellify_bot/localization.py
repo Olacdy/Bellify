@@ -61,9 +61,9 @@ localization = {
                 '\nWould You like to keep this name?'],
             'This channel is already in Your list. What You like to delete it?',
             'No channel with such a name.',
-            'Sorry, You are do not have a premium account, so the Twitch channels is not availiable to You at the time.\n\nYou can support the project and upgrade to premium.',
+            'Sorry, You are do not have a premium account, so the Twitch channels are not available to You at the time.\n\nYou can support the project and upgrade to premium.',
             ['Sorry, You have exceeded Your limit on the number of channels. Try to delete one of the channels You have already added.\n\nOr support the project and increase Your limit.',
-             'Looks like You are already have added channels.\n\nYou can increase Your quota or use /manage command to continue the tutorial.'],
+             'Looks like You are already have channels in Your list.\n\nYou can increase Your quota or use /manage command to continue the tutorial.'],
             'Doesn\'t look like a channel URL. Please review the URL You sent and try again.',
             'The name seems like an URL of a channel. Please, try to send a proper name.'
         ],

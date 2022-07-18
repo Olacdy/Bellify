@@ -49,7 +49,7 @@ class TwitchChannel(Channel):
             return ''
 
     @classmethod
-    def update_live_info(cls, channel: 'TwitchChannel', live_title: Optional[str] = None, game_name: Optional[str] = None, thumbnail_url: Optional[str] = None, is_live: Optional[bool] = False) -> None:
+    def update_live_info(cls, channel: 'TwitchChannel', live_title: Optional[str] = None, game_name: Optional[str] = None, thumbnail_url: Optional[str] = None, is_live: Optional[bool] = False, save: Optional[bool] = False) -> None:
         channel.live_title, channel.game_name, channel.thumbnail_url, channel.is_live = live_title, game_name, thumbnail_url, is_live
         channel.thumbnail_image.save(
             twitch_thumbnail_directory_path(channel), ContentFile(requests.get(thumbnail_url if thumbnail_url else channel.thumbnail_url).content), save=False) if channel.thumbnail_url else channel.thumbnail_image.delete(save=False)
