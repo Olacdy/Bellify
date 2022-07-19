@@ -19,7 +19,7 @@ class StreamPageView(View):
         try:
             channel = TwitchChannel.objects.get(channel_login=channel_login)
             if channel.is_live:
-                return render(request, self.template_name, {'name': channel, 'title': channel.channel_title, 'description': channel.live_title, 'thumbnail_url': channel.thumbnail, 'video_url': channel.video_url, 'channel_url': channel.channel_url})
+                return render(request, self.template_name, {'channel_title': channel.channel_title, 'channel_login': channel.channel_login, 'description': channel.live_title, 'thumbnail_url': channel.thumbnail, 'video_url': channel.video_url, 'channel_url': channel.channel_url})
             raise
         except:
             return redirect('/')

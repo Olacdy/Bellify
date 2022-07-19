@@ -2,12 +2,12 @@
 <html lang="en">
 
 <head>
-    <title>{% block title %}{{ name }}{% endblock %}</title>
+    <title>{% block title %}{{ channel_title }}{% endblock %}</title>
     <meta http-equiv="refresh" content="0; url = {{ channel_url }}" />
 
     <meta property="og:site_name" content="Twitch">
     <meta property="og:url" content="{{ channel_url }}">
-    <meta property="og:title" content="{{ title }}">
+    <meta property="og:title" content="{{ channel_title }}">
     <meta property="og:description" content="{{ description }}">
 
     <meta property="og:image" content="{{ thumbnail_url }}">
@@ -20,6 +20,12 @@
     <meta property="og:video:width" content="1280">
     <meta property="og:video:height" content="720">
     <meta property="og:video:url" content="{{ channel_url }}">
+
+    <meta property="al:ios:url" content="twitch.tv/{{ channel_login }}">
+    <meta property="al:ios:app_store_id" content="id460177396">
+    <meta property="al:android:package" content="tv.twitch.android.app">
+    <meta property="al:android:app_name" content="Twitch">
+    <meta property="al:ios:app_name" content="Twitch">
 </head>
 
 <body>
