@@ -15,12 +15,12 @@ logger = get_task_logger(__name__)
 
 @app.task(ignore_result=True)
 def notify_users(users: List[User], channel_info: dict, is_live: Optional[bool] = False, is_reuploaded: Optional[bool] = False) -> None:
-    def _get_message(user_title: str, channel_info: dict):
+    def _get_message(user_title: str, channel_info: dict, is_twitch_thumbnail_disabled: bool):
         user_title = get_html_bold(user_title)
 
         if is_live:
             notification = f" — {localization[u.language]['notification'][1] if not 'game_name' in channel_info or channel_info['game_name'] == 'Just Chatting' else localization[u.language]['notification'][2]+' '+channel_info['game_name']+'!'}"
-            href = f"{get_html_link(url=channel_info['preview_url']) if 'preview_url' in channel_info else get_html_link(url=channel_info['url'])}"
+            href = f"{get_html_link(url=channel_info['preview_url']) if 'preview_url' in channel_info and not is_twitch_thumbnail_disabled else get_html_link(url=channel_info['url'])}"
             return f"{user_title}{notification}{href}"
         else:
             notification = f" — {localization[u.language]['notification'][3 if is_reuploaded else 0]}"
@@ -33,7 +33,8 @@ def notify_users(users: List[User], channel_info: dict, is_live: Optional[bool] 
         user_title, is_muted = item.message_title_and_type, item.is_muted
         if is_live:
             _send_message(
-                u.user_id, _get_message(user_title, channel_info),
+                u.user_id, _get_message(
+                    user_title, channel_info, u.is_twitch_thumbnail_disabled),
                 reply_markup=get_notification_reply_markup(
                     channel_info['title'], channel_info['url']),
                 disable_notification=is_muted)
@@ -51,7 +52,7 @@ def broadcast_message(
     text: str,
     entities: Optional[List[Dict]] = None,
     reply_markup: Optional[List[List[Dict]]] = None,
-    sleep_between: float = 0.2,
+    sleep_between: float = 0.1,
     parse_mode='HTML',
 ) -> None:
     """ It's used to broadcast message to big amount of users """

@@ -51,6 +51,10 @@ def get_settings_inline_keyboard(u: User):
             InlineKeyboardButton(
                 f'{"❌" if u.is_manage_icons_disabled else "✔️"} {localization[u.language]["settings"][1][1]}', callback_data=f'settings{settings.SPLITTING_CHARACTER}manage{settings.SPLITTING_CHARACTER}icons')
         ],
+        [
+            InlineKeyboardButton(
+                f'{"❌" if u.is_twitch_thumbnail_disabled else "✔️"} {localization[u.language]["settings"][1][2]}', callback_data=f'settings{settings.SPLITTING_CHARACTER}twitch{settings.SPLITTING_CHARACTER}thumbnail')
+        ],
         get_language_inline_keyboard(user_lang=u.language, command='settings')
     ]
 

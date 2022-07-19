@@ -141,7 +141,7 @@ def _add_twitch_channel(channel_id: str, message: Message, u: User, name: Option
 
             message.reply_text(
                 text=_get_twitch_channel_message(
-                    u, channel_url, item.message_title_and_type, game_name, channel.preview_url, is_live),
+                    u, channel_url, item.message_title_and_type, game_name, channel.channel_url if u.is_twitch_thumbnail_disabled else channel.preview_url, is_live),
                 parse_mode='HTML',
                 reply_markup=get_notification_reply_markup(
                     live_title if is_live else channel_name, channel_url)
