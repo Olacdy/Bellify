@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 class StreamPageView(View):
-    template_name = "twitch/stream_page.html"
+    template_name = "twitch/test_stream_page.html"
 
     def get(self, request, channel_login, date):
         try:
