@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 class StreamPageView(View):
     template_name = "twitch/stream_page.html"
 
-    def get(self, request, channel_login):
+    def get(self, request, channel_login, date):
         try:
             channel = TwitchChannel.objects.get(channel_login=channel_login)
             if channel.is_live:
