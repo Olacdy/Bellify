@@ -15,10 +15,12 @@ logger = logging.getLogger(__name__)
 class StreamPageView(View):
     template_name = "twitch/stream_page.html"
 
-    def get(self, request, channel_login):
+    def get(self, request, channel_login, date):
         try:
             channel = TwitchChannel.objects.get(channel_login=channel_login)
-            return render(request, self.template_name, {'name': channel, 'title': channel.channel_title, 'description': channel.live_title, 'thumbnail_url': channel.thumbnail_url, 'video_url': channel.video_url, 'channel_url': channel.channel_url})
+            if channel.is_live:
+                return render(request, self.template_name, {'name': channel, 'title': channel.channel_title, 'description': channel.live_title, 'thumbnail_url': channel.thumbnail_url, 'video_url': channel.video_url, 'channel_url': channel.channel_url})
+            raise
         except:
             return redirect('/')
 

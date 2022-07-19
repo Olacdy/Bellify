@@ -1,5 +1,5 @@
 from typing import Optional
-
+from datetime import datetime
 from bellify_bot.models import Channel, ChannelUserItem, User
 from django.conf import settings
 from django.db import models
@@ -30,7 +30,7 @@ class TwitchChannel(Channel):
 
     @property
     def preview_url(self) -> str:
-        return f'{settings.ABSOLUTE_URL}/{self.type}/{self.channel_login}'
+        return f'{settings.ABSOLUTE_URL}/{self.type}/{self.channel_login}/{datetime.now()}'
 
     @property
     def video_url(self) -> str:
