@@ -1,4 +1,3 @@
-from datetime import datetime, timedelta
 from typing import Optional
 
 from bellify_bot.models import Channel, ChannelUserItem, User
@@ -7,12 +6,6 @@ from django.db import models
 from django.dispatch import receiver
 
 from utils.models import nb
-
-
-# Returns a path to the image
-# TODO: DELETE THIS
-def twitch_thumbnail_directory_path(instance: 'TwitchChannel', filename: Optional[str] = ''):
-    return f'twitch_thumbnails/{instance.channel_login}.jpg'
 
 
 # TwitchChannel model
