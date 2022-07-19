@@ -43,10 +43,9 @@ def check_twitch() -> None:
                                                                        'url': channel.channel_url,
                                                                        'title': channel.live_title,
                                                                        'game_name': channel.game_name,
-                                                                       'thumbnail_url': f'{settings.ABSOLUTE_URL}{channel.channel_login}'}, is_live=True)
+                                                                       'preview_url': channel.preview_url}, is_live=True)
         else:
             TwitchChannel.update_live_info(channel)
-        channel.save()
 
 
 # Checks for livestreams and new videos and alerts users if the are some
@@ -82,7 +81,6 @@ def check_youtube() -> None:
                     channel, live_url=channel.live_url, is_upcoming=channel.is_upcoming)
             else:
                 YouTubeChannel.update_live_info(channel)
-        channel.save()
 
 
 # Checks channel url type and call add function accordingly
@@ -97,7 +95,7 @@ def add(channel_id: str, channel_type: str, message: Message, u: User, name: Opt
 # Adds Twitch channel to a given user
 @ log_errors
 def _add_twitch_channel(channel_id: str, message: Message, u: User, name: Optional[str] = None) -> None:
-    def _get_twitch_channel_message(u: User, channel_url: str, channel_name: str, game_name: str, channel_login: str, is_live: bool) -> str:
+    def _get_twitch_channel_message(u: User, channel_url: str, channel_name: str, game_name: str, preview_url: str, is_live: bool) -> str:
         general = f"{localization[u.language]['add'][1][0]} "
         name = get_html_bold(channel_name) if is_live else get_html_link(
             channel_url, channel_name)
@@ -105,7 +103,7 @@ def _add_twitch_channel(channel_id: str, message: Message, u: User, name: Option
             1 if is_live and not 'Just Chatting' in game_name else 2 if not is_live else 3]
         game = f" {localization[u.language]['add'][1][4]} {game_name+'.'}" if (
             is_live and not 'Just Chatting' in game_name) else ''
-        thumb_href = f"{get_html_link(url=f'{settings.ABSOLUTE_URL}{channel_login}') if is_live else ''}"
+        thumb_href = f"{get_html_link(url=preview_url) if is_live else ''}"
         return f"{general}{name}{is_streaming}{game}{thumb_href}"
 
     if not TwitchChannel.objects.filter(channel_id=channel_id).exists():
@@ -134,7 +132,7 @@ def _add_twitch_channel(channel_id: str, message: Message, u: User, name: Option
     )
 
     TwitchChannel.update_live_info(
-        channel, live_title, game_name, thumbnail_url, is_live, save=True)
+        channel, live_title, game_name, thumbnail_url, is_live)
 
     if not u in channel.users.all():
         if not TwitchChannelUserItem.objects.filter(user=u, channel_title=channel_name).exists():
@@ -143,7 +141,7 @@ def _add_twitch_channel(channel_id: str, message: Message, u: User, name: Option
 
             message.reply_text(
                 text=_get_twitch_channel_message(
-                    u, channel_url, item.message_title_and_type, game_name, channel_login, is_live),
+                    u, channel_url, item.message_title_and_type, game_name, channel.preview_url, is_live),
                 parse_mode='HTML',
                 reply_markup=get_notification_reply_markup(
                     live_title if is_live else channel_name, channel_url)
