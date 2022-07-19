@@ -30,5 +30,5 @@ class TwitchChannelAdmin(admin.ModelAdmin):
         [None, {'fields': ['channel_id', 'channel_url',
                            'channel_title', 'channel_login']}],
         ['Live Info', {'fields': [
-            'live_title', 'game_name', 'thumbnail_url', 'is_live']}]
+            'live_title', 'game_name', 'thumbnail_url', 'thumbnail_image', 'is_live']}]
     ]
