@@ -1,10 +1,8 @@
 from datetime import datetime, timedelta
 from typing import Optional
 
-import requests
 from bellify_bot.models import Channel, ChannelUserItem, User
 from django.conf import settings
-from django.core.files.base import ContentFile
 from django.db import models
 from django.dispatch import receiver
 
@@ -12,6 +10,7 @@ from utils.models import nb
 
 
 # Returns a path to the image
+# TODO: DELETE THIS
 def twitch_thumbnail_directory_path(instance: 'TwitchChannel', filename: Optional[str] = ''):
     return f'twitch_thumbnails/{instance.channel_login}.jpg'
 
@@ -21,8 +20,6 @@ class TwitchChannel(Channel):
     channel_login = models.CharField(max_length=128)
     game_name = models.CharField(max_length=128, **nb)
     thumbnail_url = models.URLField(**nb)
-    thumbnail_image = models.ImageField(
-        upload_to=twitch_thumbnail_directory_path, **nb)
 
     users = models.ManyToManyField(
         User, through='TwitchChannelUserItem')
@@ -39,20 +36,17 @@ class TwitchChannel(Channel):
         return 'twitch'
 
     @property
-    def thumbnail(self) -> str:
-        if self.thumbnail_url:
-            try:
-                return f'{settings.ABSOLUTE_URL}{self.thumbnail_image.url}'
-            except:
-                return self.thumbnail_url
-        else:
-            return ''
+    def preview_url(self) -> str:
+        return f'{settings.ABSOLUTE_URL}{self.type}/{self.channel_login}'
+
+    @property
+    def video_url(self) -> str:
+        return f'https://player.twitch.tv/?channel={self.channel_login}&player=facebook&autoplay=true&parent=meta.tag'
 
     @classmethod
-    def update_live_info(cls, channel: 'TwitchChannel', live_title: Optional[str] = None, game_name: Optional[str] = None, thumbnail_url: Optional[str] = None, is_live: Optional[bool] = False, save: Optional[bool] = False) -> None:
+    def update_live_info(cls, channel: 'TwitchChannel', live_title: Optional[str] = None, game_name: Optional[str] = None, thumbnail_url: Optional[str] = None, is_live: Optional[bool] = False) -> None:
         channel.live_title, channel.game_name, channel.thumbnail_url, channel.is_live = live_title, game_name, thumbnail_url, is_live
-        channel.thumbnail_image.save(
-            twitch_thumbnail_directory_path(channel), ContentFile(requests.get(thumbnail_url if thumbnail_url else channel.thumbnail_url).content), save=False) if channel.thumbnail_url else channel.thumbnail_image.delete(save=False)
+        channel.save()
 
 
 # Custom through model with title

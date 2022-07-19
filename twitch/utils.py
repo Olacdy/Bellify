@@ -126,5 +126,5 @@ def get_channel_url_from_title(title: str) -> str:
 
 
 # Returns formatted thumbnail url with given width and height
-def get_formatted_thumbnail_url(url: str, width: Optional[int] = 1920, height: Optional[int] = 1080):
+def get_formatted_thumbnail_url(url: str, width: Optional[int] = 1280, height: Optional[int] = 720):
     return f'{url.split("{")[0]}{width}x{height}.jpg'
