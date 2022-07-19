@@ -20,7 +20,7 @@ def notify_users(users: List[User], channel_info: dict, is_live: Optional[bool] 
 
         if is_live:
             notification = f" — {localization[u.language]['notification'][1] if not 'game_name' in channel_info or channel_info['game_name'] == 'Just Chatting' else localization[u.language]['notification'][2]+' '+channel_info['game_name']+'!'}"
-            href = f"{get_html_link(url=channel_info['preview_url']) if 'thumbnail_url' in channel_info else get_html_link(url=channel_info['url'])}"
+            href = f"{get_html_link(url=channel_info['preview_url']) if 'preview_url' in channel_info else get_html_link(url=channel_info['url'])}"
             return f"{user_title}{notification}{href}"
         else:
             notification = f" — {localization[u.language]['notification'][3 if is_reuploaded else 0]}"
