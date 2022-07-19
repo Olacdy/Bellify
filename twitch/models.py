@@ -50,7 +50,7 @@ class TwitchChannel(Channel):
 
     @property
     def preview_url(self) -> str:
-        return f'{settings.ABSOLUTE_URL}/{self.type}/{self.channel_login}/{datetime.now()}'
+        return f'{settings.ABSOLUTE_URL}/{self.type}/{self.channel_login}/{datetime.now().strftime("%Y_%m_%d_%H_%M_%S")}'
 
     @property
     def video_url(self) -> str:
