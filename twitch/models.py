@@ -13,7 +13,7 @@ from utils.models import nb
 
 # Returns a path to the image
 def twitch_thumbnail_directory_path(instance: 'TwitchChannel', filename: Optional[str] = ''):
-    return f'twitch_thumbnails/{instance.channel_login}-{datetime.now().strftime("%Y_%m_%d_%H_%M_%S")}.jpg'
+    return f'twitch_thumbnails/{instance.channel_login}-{datetime.now().strftime("%Y-%m-%d-%H:%M:%S")}.jpg'
 
 
 # TwitchChannel model
@@ -50,7 +50,7 @@ class TwitchChannel(Channel):
 
     @property
     def preview_url(self) -> str:
-        return f'{settings.ABSOLUTE_URL}/{self.type}/{self.channel_login}/{datetime.now().strftime("%Y_%m_%d_%H_%M_%S")}'
+        return f'{settings.ABSOLUTE_URL}/{self.type}/{self.channel_login}/{datetime.now().strftime("%Y-%m-%d-%H:%M:%S")}'
 
     @property
     def video_url(self) -> str:
