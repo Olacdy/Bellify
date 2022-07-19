@@ -7,7 +7,7 @@ from . import views
 
 urlpatterns = [
     path('', RedirectView.as_view(url=settings.BELLIFY_LINK)),
-    path('twitch/<channel_login>/<date>', views.StreamPageView.as_view()),
+    path('twitch/<channel_login>', views.StreamPageView.as_view()),
     path(f'{settings.TG_WEBHOOK_ENDPOINT}/',
          csrf_exempt(views.TelegramBotWebhookView.as_view())),
 ]
