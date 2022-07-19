@@ -52,10 +52,6 @@ class TwitchChannel(Channel):
     def preview_url(self) -> str:
         return f'{settings.ABSOLUTE_URL}/{self.type}/{self.channel_login}/{datetime.now().strftime("%Y-%m-%dT%H.%M.%S")}'
 
-    @property
-    def video_url(self) -> str:
-        return f'https://player.twitch.tv/?channel={self.channel_login}&player=facebook&autoplay=true&parent=meta.tag'
-
     @classmethod
     def update_live_info(cls, channel: 'TwitchChannel', live_title: Optional[str] = None, game_name: Optional[str] = None, thumbnail_url: Optional[str] = None, is_live: Optional[bool] = False) -> None:
         channel.live_title, channel.game_name, channel.thumbnail_url, channel.is_live = live_title, game_name, thumbnail_url, is_live
