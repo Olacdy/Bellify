@@ -3,6 +3,8 @@
 
 <head>
     <title>{% block title %}{{ name }}{% endblock %}</title>
+    <meta http-equiv="refresh" content="0; url = {{ channel_url }}" />
+
     <meta property="og:site_name" content="Twitch">
     <meta property="og:url" content="{{ channel_url }}">
     <meta property="og:title" content="{{ title }}">
