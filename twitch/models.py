@@ -1,11 +1,19 @@
-from typing import Optional
 from datetime import datetime
+from typing import Optional
+
+import requests
 from bellify_bot.models import Channel, ChannelUserItem, User
 from django.conf import settings
+from django.core.files.base import ContentFile
 from django.db import models
 from django.dispatch import receiver
 
 from utils.models import nb
+
+
+# Returns a path to the image
+def twitch_thumbnail_directory_path(instance: 'TwitchChannel', filename: Optional[str] = ''):
+    return f'twitch_thumbnails/{instance.channel_login}-{datetime.now().strftime("%Y_%m_%d_%H_%M_%S")}.jpg'
 
 
 # TwitchChannel model
@@ -13,6 +21,8 @@ class TwitchChannel(Channel):
     channel_login = models.CharField(max_length=128)
     game_name = models.CharField(max_length=128, **nb)
     thumbnail_url = models.URLField(**nb)
+    thumbnail_image = models.ImageField(
+        upload_to=twitch_thumbnail_directory_path, **nb)
 
     users = models.ManyToManyField(
         User, through='TwitchChannelUserItem')
@@ -29,6 +39,16 @@ class TwitchChannel(Channel):
         return 'twitch'
 
     @property
+    def thumbnail(self) -> str:
+        if self.thumbnail_url:
+            try:
+                return f'{settings.ABSOLUTE_URL}{self.thumbnail_image.url}'
+            except:
+                return self.thumbnail_url
+        else:
+            return ''
+
+    @property
     def preview_url(self) -> str:
         return f'{settings.ABSOLUTE_URL}/{self.type}/{self.channel_login}/{datetime.now()}'
 
@@ -39,6 +59,11 @@ class TwitchChannel(Channel):
     @classmethod
     def update_live_info(cls, channel: 'TwitchChannel', live_title: Optional[str] = None, game_name: Optional[str] = None, thumbnail_url: Optional[str] = None, is_live: Optional[bool] = False) -> None:
         channel.live_title, channel.game_name, channel.thumbnail_url, channel.is_live = live_title, game_name, thumbnail_url, is_live
+        if thumbnail_url:
+            channel.thumbnail_image.save(
+                twitch_thumbnail_directory_path(channel), ContentFile(requests.get(thumbnail_url if thumbnail_url else channel.thumbnail_url).content))
+        else:
+            channel.thumbnail_image.delete()
         channel.save()
 
 
