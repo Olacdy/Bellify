@@ -134,6 +134,8 @@ def _add_twitch_channel(channel_id: str, message: Message, u: User, name: Option
     TwitchChannel.update_live_info(
         channel, live_title, game_name, thumbnail_url, is_live)
 
+    print(channel.preview_url)
+
     if not u in channel.users.all():
         if not TwitchChannelUserItem.objects.filter(user=u, channel_title=channel_name).exists():
             item = TwitchChannelUserItem.objects.create(
