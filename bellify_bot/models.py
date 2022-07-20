@@ -48,6 +48,7 @@ class User(CreateUpdateTracker):
     is_tutorial_finished = models.BooleanField(default=False)
     is_message_icons_disabled = models.BooleanField(default=False)
     is_manage_icons_disabled = models.BooleanField(default=False)
+    is_twitch_thumbnail_disabled = models.BooleanField(default=False)
 
     is_blocked_bot = models.BooleanField(default=False)
 
@@ -88,6 +89,11 @@ class User(CreateUpdateTracker):
     @classmethod
     def set_manage_icons_state(cls, u: User) -> None:
         u.is_manage_icons_disabled = not u.is_manage_icons_disabled
+        u.save()
+
+    @classmethod
+    def set_twitch_thumbnail_state(cls, u: User) -> None:
+        u.is_twitch_thumbnail_disabled = not u.is_twitch_thumbnail_disabled
         u.save()
 
     @classmethod

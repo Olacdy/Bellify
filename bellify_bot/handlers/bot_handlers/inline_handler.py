@@ -185,6 +185,18 @@ def inline_settings_handler(update: Update, context: CallbackContext) -> None:
             )
         except error.BadRequest:
             pass
+    elif 'thumbnail' in query_data:
+        User.set_twitch_thumbnail_state(u)
+
+        reply_markup = InlineKeyboardMarkup(
+            get_settings_inline_keyboard(u))
+
+        try:
+            query.edit_message_reply_markup(
+                reply_markup=reply_markup
+            )
+        except error.BadRequest:
+            pass
     elif 'language' in query_data:
         User.set_language(u, query_data[-1])
 
