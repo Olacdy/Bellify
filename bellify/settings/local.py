@@ -192,7 +192,7 @@ REQUESTS_DELAY = 0.05
 # Upgrades section
 
 CURRENCY = 'USD'
-PREMIUM_PRICE = 400
+PREMIUM_PRICE = 300
 
 CHANNELS_INFO = {
     'youtube': {
