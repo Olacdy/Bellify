@@ -25,7 +25,7 @@ from utils.keyboards import (get_manage_inline_keyboard,
 @log_errors
 def check_twitch() -> None:
     channels = list(TwitchChannel.objects.filter(users__status='P'))
-    channels_ids = [channel.channel_id for channel in channels] * 405
+    channels_ids = [channel.channel_id for channel in channels]
     channels_ids = [channels_ids[i * 100:(i + 1) * 100]
                     for i in range((len(channels_ids) + 100 - 1) // 100)]
 
