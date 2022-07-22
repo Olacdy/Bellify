@@ -38,7 +38,7 @@ class Migration(migrations.Migration):
                 ('status', models.CharField(choices=[
                  ('B', 'Basic'), ('P', 'Premium')], default='B', max_length=1)),
                 ('language', models.CharField(blank=True, choices=[('en', 'English'), ('ru', 'Russian'), (
-                    'ua', 'Ukrainian')], default=None, help_text="Telegram client's language", max_length=2, null=True)),
+                    'ua', 'Ukrainian')], default=None, help_text='Telegram client\'s language', max_length=2, null=True)),
                 ('max_youtube_channels_number', models.PositiveIntegerField(
                     blank=True, default=5, null=True, verbose_name='YouTube Quota')),
                 ('max_twitch_channels_number', models.PositiveIntegerField(

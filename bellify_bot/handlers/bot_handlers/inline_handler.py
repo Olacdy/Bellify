@@ -29,7 +29,7 @@ def inline_language_handler(update: Update, context: CallbackContext) -> None:
     query = update.callback_query
     query_data, u = get_query_data_and_user(query)
 
-    User.set_language(u, query_data[-1])
+    u.set_language(query_data[-1])
 
     query.edit_message_text(
         text=localization[query_data[-1]]['language_command'][1],
@@ -42,8 +42,8 @@ def inline_start_handler(update: Update, context: CallbackContext) -> None:
     query = update.callback_query
     query_data, u = get_query_data_and_user(query)
 
-    User.set_tutorial_state(u, False)
-    User.set_language(u, query_data[-1])
+    u.set_tutorial_state(False)
+    u.set_language(query_data[-1])
 
     tutorial_reply(query, u.language if u.language else query_data[-1], u)
 
@@ -53,7 +53,7 @@ def inline_tutorial_handler(update: Update, context: CallbackContext) -> None:
     query = update.callback_query
     _, u = get_query_data_and_user(query)
 
-    User.set_tutorial_state(u, False)
+    u.set_tutorial_state(False)
 
     tutorial_reply(query, u.language, u)
 
@@ -68,8 +68,8 @@ def inline_add_handler(update: Update, context: CallbackContext) -> None:
             text=localization[u.language]['add'][0],
             parse_mode='HTML'
         )
-        User.set_menu_field(
-            u, f"name{settings.SPLITTING_CHARACTER}{query_data[0]}{settings.SPLITTING_CHARACTER}{query_data[1]}")
+        u.set_menu_field(
+            f'name{settings.SPLITTING_CHARACTER}{query_data[0]}{settings.SPLITTING_CHARACTER}{query_data[1]}')
     else:
         channel_id, channel_type = query_data[-2], query_data[-1]
         query.delete_message()
@@ -111,7 +111,7 @@ def inline_manage_handler(update: Update, context: CallbackContext) -> None:
     else:
         try:
             query.edit_message_text(
-                text=localization[u.language]["help"][6],
+                text=localization[u.language]['help'][6],
                 reply_markup=InlineKeyboardMarkup(
                     get_manage_inline_keyboard(u)),
                 parse_mode='HTML'
@@ -172,9 +172,9 @@ def inline_settings_handler(update: Update, context: CallbackContext) -> None:
 
     if 'icons' in query_data:
         if 'manage' in query_data:
-            User.set_manage_icons_state(u)
+            u.set_manage_icons_state()
         elif 'message' in query_data:
-            User.set_message_icons_state(u)
+            u.set_message_icons_state()
 
         reply_markup = InlineKeyboardMarkup(
             get_settings_inline_keyboard(u))
@@ -186,7 +186,7 @@ def inline_settings_handler(update: Update, context: CallbackContext) -> None:
         except error.BadRequest:
             pass
     elif 'thumbnail' in query_data:
-        User.set_twitch_thumbnail_state(u)
+        u.set_twitch_thumbnail_state()
 
         reply_markup = InlineKeyboardMarkup(
             get_settings_inline_keyboard(u))
@@ -198,7 +198,7 @@ def inline_settings_handler(update: Update, context: CallbackContext) -> None:
         except error.BadRequest:
             pass
     elif 'language' in query_data:
-        User.set_language(u, query_data[-1])
+        u.set_language(query_data[-1])
 
         reply_markup = InlineKeyboardMarkup(
             get_settings_inline_keyboard(u))

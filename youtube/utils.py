@@ -23,15 +23,15 @@ def get_youtube_channels_info(ids: List[str]) -> List[Tuple[str]]:
                 live_html = soup.BeautifulSoup(live_text, 'lxml')
                 videos_xml = soup.BeautifulSoup(video_text, 'xml')
                 try:
-                    live_title, live_url, is_upcoming = live_html.find("meta", {"name": "title"})['content'], live_html.find(
-                        "link", {"rel": "canonical"})['href'], any(re.findall(r'(\"isUpcoming\":true)', live_text))
+                    live_title, live_url, is_upcoming = live_html.find('meta', {'name': 'title'})['content'], live_html.find(
+                        'link', {'rel': 'canonical'})['href'], any(re.findall(r'(\"isUpcoming\":true)', live_text))
                 except TypeError:
                     live_title, live_url, is_upcoming = None, None, None
-                for entry in videos_xml.find_all("entry"):
+                for entry in videos_xml.find_all('entry'):
                     video_title = entry.title.text
                     video_url = entry.link['href']
                     video_published = datetime.strptime(
-                        entry.published.text, "%Y-%m-%dT%H:%M:%S%z")
+                        entry.published.text, '%Y-%m-%dT%H:%M:%S%z')
                     channel_title = entry.author.find('name').text
                     if not (entry.statistics['views'] == '0' and entry.starRating['count'] != '0') and video_url != live_url:
                         return video_title, video_url, video_published, live_title, live_url, is_upcoming, channel_title
@@ -54,7 +54,7 @@ def get_url_from_id(channel_id: str) -> Union[str, None]:
 # Returns html of a page by url
 def _get_html_response_youtube(url: str) -> str:
     session = requests.Session()
-    session.cookies.set("CONSENT", "YES+cb", domain=".youtube.com")
+    session.cookies.set('CONSENT', 'YES+cb', domain='.youtube.com')
     response = session.get(url, headers=Headers().generate())
     session.close()
 
@@ -66,11 +66,11 @@ def scrape_last_video_and_channel_title(id: str, live_url: Optional[str] = None)
     video_text = _get_html_response_youtube(
         f'https://www.youtube.com/feeds/videos.xml?channel_id={id}')
     videos_xml = soup.BeautifulSoup(video_text, 'xml')
-    for entry in videos_xml.find_all("entry"):
+    for entry in videos_xml.find_all('entry'):
         video_title = entry.title.text
         video_url = entry.link['href']
         video_published = datetime.strptime(
-            entry.published.text, "%Y-%m-%dT%H:%M:%S%z")
+            entry.published.text, '%Y-%m-%dT%H:%M:%S%z')
         channel_title = entry.author.find('name').text
         if not (entry.statistics['views'] == '0' and entry.starRating['count'] != '0') and video_url != live_url:
             return video_title, video_url, video_published, channel_title
@@ -82,8 +82,8 @@ def scrape_channel_live(id: str) -> Tuple[Union[str, None]]:
         f'https://www.youtube.com/channel/{id}/live')
     live_html = soup.BeautifulSoup(live_text, 'lxml')
     try:
-        return live_html.find("meta", {"name": "title"})['content'], live_html.find(
-            "link", {"rel": "canonical"})['href'], any(re.findall(r'(\"isUpcoming\":true)', live_text))
+        return live_html.find('meta', {'name': 'title'})['content'], live_html.find(
+            'link', {'rel': 'canonical'})['href'], any(re.findall(r'(\"isUpcoming\":true)', live_text))
     except TypeError:
         return None, None, None
 

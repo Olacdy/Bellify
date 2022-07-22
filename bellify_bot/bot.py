@@ -235,7 +235,7 @@ if platform.system() == 'Windows':
     asyncio.set_event_loop_policy(
         asyncio.WindowsSelectorEventLoopPolicy())
 try:
-    TELEGRAM_BOT_USERNAME = bot.get_me()["username"]
+    TELEGRAM_BOT_USERNAME = bot.get_me()['username']
 except Unauthorized:
     sys.exit(1)
 n_workers = 4 if settings.DEBUG else 4
@@ -254,7 +254,7 @@ def run_pooling():
     if settings.DEBUG:
         set_up_commands(bot_pool)
     bot_info = bot_pool.get_me()
-    bot_link = f"https://t.me/" + bot_info["username"]
+    bot_link = f'https://t.me/' + bot_info['username']
 
     print(f"Pooling of '{bot_link}' started")
 

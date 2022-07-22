@@ -25,7 +25,7 @@ def echo_handler(update: Update, context: CallbackContext) -> None:
     if all(echo_data):
         if 'name' in echo_data:
             if not get_channel_url_type(user_text):
-                User.set_menu_field(u)
+                u.set_menu_field()
                 channel_id, channel_type = echo_data[-2], echo_data[-1]
                 add(channel_id, channel_type, update.message,
                     u, user_text.lstrip())
@@ -100,7 +100,7 @@ def echo_handler(update: Update, context: CallbackContext) -> None:
 
                 reply_markup = InlineKeyboardMarkup(keyboard)
 
-                User.set_menu_field(u)
+                u.set_menu_field()
 
                 if u.is_tutorial_finished:
                     update.message.reply_text(

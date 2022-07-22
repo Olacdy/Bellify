@@ -136,7 +136,7 @@ MEDIA_URL = '/media/'
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
@@ -160,19 +160,19 @@ BELLIFY_LINK = 'https://t.me/BellifyBot'
 
 # Celery section
 
-CELERY_BROKER_URL = os.environ.get("REDIS_URL", "") + "/1"
-CELERY_RESULT_BACKEND = os.environ.get("REDIS_URL", "") + "/1"
+CELERY_BROKER_URL = os.environ.get('REDIS_URL', '') + '/1'
+CELERY_RESULT_BACKEND = os.environ.get('REDIS_URL', '') + '/1'
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 
 CELERY_BEAT_SCHEDULE = {
-    "check_twitch": {
-        "task": "bellify.tasks.check_twitch",
-        "schedule": crontab(minute='0-57/3'),
+    'check_twitch': {
+        'task': 'bellify.tasks.check_twitch',
+        'schedule': crontab(minute='0-57/3'),
     },
-    "check_youtube": {
-        "task": "bellify.tasks.check_youtube",
-        "schedule": crontab(minute='1-58/3'),
+    'check_youtube': {
+        'task': 'bellify.tasks.check_youtube',
+        'schedule': crontab(minute='1-58/3'),
     },
 }
 
@@ -185,14 +185,12 @@ PAGINATION_SIZE = 10
 
 SPLITTING_CHARACTER = 'ø'
 
-SESSION_CLIENT_COOKIES = {"CONSENT": "YES+cb"}
-
-REQUESTS_DELAY = 0.05
+SESSION_CLIENT_COOKIES = {'CONSENT': 'YES+cb'}
 
 # Upgrades section
 
 CURRENCY = 'USD'
-PREMIUM_PRICE = 400
+PREMIUM_PRICE = 300
 
 CHANNELS_INFO = {
     'youtube': {

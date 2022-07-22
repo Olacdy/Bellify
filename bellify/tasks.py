@@ -70,19 +70,19 @@ def broadcast_message(
                 parse_mode=parse_mode,
                 reply_markup=reply_markup_,
             )
-            logger.info(f"Broadcast message was sent to {user_id}")
+            logger.info(f'Broadcast message was sent to {user_id}')
         except Exception as e:
-            logger.error(f"Failed to send message to {user_id}, reason: {e}")
+            logger.error(f'Failed to send message to {user_id}, reason: {e}')
         time.sleep(max(sleep_between, 0.1))
 
-    logger.info("Broadcast finished!")
+    logger.info('Broadcast finished!')
 
 
 @app.task(ignore_result=True)
 def check_youtube():
-    call_command("check_youtube", )
+    call_command('check_youtube', )
 
 
 @app.task(ignore_result=True)
 def check_twitch():
-    call_command("check_twitch",)
+    call_command('check_twitch',)

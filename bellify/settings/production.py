@@ -18,7 +18,7 @@ MEDIA_ROOT = '/app/storage'
 
 ABSOLUTE_URL = f'https://{ALLOWED_HOSTS[0]}'
 
-if "DATABASE_URL" in env:
+if 'DATABASE_URL' in env:
     DATABASES['default'] = env.db('DATABASE_URL')
     DATABASES['default']['ENGINE'] = 'django.db.backends.postgresql_psycopg2'
     DATABASES['default']['ATOMIC_REQUESTS'] = True
@@ -29,8 +29,8 @@ LOGGING = {
     'disable_existing_loggers': False,
     'formatters': {
         'verbose': {
-            'format': "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
-            'datefmt': "%d/%b/%Y %H:%M:%S"
+            'format': '[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s',
+            'datefmt': '%d/%b/%Y %H:%M:%S'
         },
         'simple': {
             'format': '%(levelname)s %(message)s'
