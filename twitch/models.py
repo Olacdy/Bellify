@@ -18,6 +18,8 @@ def twitch_thumbnail_directory_path(instance: 'TwitchChannel', filename: Optiona
 
 # TwitchChannel model
 class TwitchChannel(Channel):
+    _bearer_token = ''
+
     channel_login = models.CharField(max_length=128)
     game_name = models.CharField(max_length=128, **nb)
     thumbnail_url = models.URLField(**nb)
@@ -33,6 +35,36 @@ class TwitchChannel(Channel):
 
     def __str__(self):
         return f'{self.channel_title}'
+
+    def update_live_info(self: 'TwitchChannel', live_title: Optional[str] = None, game_name: Optional[str] = None, thumbnail_url: Optional[str] = None, is_live: Optional[bool] = False) -> None:
+        self.live_title, self.game_name, self.thumbnail_url, self.is_live = live_title, game_name, thumbnail_url, is_live
+        if thumbnail_url:
+            self.thumbnail_image.save(
+                twitch_thumbnail_directory_path(self), ContentFile(requests.get(thumbnail_url if thumbnail_url else self.thumbnail_url).content))
+        else:
+            self.thumbnail_image.delete()
+        self.save()
+
+    @classmethod
+    def get_or_update_bearer_token(cls, update: Optional[bool] = False):
+        if not cls._bearer_token or update:
+
+            headers = {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            }
+
+            params = {
+                'client_id': settings.TWITCH_CLIENT_ID,
+                'client_secret': settings.TWITCH_CLIENT_SECRET,
+                'grant_type': 'client_credentials'
+            }
+
+            response = requests.post(
+                'https://id.twitch.tv/oauth2/token', headers=headers, params=params)
+
+            cls._bearer_token = response.json()['access_token']
+
+        return cls._bearer_token
 
     @property
     def type(self) -> str:
@@ -51,16 +83,6 @@ class TwitchChannel(Channel):
     @property
     def preview_url(self) -> str:
         return f'{settings.ABSOLUTE_URL}/{self.type}/{self.channel_login}/{datetime.now().strftime("%Y-%m-%dT%H.%M.%S")}'
-
-    @classmethod
-    def update_live_info(cls, channel: 'TwitchChannel', live_title: Optional[str] = None, game_name: Optional[str] = None, thumbnail_url: Optional[str] = None, is_live: Optional[bool] = False) -> None:
-        channel.live_title, channel.game_name, channel.thumbnail_url, channel.is_live = live_title, game_name, thumbnail_url, is_live
-        if thumbnail_url:
-            channel.thumbnail_image.save(
-                twitch_thumbnail_directory_path(channel), ContentFile(requests.get(thumbnail_url if thumbnail_url else channel.thumbnail_url).content))
-        else:
-            channel.thumbnail_image.delete()
-        channel.save()
 
 
 # Custom through model with title

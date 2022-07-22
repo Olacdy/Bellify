@@ -29,19 +29,17 @@ class YouTubeChannel(Channel):
     def __str__(self):
         return f'{self.channel_title}'
 
+    def update_live_info(self: 'YouTubeChannel', live_title: Optional[str] = None, live_url: Optional[str] = None, is_upcoming: Optional[bool] = None, is_live: Optional[bool] = False):
+        self.live_title, self.live_url, self.is_upcoming, self.is_live = live_title, live_url, is_upcoming, is_live
+        self.save()
+
+    def update_video_info(self: 'YouTubeChannel', video_title: Optional[str] = None, video_url: Optional[str] = None, video_published: Optional[datetime.datetime] = None):
+        self.video_title, self.video_url, self.video_published = video_title, video_url, video_published
+        self.save()
+
     @property
     def type(self) -> str:
         return 'youtube'
-
-    @classmethod
-    def update_live_info(cls, channel: 'YouTubeChannel', live_title: Optional[str] = None, live_url: Optional[str] = None, is_upcoming: Optional[bool] = None, is_live: Optional[bool] = False):
-        channel.live_title, channel.live_url, channel.is_upcoming, channel.is_live = live_title, live_url, is_upcoming, is_live
-        channel.save()
-
-    @classmethod
-    def update_video_info(cls, channel: 'YouTubeChannel', video_title: Optional[str] = None, video_url: Optional[str] = None, video_published: Optional[datetime.datetime] = None):
-        channel.video_title, channel.video_url, channel.video_published = video_title, video_url, video_published
-        channel.save()
 
 
 # Custom through model with title

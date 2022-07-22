@@ -41,9 +41,9 @@ class User(CreateUpdateTracker):
         max_length=2, choices=LANGUAGE_CHOICES, default=None, help_text='Telegram client\'s language', **nb)
 
     max_youtube_channels_number = models.PositiveIntegerField(verbose_name='YouTube Quota',
-                                                              default=settings.CHANNELS_INFO["youtube"]["initial_number"], **nb)
+                                                              default=settings.CHANNELS_INFO['youtube']['initial_number'], **nb)
     max_twitch_channels_number = models.PositiveIntegerField(verbose_name='Twitch Quota',
-                                                             default=settings.CHANNELS_INFO["twitch"]["initial_number"], **nb)
+                                                             default=settings.CHANNELS_INFO['twitch']['initial_number'], **nb)
 
     is_tutorial_finished = models.BooleanField(default=False)
     is_message_icons_disabled = models.BooleanField(default=False)
@@ -64,42 +64,35 @@ class User(CreateUpdateTracker):
     def __str__(self):
         return f'@{self.username}' if self.username is not None else f'{self.user_id}'
 
-    @classmethod
-    def get_max_for_channel(cls, u, channel_type: str) -> int:
+    def get_max_for_channel(self: User, channel_type: str) -> int:
         if 'YouTube' in channel_type:
-            return u.max_youtube_channels_number
+            return self.max_youtube_channels_number
         elif 'Twitch' in channel_type:
-            return u.max_twitch_channels_number
+            return self.max_twitch_channels_number
 
-    @classmethod
-    def set_menu_field(cls, u: User, value: Optional[str] = '') -> None:
-        u.menu = value
-        u.save()
+    def set_menu_field(self: User, value: Optional[str] = '') -> None:
+        self.menu = value
+        self.save()
 
-    @classmethod
-    def set_language(cls, u: User, value: str) -> None:
-        u.language = value
-        u.save()
+    def set_language(self: User, value: str) -> None:
+        self.language = value
+        self.save()
 
-    @classmethod
-    def set_message_icons_state(cls, u: User) -> None:
-        u.is_message_icons_disabled = not u.is_message_icons_disabled
-        u.save()
+    def set_message_icons_state(self: User) -> None:
+        self.is_message_icons_disabled = not self.is_message_icons_disabled
+        self.save()
 
-    @classmethod
-    def set_manage_icons_state(cls, u: User) -> None:
-        u.is_manage_icons_disabled = not u.is_manage_icons_disabled
-        u.save()
+    def set_manage_icons_state(self: User) -> None:
+        self.is_manage_icons_disabled = not self.is_manage_icons_disabled
+        self.save()
 
-    @classmethod
-    def set_twitch_thumbnail_state(cls, u: User) -> None:
-        u.is_twitch_thumbnail_disabled = not u.is_twitch_thumbnail_disabled
-        u.save()
+    def set_twitch_thumbnail_state(self: User) -> None:
+        self.is_twitch_thumbnail_disabled = not self.is_twitch_thumbnail_disabled
+        self.save()
 
-    @classmethod
-    def set_tutorial_state(cls, u: User, value: bool) -> None:
-        u.is_tutorial_finished = value
-        u.save()
+    def set_tutorial_state(self: User, value: bool) -> None:
+        self.is_tutorial_finished = value
+        self.save()
 
     @classmethod
     def get_or_create_profile(cls, chat_id: str, tg_user: TgUser, reset: Optional[bool] = True):
@@ -117,7 +110,7 @@ class User(CreateUpdateTracker):
             user_data[0].last_name = tg_user.last_name
             user_data[0].save()
         if reset:
-            User.set_menu_field(user_data[0])
+            user_data[0].set_menu_field()
         return user_data
 
     @property
@@ -128,7 +121,7 @@ class User(CreateUpdateTracker):
     def tg_str(self) -> str:
         if self.username:
             return f'@{self.username}'
-        return f"{self.first_name} {self.last_name}" if self.last_name else f"{self.first_name}"
+        return f'{self.first_name} {self.last_name}' if self.last_name else f'{self.first_name}'
 
 
 class ChannelUserItem(CreateUpdateTracker):
@@ -162,10 +155,9 @@ class ChannelUserItem(CreateUpdateTracker):
         elif 'Twitch' in channel_type:
             return apps.get_model('twitch', 'TwitchChannelUserItem').objects.filter(user=u).count() + 1
 
-    @classmethod
-    def mute_channel(cls, u: User, channel: 'ChannelUserItem') -> None:
-        channel.is_muted = not channel.is_muted
-        channel.save()
+    def mute_channel(self: 'ChannelUserItem') -> None:
+        self.is_muted = not self.is_muted
+        self.save()
 
 
 class Channel(CreateUpdateTracker):

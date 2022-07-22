@@ -19,9 +19,9 @@ from django.contrib import admin
 from django.urls import path
 from django.urls.conf import include
 
-admin.site.site_header = "Bellify Admin"
-admin.site.site_title = "Bellify Admin"
-admin.site.index_title = "Welcome to Bellify Admin Page"
+admin.site.site_header = 'Bellify Admin'
+admin.site.site_title = 'Bellify Admin'
+admin.site.index_title = 'Welcome to Bellify Admin Page'
 admin.site.site_url = settings.BELLIFY_LINK
 admin.site.site_header = 'Bellify Bot Admin Page'
 

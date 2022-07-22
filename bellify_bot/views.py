@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 class StreamPageView(View):
-    template_name = "twitch/stream_page.html"
+    template_name = 'twitch/stream_page.html'
 
     def get(self, request, channel_login, date):
         try:
@@ -31,7 +31,7 @@ class TelegramBotWebhookView(View):
             process_telegram_event(json.loads(request.body))
         else:
             process_telegram_event.delay(json.loads(request.body))
-        return JsonResponse({"ok": "POST request processed"})
+        return JsonResponse({'ok': 'POST request processed'})
 
     def get(self, request, *args, **kwargs):
-        return JsonResponse({"ok": "Get request received! But nothing done"})
+        return JsonResponse({'ok': 'Get request received! But nothing done'})

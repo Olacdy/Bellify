@@ -72,7 +72,7 @@ localization = {
         [
             'Select the configuration that You would like to change',
             ['Type Icons in Messages', 'Type Icons in Channel list',
-                'Twitch thumbnail preview'],
+                'Twitch Thumbnail Preview'],
             'The work will be continued in 🇬🇧English.',
         ]
     },
