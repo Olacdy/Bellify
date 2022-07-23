@@ -39,11 +39,11 @@ def check_twitch() -> None:
                 channel.update_live_info(
                     live_title=stream_data[0], game_name=stream_data[1], thumbnail_url=stream_data[2], is_live=stream_data[3])
                 tasks.notify_users([item.user for item in TwitchChannelUserItem.objects.filter(
-                    channel=channel, user__status='P')], channel_info={'id': channel.channel_id,
-                                                                       'url': channel.channel_url,
-                                                                       'title': channel.live_title,
-                                                                       'game_name': channel.game_name,
-                                                                       'preview_url': channel.preview_url}, is_live=True)
+                    channel=channel)], channel_info={'id': channel.channel_id,
+                                                     'url': channel.channel_url,
+                                                     'title': channel.live_title,
+                                                     'game_name': channel.game_name,
+                                                     'preview_url': channel.preview_url}, is_live=True)
         else:
             channel.update_live_info()
 
