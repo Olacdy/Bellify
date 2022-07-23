@@ -76,9 +76,15 @@ def check_youtube() -> None:
                                                                            'url': channel.live_url,
                                                                            'title': channel.live_title}, is_live=True)
         else:
-            if channel.live_title:
+            if channel.is_live:
+                channel.update_live_info(
+                    live_title=channel.live_title, live_url=channel.live_url, is_upcoming=channel.is_upcoming)
+            elif not channel.live_title is None:
                 channel.update_live_info(
                     live_url=channel.live_url, is_upcoming=channel.is_upcoming)
+            elif not channel.is_upcoming is None:
+                channel.update_live_info(
+                    live_url=channel.live_url)
             else:
                 channel.update_live_info()
 
