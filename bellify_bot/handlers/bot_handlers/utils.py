@@ -24,7 +24,7 @@ from utils.keyboards import (get_manage_inline_keyboard,
 # Checks for streams and alerts every premium user if there is one
 @log_errors
 def check_twitch() -> None:
-    channels = list(TwitchChannel.objects.filter(users__status='P'))
+    channels = list(TwitchChannel.objects.all())
     channels_ids = [channel.channel_id for channel in channels]
     channels_ids = [channels_ids[i * 100:(i + 1) * 100]
                     for i in range((len(channels_ids) + 100 - 1) // 100)]
