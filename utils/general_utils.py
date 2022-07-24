@@ -6,8 +6,8 @@ from bellify_bot.models import ChannelUserItem, User
 from django.conf import settings
 from telegram import (CallbackQuery, InlineKeyboardButton,
                       InlineKeyboardMarkup, MessageEntity)
-from twitch.utils import is_twitch_channel_url
-from youtube.utils import is_youtube_channel_url
+from twitch.utils import is_twitch_url
+from youtube.utils import is_youtube_url
 
 
 def log_errors(f):
@@ -25,9 +25,9 @@ def log_errors(f):
 # Checks if given string is url
 @log_errors
 def get_channel_url_type(string: str) -> Union[str, None]:
-    if is_youtube_channel_url(string):
+    if is_youtube_url(string):
         return 'YouTube'
-    elif is_twitch_channel_url(string):
+    elif is_twitch_url(string):
         return 'Twitch'
     else:
         return None
