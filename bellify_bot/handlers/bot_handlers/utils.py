@@ -11,7 +11,7 @@ from twitch.utils import (get_channel_url_from_title, get_streams_info,
                           get_twitch_streams_info, get_users_info)
 from youtube.models import YouTubeChannel, YouTubeChannelUserItem
 from youtube.utils import (get_url_from_id, get_youtube_channels_info,
-                           is_youtube_channel_url, scrape_channel_live,
+                           is_youtube_url, scrape_channel_live,
                            scrape_last_video_and_channel_title)
 
 from utils.general_utils import (get_html_bold, get_html_link,
@@ -66,7 +66,7 @@ def check_youtube() -> None:
             channel.update_video_info(
                 video_title=video_title, video_url=video_url, video_published=video_published)
 
-        if live_title and live_url and not is_youtube_channel_url(live_url):
+        if live_title and live_url and not is_youtube_url(live_url):
             if live_url != channel.live_url or (is_upcoming != channel.is_upcoming and channel.is_upcoming == True):
                 channel.update_live_info(
                     live_title=live_title, live_url=live_url, is_upcoming=is_upcoming, is_live=True)

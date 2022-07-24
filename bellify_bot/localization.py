@@ -41,7 +41,7 @@ localization = {
         'help':
         [
             ['Bellify Bot manual\n\nThis bot is capable of storing and notifying users when a new video is uploaded on the YouTube channel.\n\nIn premium mode, live stream notifications functionality is available for YouTube and Twitch channels.\n\nDeveloper contacts:\nTelegram - https://t.me/golovakanta\nGmail - oleg.didechkin@gmail.com\n\nTo start tutorial click on the button below.', 'Start tutorial'],
-            ['To start using this bot is recommended to complete a little tutorial. It will help You to familiarize the main functionality and using the bot right away.\n\nFirst things first, let\'s send a link to a sample YouTube channel.\nCopy the link below and send it to a bot.\n\nExample link (click on it):',
+            ['To start using this bot is recommended to complete a little tutorial. It will help You to familiarize the main functionality and using the bot right away.\n\nFirst things first, let\'s send a link of a sample YouTube channel.\nCopy the link below and send it to a bot, or You can provide Your own link to a channel or to a video from the interested channel.\n\nExample link (click on it):',
              'You have already added all of the sample channels.\n\nUse /manage command to continue the tutorial.'],
             ['At this point, You can decide whether You want to change the default channel name to Your custom one.\nChannel default name is: ',
                 '\n\nWould You like to keep this name?'],
@@ -65,7 +65,7 @@ localization = {
             'Sorry, You are do not have a premium account, so the Twitch channels are not available to You at the time.\n\nYou can support the project and upgrade to premium.',
             ['Sorry, You have exceeded Your limit on the number of channels. Try to delete one of the channels You have already added.\n\nOr support the project and increase Your limit.',
              'Looks like You are already have channels in Your list.\n\nYou can increase Your quota or use /manage command to continue the tutorial.'],
-            'Doesn\'t look like a channel URL. Please review the URL You sent and try again.',
+            'Doesn\'t look like a proper URL. Please review the URL You sent and try again.',
             'The name seems like an URL of a channel. Please, try to send a proper name.'
         ],
         'settings':
@@ -116,7 +116,7 @@ localization = {
         'help':
         [
             ['Bellify Bot мануал\n\nЭтот бот сохраняет добавленные каналы и уведомляет пользователей о выходе нового видео.\n\nВ премиум моде пользователи также будут получать уведомления о начале трансляции на YouTube и Twitch каналах.\n\nКонтакты разработчика:\nTelegram - https://t.me/golovakanta\nGmail - oleg.didechkin@gmail.com\n\nЧтобы начать обучение, нажмите на кнопку ниже.', 'Начать обучение'],
-            ['Для того чтобы начать пользоваться этим ботом, рекомендуется пройти небольшое обучение. Оно поможет Вам ознакомиться с основной функциональностью и пользоваться ботом без задержек.\n\nПрежде всего, давайте пришлем боту ссылку-пример.\nСкопируйте и пришлите ссылку ниже.\n\nСсылка-пример (нажмите, чтобы скопировать):',
+            ['Для того чтобы начать пользоваться этим ботом, рекомендуется пройти небольшое обучение. Оно поможет Вам ознакомиться с основной функциональностью и пользоваться ботом без задержек.\n\nПрежде всего, давайте пришлем боту ссылку-пример, или Вы можете прислать ссылку на интересующий Вас канал или его видео.\nСкопируйте и пришлите ссылку ниже.\n\nСсылка-пример (нажмите, чтобы скопировать):',
              'Вы уже добавили все ссылки-примеры.\n\nВоспользуйтесь командой /manage, чтобы продолжить обучение.'],
             ['На этом моменте Вы можете решить, хотите ли Вы поменять имя канала установив собственное.\nИмя канала сейчас: ',
                 '\n\nХотите оставить это имя?'],
@@ -140,8 +140,8 @@ localization = {
             'Извините, но Ваш аккаунт не является премиумным, поэтому добавление Twitch каналов Вам пока не доступно.\n\nВы можете поддержать проект и улучшить аккаунт.',
             ['Извините, Вы превысили Ваш лимит на количество каналов. Попробуйте удалить один из уже добавленных Вами каналов.\n\nИли поддержите проект и увеличьте Ваш лимит.',
              'Похоже, что Вы уже имеете добавленные каналы.\n\nВы можете увеличить Вашу квоту, или же воспользуйтесь командой /manage, чтобы продолжить обучение.'],
-            'URL-адрес не похож на реальный URL канала. Пожалуйста, проверьте правильность URL и повторите попытку.',
-            'Присланное имя похоже на ссылку канала. Пожалуйста, пришлите подходящее имя.'
+            'URL-адрес не похож на настоящий URL. Пожалуйста, проверьте правильность URL и повторите попытку.',
+            'Присланное имя похоже на ссылку. Пожалуйста, пришлите подходящее имя.'
         ],
         'settings':
         [
@@ -191,7 +191,7 @@ localization = {
         'help':
         [
             ['Bellify Bot мануал\n\nЦей бот зберігає додані канали та повідомляє користувачів при виході нового відео.\n\nУ преміум режимі користувачі також будуть отримувати повідомлення про початок трансляції на YouTube та Twitch каналах.\n\nКонтакти розробника:\nTelegram - https://t.me/golovakanta\nGmail - oleg.didechkin@gmail.com\n\nДля того аби почати туторіал, натисніть на кнопку нижче.', 'Почати туторіал'],
-            ['Аби почати користуватись цим ботом, рекомендовано завершити невеличкий туторіал. Він допоможе ознайомитись Вам з основною функціональністю та почати користування ботом без затримок.\n\nПерш за все, давайте надішлемо боту посилання-приклад.\nСкопіюйте та надішліть посилання нижче.\n\nПосилання-приклад (натисніть, щоб скопіювати):',
+            ['Аби почати користуватись цим ботом, рекомендовано завершити невеличкий туторіал. Він допоможе ознайомитись Вам з основною функціональністю та почати користування ботом без затримок.\n\nПерш за все, давайте надішлемо боту посилання-приклад, або Ви можете надіслати посилання на канал, який Вас цікавить, або посилання на одне з його відео.\nСкопіюйте та надішліть посилання нижче.\n\nПосилання-приклад (натисніть, щоб скопіювати):',
              'Ви вже додали усі посилання-приклади.\n\nДля того аби продовжити туторіал, скористайтеся командою /manage.'],
             ['На цьому етапі Ви можете вирішити, чи хочете змінити ім\'я канала, встановивши власне.\nІм\'я канала зараз: ',
                 '\n\nХочете залишити це ім\'я?'],
@@ -215,8 +215,8 @@ localization = {
             'Вибачте, але Ваш акаунт не має статусу преміум, тому додавання Twitch каналів Вам поки не доступне.\n\nВи можете підтримати проект та покращити акаунт.',
             ['Вибачте, Ви перевищили Ваш ліміт на кількість каналів. Спробуйте видалити один з вже доданих Вами каналів.\n\nАбо підтримайте проект та збільшіть Ваш ліміт.',
              'Схоже, що Ви вже маєте додані канали.\n\nВи можете збільшити Вашу квоту, або ж скористайтеся командою /manage, аби продовжити туторіал.'],
-            'URL-адреса не схожа на реальний URL каналу. Будь-ласка, перевірте правильність URL та повторіть спробу.',
-            'Надіслане ім\'я схоже на посилання каналу. Будь-ласка, спробуйте надіслати більш вдале ім\'я.'
+            'URL-адреса не схожа на справжню URL. Будь-ласка, перевірте правильність URL та повторіть спробу.',
+            'Надіслане ім\'я схоже на посилання. Будь-ласка, спробуйте надіслати більш вдале ім\'я.'
         ],
         'settings':
         [
