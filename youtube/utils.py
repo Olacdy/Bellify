@@ -41,9 +41,19 @@ def get_youtube_channels_info(ids: List[str]) -> List[Tuple[str]]:
     return sync.async_to_sync(get_all)(ids)
 
 
-# Checks if given string is youtube channel url
+# Checks if given string is a youtube channel url
 def is_youtube_channel_url(string: str) -> bool:
     return bool(re.search(r'http[s]*://(?:www\.)?youtube.com/(?:c|user|channel)/([\%\w-]+)(?:[/]*)', string))
+
+
+# Checks if given string is a youtube video url
+def is_youtube_video_url(string: str) -> bool:
+    return bool(re.search(r'http[s]*://(?:www\.)?(?:youtu\.be|youtube\.com)/(?:watch\?v=|shorts/)?([\%\w-]+)(?:[/]*)', string))
+
+
+# Checks if given string is a youtube url
+def is_youtube_url(string: str) -> bool:
+    return is_youtube_channel_url(string) or is_youtube_video_url(string)
 
 
 # Returns channel url from channel id

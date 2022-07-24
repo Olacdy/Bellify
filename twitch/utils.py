@@ -92,7 +92,7 @@ def get_streams_info(ids: List[str]) -> List[tuple]:
 
 
 # Checks if given string is twitch channel url
-def is_twitch_channel_url(string: str) -> bool:
+def is_twitch_url(string: str) -> bool:
     return bool(re.search(r'http[s]*://(?:www\.)?twitch.(?:com|tv)/([\%\w-]+)(?:[/]*)', string))
 
 

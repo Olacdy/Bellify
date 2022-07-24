@@ -31,20 +31,19 @@ def notify_users(users: List[User], channel_info: dict, is_live: Optional[bool] 
         item = ChannelUserItem.get_user_channel_by_id(
             u, channel_info['id'])
         user_title, is_muted = item.message_title_and_type, item.is_muted
-        if is_live:
-            _send_message(
-                u.user_id, _get_message(
-                    user_title, channel_info, u.is_twitch_thumbnail_disabled),
-                reply_markup=get_notification_reply_markup(
-                    channel_info['title'], channel_info['url']),
-                disable_notification=is_muted)
-        else:
-            _send_message(
-                u.user_id, _get_message(
-                    user_title, channel_info, u.is_twitch_thumbnail_disabled),
-                reply_markup=get_notification_reply_markup(
-                    channel_info['title'], channel_info['url']),
-                disable_notification=is_muted)
+        if not is_muted:
+            if is_live:
+                _send_message(
+                    u.user_id, _get_message(
+                        user_title, channel_info, u.is_twitch_thumbnail_disabled),
+                    reply_markup=get_notification_reply_markup(
+                        channel_info['title'], channel_info['url']))
+            else:
+                _send_message(
+                    u.user_id, _get_message(
+                        user_title, channel_info, u.is_twitch_thumbnail_disabled),
+                    reply_markup=get_notification_reply_markup(
+                        channel_info['title'], channel_info['url']))
 
 
 @app.task(ignore_result=True)
