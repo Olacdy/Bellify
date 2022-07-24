@@ -65,7 +65,7 @@ localization = {
             'Sorry, You are do not have a premium account, so the Twitch channels are not available to You at the time.\n\nYou can support the project and upgrade to premium.',
             ['Sorry, You have exceeded Your limit on the number of channels. Try to delete one of the channels You have already added.\n\nOr support the project and increase Your limit.',
              'Looks like You are already have channels in Your list.\n\nYou can increase Your quota or use /manage command to continue the tutorial.'],
-            'Doesn\'t look like a channel URL. Please review the URL You sent and try again.',
+            'Doesn\'t look like a proper URL. Please review the URL You sent and try again.',
             'The name seems like an URL of a channel. Please, try to send a proper name.'
         ],
         'settings':
@@ -140,8 +140,8 @@ localization = {
             'Извините, но Ваш аккаунт не является премиумным, поэтому добавление Twitch каналов Вам пока не доступно.\n\nВы можете поддержать проект и улучшить аккаунт.',
             ['Извините, Вы превысили Ваш лимит на количество каналов. Попробуйте удалить один из уже добавленных Вами каналов.\n\nИли поддержите проект и увеличьте Ваш лимит.',
              'Похоже, что Вы уже имеете добавленные каналы.\n\nВы можете увеличить Вашу квоту, или же воспользуйтесь командой /manage, чтобы продолжить обучение.'],
-            'URL-адрес не похож на реальный URL канала. Пожалуйста, проверьте правильность URL и повторите попытку.',
-            'Присланное имя похоже на ссылку канала. Пожалуйста, пришлите подходящее имя.'
+            'URL-адрес не похож на настоящий URL. Пожалуйста, проверьте правильность URL и повторите попытку.',
+            'Присланное имя похоже на ссылку. Пожалуйста, пришлите подходящее имя.'
         ],
         'settings':
         [
@@ -215,8 +215,8 @@ localization = {
             'Вибачте, але Ваш акаунт не має статусу преміум, тому додавання Twitch каналів Вам поки не доступне.\n\nВи можете підтримати проект та покращити акаунт.',
             ['Вибачте, Ви перевищили Ваш ліміт на кількість каналів. Спробуйте видалити один з вже доданих Вами каналів.\n\nАбо підтримайте проект та збільшіть Ваш ліміт.',
              'Схоже, що Ви вже маєте додані канали.\n\nВи можете збільшити Вашу квоту, або ж скористайтеся командою /manage, аби продовжити туторіал.'],
-            'URL-адреса не схожа на реальний URL каналу. Будь-ласка, перевірте правильність URL та повторіть спробу.',
-            'Надіслане ім\'я схоже на посилання каналу. Будь-ласка, спробуйте надіслати більш вдале ім\'я.'
+            'URL-адреса не схожа на справжню URL. Будь-ласка, перевірте правильність URL та повторіть спробу.',
+            'Надіслане ім\'я схоже на посилання. Будь-ласка, спробуйте надіслати більш вдале ім\'я.'
         ],
         'settings':
         [
