@@ -115,7 +115,7 @@ def scrape_if_video_is_valid(url: str) -> bool:
         text = _get_html_response_youtube(url)
         html = soup.BeautifulSoup(text, 'lxml')
         try:
-            return bool(html.find('meta', {'property': 'og:image'}))
+            return bool(html.find('meta', {'name': 'title'})['content'])
         except:
             return False
     return True
