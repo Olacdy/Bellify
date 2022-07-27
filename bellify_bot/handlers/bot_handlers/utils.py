@@ -60,10 +60,10 @@ def check_youtube() -> None:
         if channel.video_url != video_url or channel.is_saved_livestream:
             if channel.live_url == video_url or (channel.is_saved_livestream and channel.iterations_skipped < settings.ITERATIONS_TO_SKIP - 1):
                 channel.update_video_info(
-                    is_saved_livestream=True) if not channel.is_saved_livestream else None
+                    video_published=video_published, is_saved_livestream=True) if not channel.is_saved_livestream else None
                 channel.iterations_skip()
             else:
-                if channel.video_published < video_published and scrape_if_video_is_valid(video_url if channel.is_saved_livestream else ''):
+                if channel.video_published <= video_published and scrape_if_video_is_valid(video_url if channel.is_saved_livestream else ''):
                     tasks.notify_users([item.user for item in YouTubeChannelUserItem.objects.filter(
                         channel=channel)], channel_info={'id': channel.channel_id,
                                                          'url': video_url,
