@@ -13,8 +13,9 @@ from utils.models import nb
 class YouTubeChannel(Channel):
     video_title = models.CharField(max_length=256, **nb)
     video_url = models.URLField(**nb)
-
     video_published = models.DateTimeField(default=datetime.date.min, **nb)
+    is_saved_livestream = models.BooleanField(default=False)
+    iterations_skipped = models.PositiveSmallIntegerField(default=0)
 
     live_url = models.URLField(**nb)
     is_upcoming = models.BooleanField(**nb)
@@ -29,12 +30,19 @@ class YouTubeChannel(Channel):
     def __str__(self):
         return f'{self.channel_title}'
 
+    def iterations_skip(self, reset: Optional[bool] = False):
+        if not reset:
+            self.iterations_skipped = self.iterations_skipped + 1
+        else:
+            self.iterations_skipped = 0
+        self.save()
+
     def update_live_info(self: 'YouTubeChannel', live_title: Optional[str] = None, live_url: Optional[str] = None, is_upcoming: Optional[bool] = None, is_live: Optional[bool] = False):
         self.live_title, self.live_url, self.is_upcoming, self.is_live = live_title, live_url, is_upcoming, is_live
         self.save()
 
-    def update_video_info(self: 'YouTubeChannel', video_title: Optional[str] = None, video_url: Optional[str] = None, video_published: Optional[datetime.datetime] = None):
-        self.video_title, self.video_url, self.video_published = video_title, video_url, video_published
+    def update_video_info(self: 'YouTubeChannel', video_title: Optional[str] = None, video_url: Optional[str] = None, video_published: Optional[datetime.datetime] = datetime.date.min, is_saved_livestream: Optional[bool] = False):
+        self.video_title, self.video_url, self.video_published, self.is_saved_livestream = video_title, video_url, video_published, is_saved_livestream
         self.save()
 
     @property

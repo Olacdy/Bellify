@@ -157,7 +157,6 @@ BOT_NAME = 'BellifyBot' if not DEBUG else 'TestBellifyBot'
 
 BELLIFY_LINK = 'https://t.me/BellifyBot'
 
-
 # Celery section
 
 CELERY_BROKER_URL = os.environ.get('REDIS_URL', '') + '/1'
@@ -184,6 +183,8 @@ TWITCH_CLIENT_SECRET = env.str('TWITCH_CLIENT_SECRET')
 PAGINATION_SIZE = 10
 
 SPLITTING_CHARACTER = 'ø'
+
+ITERATIONS_TO_SKIP = 4
 
 SESSION_CLIENT_COOKIES = {'CONSENT': 'YES+cb'}
 

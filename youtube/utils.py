@@ -106,3 +106,16 @@ def scrape_id_by_url(url: str) -> Union[str, bool]:
         return html.find('meta', {'itemprop': 'channelId'})['content']
     except:
         return False
+
+
+# Checks whether the video is valid
+def scrape_if_video_is_valid(url: str) -> bool:
+    if url:
+        print('Yeah, checking...')
+        text = _get_html_response_youtube(url)
+        html = soup.BeautifulSoup(text, 'lxml')
+        try:
+            return bool(html.find('meta', {'property': 'og:image'}))
+        except:
+            return False
+    return True

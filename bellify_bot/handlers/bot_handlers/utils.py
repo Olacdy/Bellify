@@ -11,7 +11,7 @@ from twitch.utils import (get_channel_url_from_title, get_streams_info,
                           get_twitch_streams_info, get_users_info)
 from youtube.models import YouTubeChannel, YouTubeChannelUserItem
 from youtube.utils import (get_url_from_id, get_youtube_channels_info,
-                           is_youtube_url, scrape_channel_live,
+                           scrape_channel_live, scrape_if_video_is_valid,
                            scrape_last_video_and_channel_title)
 
 from utils.general_utils import (get_html_bold, get_html_link,
@@ -57,16 +57,22 @@ def check_youtube() -> None:
 
     for channel, channel_info_item in zip(channels, channels_info):
         video_title, video_url, video_published, live_title, live_url, is_upcoming, _ = channel_info_item
+        if channel.video_url != video_url or channel.is_saved_livestream:
+            if channel.live_url == video_url or (channel.is_saved_livestream and channel.iterations_skipped < settings.ITERATIONS_TO_SKIP - 1):
+                channel.update_video_info(
+                    is_saved_livestream=True) if not channel.is_saved_livestream else None
+                channel.iterations_skip()
+            else:
+                if channel.video_published < video_published and scrape_if_video_is_valid(video_url if channel.is_saved_livestream else ''):
+                    tasks.notify_users([item.user for item in YouTubeChannelUserItem.objects.filter(
+                        channel=channel)], channel_info={'id': channel.channel_id,
+                                                         'url': video_url,
+                                                         'title': video_title}, is_reuploaded=channel.video_title == video_title)
+                channel.update_video_info(
+                    video_title=video_title, video_url=video_url, video_published=video_published)
+                channel.iterations_skip(reset=True)
 
-        if channel.live_url != video_url and channel.video_url != video_url and channel.video_published < video_published:
-            tasks.notify_users([item.user for item in YouTubeChannelUserItem.objects.filter(
-                channel=channel)], channel_info={'id': channel.channel_id,
-                                                 'url': video_url,
-                                                 'title': video_title}, is_reuploaded=channel.video_title == video_title)
-            channel.update_video_info(
-                video_title=video_title, video_url=video_url, video_published=video_published)
-
-        if live_title and live_url and not is_youtube_url(live_url):
+        if live_url:
             if live_url != channel.live_url or (is_upcoming != channel.is_upcoming and channel.is_upcoming == True):
                 channel.update_live_info(
                     live_title=live_title, live_url=live_url, is_upcoming=is_upcoming, is_live=True)
@@ -76,17 +82,7 @@ def check_youtube() -> None:
                                                                            'url': channel.live_url,
                                                                            'title': channel.live_title}, is_live=True)
         else:
-            if channel.is_live:
-                channel.update_live_info(
-                    live_title=channel.live_title, live_url=channel.live_url, is_upcoming=channel.is_upcoming)
-            elif not channel.live_title is None:
-                channel.update_live_info(
-                    live_url=channel.live_url, is_upcoming=channel.is_upcoming)
-            elif not channel.is_upcoming is None:
-                channel.update_live_info(
-                    live_url=channel.live_url)
-            else:
-                channel.update_live_info()
+            channel.update_live_info()
 
 
 # Checks channel url type and call add function accordingly
