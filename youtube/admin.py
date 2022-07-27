@@ -24,6 +24,8 @@ class YouTubeChannelUserItemInline(admin.TabularInline):
 @admin.register(YouTubeChannel)
 class YouTubeChannelAdmin(admin.ModelAdmin):
     inlines = [YouTubeChannelUserItemInline, ]
+    search_fields = ['channel_title', 'video_title', 'live_title', ]
+    list_filter = ['is_live', 'is_upcoming', ]
     list_display = ['channel_title', 'video_title',
                     'live_title', 'is_upcoming', ]
     fieldsets = [
