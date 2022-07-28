@@ -57,30 +57,34 @@ def check_youtube() -> None:
 
     for channel, channel_info_item in zip(channels, channels_info):
         video_title, video_url, video_published, live_title, live_url, is_upcoming, _ = channel_info_item
-        if channel.video_url != video_url or channel.is_saved_livestream:
-            if channel.live_url == video_url or (channel.is_saved_livestream and channel.iterations_skipped < settings.ITERATIONS_TO_SKIP - 1):
-                channel.update_video_info(
-                    video_published=video_published, is_saved_livestream=True) if not channel.is_saved_livestream else None
+        if channel.video_url != video_url:
+            if channel.live_url == video_url:
+                channel.update_saved_livestream_info(
+                    saved_livestream_title=video_title, saved_livestream_url=video_url, saved_livestream_published=video_published)
+            elif channel.saved_livestream_url and channel.iterations_skipped < settings.ITERATIONS_TO_SKIP - 2:
                 channel.iterations_skip()
-            else:
-                if channel.video_published <= video_published and scrape_if_video_is_valid(video_url if channel.is_saved_livestream else ''):
-                    tasks.notify_users([item.user for item in YouTubeChannelUserItem.objects.filter(
-                        channel=channel)], channel_info={'id': channel.channel_id,
-                                                         'url': video_url,
-                                                         'title': video_title}, is_reuploaded=channel.video_title == video_title)
+            elif (channel.video_published <= video_published or channel.saved_livestream_published <= video_published) and scrape_if_video_is_valid(channel.saved_livestream_url):
+                tasks.notify_users([item.user for item in YouTubeChannelUserItem.objects.filter(
+                    channel=channel)], channel_info={'id': channel.channel_id,
+                                                     'url': channel.saved_livestream_url or video_url,
+                                                     'title': channel.saved_livestream_title or video_title}, is_reuploaded=channel.video_title == video_title)
                 channel.update_video_info(
-                    video_title=video_title, video_url=video_url, video_published=video_published)
-                channel.iterations_skip(reset=True)
+                    video_title=channel.saved_livestream_title or video_title,
+                    video_url=channel.saved_livestream_url or video_url,
+                    video_published=channel.saved_livestream_published or video_published)
+                if channel.saved_livestream_url:
+                    channel.iterations_skip(reset=True)
+                    channel.update_saved_livestream_info()
 
         if live_url:
             if live_url != channel.live_url or (is_upcoming != channel.is_upcoming and channel.is_upcoming == True):
-                channel.update_live_info(
-                    live_title=live_title, live_url=live_url, is_upcoming=is_upcoming, is_live=True)
                 if not is_upcoming:
                     tasks.notify_users([item.user for item in YouTubeChannelUserItem.objects.filter(
                         channel=channel, user__status='P')], channel_info={'id': channel.channel_id,
-                                                                           'url': channel.live_url,
-                                                                           'title': channel.live_title}, is_live=True)
+                                                                           'url': live_url,
+                                                                           'title': live_title}, is_live=True)
+                channel.update_live_info(live_title=live_title, live_url=live_url,
+                                         is_upcoming=is_upcoming, is_live=True)
         else:
             channel.update_live_info()
 
