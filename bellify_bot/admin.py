@@ -27,7 +27,7 @@ class YouTubeChannelsInline(admin.TabularInline):
         return False
 
     def has_change_permission(self, request, obj=None):
-        return True
+        return False
 
     def has_delete_permission(self, request, obj=None):
         return False
@@ -46,7 +46,7 @@ class TwitchChannelsInline(admin.TabularInline):
         return False
 
     def has_change_permission(self, request, obj=None):
-        return True
+        return False
 
     def has_delete_permission(self, request, obj=None):
         return False
