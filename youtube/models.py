@@ -50,13 +50,11 @@ class YouTubeChannel(Channel):
         self.live_title, self.live_url, self.is_upcoming, self.is_live = live_title, live_url, is_upcoming, is_live
         self.save()
 
-    def update_video_info(self: 'YouTubeChannel', video_title: Optional[str] = None, video_url: Optional[str] = None, video_published: Optional[datetime.datetime] = datetime.datetime.strptime(
-            '0001-01-01T00:00:00+00:00', '%Y-%m-%dT%H:%M:%S%z')):
+    def update_video_info(self: 'YouTubeChannel', video_title: Optional[str] = None, video_url: Optional[str] = None, video_published: Optional[datetime.datetime] = None):
         self.video_title, self.video_url, self.video_published = video_title, video_url, video_published
         self.save()
 
-    def update_saved_livestream_info(self: 'YouTubeChannel', saved_livestream_title: Optional[str] = None, saved_livestream_url: Optional[str] = None, saved_livestream_published: Optional[datetime.datetime] = datetime.datetime.strptime(
-            '0001-01-01T00:00:00+00:00', '%Y-%m-%dT%H:%M:%S%z')):
+    def update_saved_livestream_info(self: 'YouTubeChannel', saved_livestream_title: Optional[str] = None, saved_livestream_url: Optional[str] = None, saved_livestream_published: Optional[datetime.datetime] = None):
         self.saved_livestream_title, self.saved_livestream_url, self.saved_livestream_published = saved_livestream_title, saved_livestream_url, saved_livestream_published
         self.save()
 
