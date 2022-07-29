@@ -1,4 +1,5 @@
-from typing import Optional
+from ctypes import Union
+from typing import List, Optional, Tuple
 
 import bellify.tasks as tasks
 from bellify_bot.localization import localization
@@ -51,7 +52,7 @@ def check_twitch() -> None:
 # Checks for livestreams and new videos and alerts users if the are some
 @ log_errors
 def check_youtube() -> None:
-    channels = list(YouTubeChannel.objects.all())
+    channels: List[YouTubeChannel] = list(YouTubeChannel.objects.all())
     channels_info = get_youtube_channels_info(
         [channel.channel_id for channel in channels])
 
@@ -61,9 +62,9 @@ def check_youtube() -> None:
             if channel.live_url == video_url:
                 channel.update_saved_livestream_info(
                     saved_livestream_title=video_title, saved_livestream_url=video_url, saved_livestream_published=video_published)
-            elif channel.saved_livestream_url and channel.iterations_skipped < settings.ITERATIONS_TO_SKIP - 2:
+            elif channel.is_iterations_over:
                 channel.iterations_skip()
-            elif (channel.video_published <= video_published or channel.saved_livestream_published <= video_published) and scrape_if_video_is_valid(channel.saved_livestream_url):
+            elif channel.published <= video_published and scrape_if_video_is_valid(channel.saved_livestream_url):
                 tasks.notify_users([item.user for item in YouTubeChannelUserItem.objects.filter(
                     channel=channel)], channel_info={'id': channel.channel_id,
                                                      'url': channel.saved_livestream_url or video_url,

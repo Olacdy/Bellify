@@ -13,7 +13,8 @@ from utils.models import nb
 class YouTubeChannel(Channel):
     video_title = models.CharField(max_length=256, **nb)
     video_url = models.URLField(**nb)
-    video_published = models.DateTimeField(default=datetime.date.min, **nb)
+    video_published = models.DateTimeField(default=datetime.datetime.strptime(
+        '0001-01-01T00:00:00+00:00', '%Y-%m-%dT%H:%M:%S%z'), **nb)
 
     live_url = models.URLField(**nb)
     is_upcoming = models.BooleanField(**nb)
@@ -21,7 +22,8 @@ class YouTubeChannel(Channel):
     saved_livestream_title = models.CharField(max_length=256, **nb)
     saved_livestream_url = models.URLField(**nb)
     saved_livestream_published = models.DateTimeField(
-        default=datetime.date.min, **nb)
+        default=datetime.datetime.strptime(
+            '0001-01-01T00:00:00+00:00', '%Y-%m-%dT%H:%M:%S%z'), **nb)
 
     iterations_skipped = models.PositiveSmallIntegerField(default=0)
 
@@ -46,17 +48,27 @@ class YouTubeChannel(Channel):
         self.live_title, self.live_url, self.is_upcoming, self.is_live = live_title, live_url, is_upcoming, is_live
         self.save()
 
-    def update_video_info(self: 'YouTubeChannel', video_title: Optional[str] = None, video_url: Optional[str] = None, video_published: Optional[datetime.datetime] = None):
+    def update_video_info(self: 'YouTubeChannel', video_title: Optional[str] = None, video_url: Optional[str] = None, video_published: Optional[datetime.datetime] = datetime.datetime.strptime(
+            '0001-01-01T00:00:00+00:00', '%Y-%m-%dT%H:%M:%S%z')):
         self.video_title, self.video_url, self.video_published = video_title, video_url, video_published
         self.save()
 
-    def update_saved_livestream_info(self: 'YouTubeChannel', saved_livestream_title: Optional[str] = None, saved_livestream_url: Optional[str] = None, saved_livestream_published: Optional[datetime.datetime] = None):
+    def update_saved_livestream_info(self: 'YouTubeChannel', saved_livestream_title: Optional[str] = None, saved_livestream_url: Optional[str] = None, saved_livestream_published: Optional[datetime.datetime] = datetime.datetime.strptime(
+            '0001-01-01T00:00:00+00:00', '%Y-%m-%dT%H:%M:%S%z')):
         self.saved_livestream_title, self.saved_livestream_url, self.saved_livestream_published = saved_livestream_title, saved_livestream_url, saved_livestream_published
         self.save()
 
     @property
-    def type(self) -> str:
+    def type(self: 'YouTubeChannel') -> str:
         return 'youtube'
+
+    @property
+    def published(self: 'YouTubeChannel') -> datetime.datetime:
+        return self.saved_livestream_published if self.saved_livestream_url else self.video_published
+
+    @property
+    def is_iterations_over(self: 'YouTubeChannel') -> bool:
+        return self.saved_livestream_url and self.iterations_skipped < settings.ITERATIONS_TO_SKIP - 2
 
 
 # Custom through model with title
@@ -65,7 +77,7 @@ class YouTubeChannelUserItem(ChannelUserItem):
         YouTubeChannel, on_delete=models.CASCADE)
 
     @property
-    def type(self) -> str:
+    def type(self: 'YouTubeChannelUserItem') -> str:
         return 'youtube'
 
 
