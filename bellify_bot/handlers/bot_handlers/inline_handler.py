@@ -16,6 +16,8 @@ from utils.keyboards import get_settings_inline_keyboard
 
 @log_errors
 def get_query_data_and_user(query: CallbackQuery) -> Union[List[str], User]:
+    u: User
+
     query.answer()
 
     u, _ = User.get_or_create_profile(
@@ -26,6 +28,8 @@ def get_query_data_and_user(query: CallbackQuery) -> Union[List[str], User]:
 
 @log_errors
 def inline_language_handler(update: Update, context: CallbackContext) -> None:
+    u: User
+
     query = update.callback_query
     query_data, u = get_query_data_and_user(query)
 
@@ -39,6 +43,8 @@ def inline_language_handler(update: Update, context: CallbackContext) -> None:
 
 @log_errors
 def inline_start_handler(update: Update, context: CallbackContext) -> None:
+    u: User
+
     query = update.callback_query
     query_data, u = get_query_data_and_user(query)
 
@@ -50,6 +56,8 @@ def inline_start_handler(update: Update, context: CallbackContext) -> None:
 
 @log_errors
 def inline_tutorial_handler(update: Update, context: CallbackContext) -> None:
+    u: User
+
     query = update.callback_query
     _, u = get_query_data_and_user(query)
 
@@ -60,6 +68,8 @@ def inline_tutorial_handler(update: Update, context: CallbackContext) -> None:
 
 @log_errors
 def inline_add_handler(update: Update, context: CallbackContext) -> None:
+    u: User
+
     query = update.callback_query
     query_data, u = get_query_data_and_user(query)
 
@@ -78,6 +88,8 @@ def inline_add_handler(update: Update, context: CallbackContext) -> None:
 
 @log_errors
 def inline_link_handler(update: Update, context: CallbackContext) -> None:
+    u: User
+
     query = update.callback_query
     query_data, u = get_query_data_and_user(query)
 
@@ -97,6 +109,8 @@ def inline_link_handler(update: Update, context: CallbackContext) -> None:
 
 @log_errors
 def inline_manage_handler(update: Update, context: CallbackContext) -> None:
+    u: User
+
     query = update.callback_query
     query_data, u = get_query_data_and_user(query)
 
@@ -122,6 +136,8 @@ def inline_manage_handler(update: Update, context: CallbackContext) -> None:
 
 @log_errors
 def inline_upgrade_handler(update: Update, context: CallbackContext) -> None:
+    u: User
+
     query = update.callback_query
     query_data, u = get_query_data_and_user(query)
 
@@ -167,6 +183,8 @@ def inline_upgrade_handler(update: Update, context: CallbackContext) -> None:
 
 @log_errors
 def inline_settings_handler(update: Update, context: CallbackContext) -> None:
+    u: User
+
     query = update.callback_query
     query_data, u = get_query_data_and_user(query)
 
@@ -215,6 +233,8 @@ def inline_settings_handler(update: Update, context: CallbackContext) -> None:
 
 @ log_errors
 def inline_pagination_handler(update: Update, context: CallbackContext) -> None:
+    u: User
+
     query = update.callback_query
     query_data, u = get_query_data_and_user(query)
 

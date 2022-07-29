@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 
 import bellify.tasks as tasks
 from bellify_bot.localization import localization
@@ -24,7 +24,7 @@ from utils.keyboards import (get_manage_inline_keyboard,
 # Checks for streams and alerts every premium user if there is one
 @log_errors
 def check_twitch() -> None:
-    channels = list(TwitchChannel.objects.all())
+    channels: List[TwitchChannel] = list(TwitchChannel.objects.all())
     channels_ids = [channel.channel_id for channel in channels]
     channels_ids = [channels_ids[i * 100:(i + 1) * 100]
                     for i in range((len(channels_ids) + 100 - 1) // 100)]
@@ -51,7 +51,7 @@ def check_twitch() -> None:
 # Checks for livestreams and new videos and alerts users if the are some
 @ log_errors
 def check_youtube() -> None:
-    channels = list(YouTubeChannel.objects.all())
+    channels: List[YouTubeChannel] = list(YouTubeChannel.objects.all())
     channels_info = get_youtube_channels_info(
         [channel.channel_id for channel in channels])
 
@@ -61,9 +61,9 @@ def check_youtube() -> None:
             if channel.live_url == video_url:
                 channel.update_saved_livestream_info(
                     saved_livestream_title=video_title, saved_livestream_url=video_url, saved_livestream_published=video_published)
-            elif channel.saved_livestream_url and channel.iterations_skipped < settings.ITERATIONS_TO_SKIP - 2:
+            elif channel.is_iterations_over:
                 channel.iterations_skip()
-            elif (channel.video_published <= video_published or channel.saved_livestream_published <= video_published) and scrape_if_video_is_valid(channel.saved_livestream_url):
+            elif channel.published <= video_published and scrape_if_video_is_valid(channel.saved_livestream_url):
                 tasks.notify_users([item.user for item in YouTubeChannelUserItem.objects.filter(
                     channel=channel)], channel_info={'id': channel.channel_id,
                                                      'url': channel.saved_livestream_url or video_url,
@@ -101,6 +101,8 @@ def add(channel_id: str, channel_type: str, message: Message, u: User, name: Opt
 # Adds Twitch channel to a given user
 @ log_errors
 def _add_twitch_channel(channel_id: str, message: Message, u: User, name: Optional[str] = None) -> None:
+    channel: TwitchChannel
+
     def _get_twitch_channel_message(u: User, channel_url: str, channel_name: str, game_name: str, preview_url: str, is_live: bool) -> str:
         general = f"{localization[u.language]['add'][1][0]} "
         name = get_html_bold(channel_name) if is_live else get_html_link(
@@ -123,7 +125,8 @@ def _add_twitch_channel(channel_id: str, message: Message, u: User, name: Option
         else:
             live_title, game_name, thumbnail_url, is_live = None, None, None, False
     else:
-        channel = TwitchChannel.objects.get(channel_id=channel_id)
+        channel = TwitchChannel.objects.get(
+            channel_id=channel_id)
         channel_login, channel_title, channel_url = channel.channel_login, channel.channel_title, get_channel_url_from_title(
             channel.channel_title)
 
@@ -167,6 +170,8 @@ def _add_twitch_channel(channel_id: str, message: Message, u: User, name: Option
 # Adds YouTube channel to a given user
 @ log_errors
 def _add_youtube_channel(channel_id: str, message: Message, u: User, name: Optional[str] = None) -> None:
+    channel: YouTubeChannel
+
     def _get_youtube_channel_message(u: User, channel_name: str, url: str, is_live: bool) -> str:
         general = f"{localization[u.language]['add'][1][0]} "
         channel_name = get_html_bold(channel_name)
