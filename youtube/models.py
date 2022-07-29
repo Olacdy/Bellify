@@ -1,6 +1,8 @@
 import datetime
 from typing import Optional
 
+from django.http import QueryDict
+
 from bellify_bot.models import Channel, ChannelUserItem, User
 from django.conf import settings
 from django.db import models
