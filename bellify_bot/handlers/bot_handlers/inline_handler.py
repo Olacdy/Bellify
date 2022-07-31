@@ -79,9 +79,9 @@ def inline_add_handler(update: Update, context: CallbackContext) -> None:
             parse_mode='HTML'
         )
         u.set_menu_field(
-            f'name{settings.SPLITTING_CHARACTER}{query_data[0]}{settings.SPLITTING_CHARACTER}{query_data[1]}')
+            f'name{settings.SPLITTING_CHARACTER}{query_data[0:].join(settings.SPLITTING_CHARACTER)}')
     else:
-        channel_id, channel_type = query_data[-2], query_data[-1]
+        channel_id, channel_type = query_data[0:]
         query.delete_message()
         add(channel_id, channel_type, query.message, u)
 

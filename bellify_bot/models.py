@@ -165,8 +165,5 @@ class Channel(CreateUpdateTracker):
     channel_url = models.URLField(unique=True)
     channel_title = models.CharField(max_length=128)
 
-    live_title = models.CharField(max_length=256, **nb)
-    is_live = models.BooleanField(default=False, **nb)
-
     def __str__(self):
         return f'{self.channel_id}'

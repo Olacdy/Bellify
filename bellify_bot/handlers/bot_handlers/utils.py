@@ -9,10 +9,12 @@ from telegram import (InlineKeyboardButton, InlineKeyboardMarkup, LabeledPrice,
 from twitch.models import TwitchChannel, TwitchChannelUserItem
 from twitch.utils import (get_channel_url_from_title, get_streams_info,
                           get_twitch_streams_info, get_users_info)
-from youtube.models import YouTubeChannel, YouTubeChannelUserItem
-from youtube.utils import (get_url_from_id, get_youtube_channels_info,
-                           scrape_channel_live, scrape_if_video_is_valid,
-                           scrape_last_video_and_channel_title)
+from youtube.models import (YouTubeChannel, YouTubeChannelUserItem,
+                            YouTubeLivestream, YouTubeVideo)
+from youtube.utils import (get_url_from_id, get_youtube_livestreams,
+                           get_youtube_videos, scrape_id_and_title_by_url,
+                           scrape_if_video_is_valid, scrape_last_videos,
+                           scrape_livesteams)
 
 from utils.general_utils import (get_html_bold, get_html_link,
                                  get_manage_message)
@@ -52,8 +54,8 @@ def check_twitch() -> None:
 @ log_errors
 def check_youtube() -> None:
     channels: List[YouTubeChannel] = list(YouTubeChannel.objects.all())
-    channels_info = get_youtube_channels_info(
-        [channel.channel_id for channel in channels])
+    # get_youtube_channels_last_content([channel.channel_id for channel in channels])
+    channels_info = []
 
     for channel, channel_info_item in zip(channels, channels_info):
         video_title, video_url, video_published, live_title, live_url, is_upcoming, _ = channel_info_item
@@ -119,6 +121,13 @@ def _add_twitch_channel(channel_id: str, message: Message, u: User, name: Option
             ids=[channel_id])[0]
         channel_url = get_channel_url_from_title(channel_title)
 
+        channel, _ = TwitchChannel.objects.get_or_create(
+            channel_id=channel_id,
+            channel_title=channel_title,
+            channel_login=channel_login,
+            channel_url=channel_url
+        )
+
         stream_data = get_streams_info([channel_id])
         if stream_data:
             _, live_title, game_name, thumbnail_url, is_live = stream_data[0]
@@ -127,18 +136,12 @@ def _add_twitch_channel(channel_id: str, message: Message, u: User, name: Option
     else:
         channel = TwitchChannel.objects.get(
             channel_id=channel_id)
-        channel_login, channel_title, channel_url = channel.channel_login, channel.channel_title, get_channel_url_from_title(
+        channel_title, channel_url = channel.channel_title, get_channel_url_from_title(
             channel.channel_title)
 
         live_title, game_name, thumbnail_url, is_live = channel.live_title, channel.game_name, channel.thumbnail_url, channel.is_live
 
     channel_name = name if name else channel_title
-    channel, _ = TwitchChannel.objects.get_or_create(
-        channel_id=channel_id,
-        channel_title=channel_title,
-        channel_login=channel_login,
-        channel_url=channel_url,
-    )
 
     channel.update_live_info(live_title=live_title, game_name=game_name,
                              thumbnail_url=thumbnail_url, is_live=is_live)
@@ -180,47 +183,63 @@ def _add_youtube_channel(channel_id: str, message: Message, u: User, name: Optio
         return f'{general}{channel_name}{is_streaming}{href}'
 
     if not YouTubeChannel.objects.filter(channel_id=channel_id).exists():
-        live_title, live_url, is_upcoming = scrape_channel_live(channel_id)
-        video_title, video_url, video_published, channel_title = scrape_last_video_and_channel_title(
-            channel_id, live_url)
+        channel_url = get_url_from_id(channel_id)
+        _, channel_title = scrape_id_and_title_by_url(channel_url)
+
+        channel, _ = YouTubeChannel.objects.get_or_create(
+            channel_id=channel_id,
+            channel_url=channel_url,
+            channel_title=channel_title
+        )
+
+        videos = scrape_last_videos(channel_id)[0:settings.MAX_YOUTUBE_VIDEOS]
+        livestreams = scrape_livesteams(channel_id)
+
+        for livestream in livestreams:
+            YouTubeLivestream.objects.get_or_create(
+                livestream_id=livestream[0],
+                livestream_title=livestream[1],
+                channel=channel
+            )
+
+        for video in videos:
+            YouTubeVideo.objects.get_or_create(
+                video_id=video[0],
+                video_title=video[1],
+                video_published=video[2],
+                is_saved_livestream=video[3],
+                channel=channel
+            )
     else:
         channel = YouTubeChannel.objects.get(channel_id=channel_id)
-        channel_title, video_title, video_url, video_published, live_title, live_url, is_upcoming = channel.channel_title, channel.video_title, channel.video_url, channel.video_published, channel.live_title, channel.live_url, channel.is_upcoming
+        channel_title = channel.channel_title
 
     channel_name = name if name else channel_title
-    channel, _ = YouTubeChannel.objects.get_or_create(
-        channel_id=channel_id,
-        channel_url=get_url_from_id(channel_id),
-        channel_title=channel_title,
-        video_title=video_title,
-        video_url=video_url,
-        video_published=video_published,
-        live_title=live_title,
-        live_url=live_url,
-        is_live=True if live_title else False,
-        is_upcoming=is_upcoming
-    )
 
     if not u in channel.users.all():
         if not YouTubeChannelUserItem.objects.filter(user=u, channel_title=channel_title).exists():
             item = YouTubeChannelUserItem.objects.create(
                 user=u, channel=channel, channel_title=channel_name)
 
-            if live_url and not is_upcoming and u.status == 'P':
+            ongoing_livestream = YouTubeLivestream.get_ongoing_livestream(
+                channel)
+            last_video = YouTubeVideo.get_last_video(channel)
+
+            if ongoing_livestream and u.status == 'P':
                 message.reply_text(
                     text=_get_youtube_channel_message(
-                        u, item.message_title_and_type, live_url, True),
+                        u, item.message_title_and_type, ongoing_livestream.livestream_url, True),
                     parse_mode='HTML',
                     reply_markup=get_notification_reply_markup(
-                        live_title, live_url)
+                        ongoing_livestream.livestream_title, ongoing_livestream.livestream_url)
                 )
             else:
                 message.reply_text(
                     text=_get_youtube_channel_message(
-                        u, item.message_title_and_type, video_url, False),
+                        u, item.message_title_and_type, last_video.video_url, False),
                     parse_mode='HTML',
                     reply_markup=get_notification_reply_markup(
-                        video_title, video_url)
+                        last_video.video_title, last_video.video_url)
                 )
             if not u.is_tutorial_finished:
                 message.reply_text(

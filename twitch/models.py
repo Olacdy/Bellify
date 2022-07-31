@@ -16,11 +16,14 @@ def twitch_thumbnail_directory_path(instance: 'TwitchChannel', filename: Optiona
     return f'twitch_thumbnails/{instance.channel_login}-{datetime.now().strftime("%Y-%m-%dT%H.%M.%S")}.jpg'
 
 
-# TwitchChannel model
+# Twitch channel model
 class TwitchChannel(Channel):
     _bearer_token = ''
 
     channel_login = models.CharField(max_length=128)
+
+    live_title = models.CharField(max_length=256, **nb)
+    is_live = models.BooleanField(default=False, **nb)
     game_name = models.CharField(max_length=128, **nb)
     thumbnail_url = models.URLField(**nb)
     thumbnail_image = models.ImageField(
