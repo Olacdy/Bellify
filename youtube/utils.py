@@ -126,24 +126,15 @@ def get_json_from_html(html: str, key: str, num_chars: int = 2, stop: str = '"')
 
 # Returns list of content
 def get_content(partial: dict, mode: Optional[str] = 'videos') -> List[Union[Tuple[str, str, str, bool], Tuple[str, str]]]:
-    def _get_datetime_from_publish_text(text_ago: str) -> datetime.datetime:
-        matches = re.findall(
-            r'(\d+) (second(?:s)?|minute(?:s)?|hour(?:s)?|day(?:s)?|week(?:s)?|month(?:s)?|year(?:s)?)', text_ago)
-        timedelta_kwargs = {
-            key if key[-1] == 's' else key+'s': int(value) for value, key in matches}
-        return timezone.now() - datetime.timedelta(**timedelta_kwargs)
-
     def _get_video_info(video: dict) -> Tuple[str, str, str, bool]:
         video_id = video['videoId']
         video_title = video['title']['runs'][0]['text']
-        video_publication_date = _get_datetime_from_publish_text(
-            video['publishedTimeText']['simpleText']).strftime('%Y-%m-%dT%H:%M:%S%z')
 
         is_saved_livestream = 'streamed' in video['publishedTimeText']['simpleText'].lower(
         )
 
         if not video['thumbnailOverlays'][0]['thumbnailOverlayTimeStatusRenderer']['style'].lower() in ['live', 'upcoming']:
-            return video_id, video_title, video_publication_date, is_saved_livestream
+            return video_id, video_title, is_saved_livestream
         raise
 
     def _get_livestream_info(livestream: dict) -> Tuple[str, str]:

@@ -1,5 +1,5 @@
 from typing import List, Optional
-
+import time
 import bellify.tasks as tasks
 from bellify_bot.localization import localization
 from bellify_bot.models import ChannelUserItem, User
@@ -63,12 +63,12 @@ def check_youtube() -> None:
         [channel.channel_id for channel in channels_premium])
 
     for channel, channel_videos_info_item in zip(channels, channels_videos_info):
-        for video in YouTubeVideo.add_new_videos(channel, channel_videos_info_item[0:settings.MAX_YOUTUBE_VIDEOS]):
+        for video in YouTubeVideo.get_new_videos(channel, channel_videos_info_item):
             if not video.is_notified:
                 tasks.notify_users([item.user for item in YouTubeChannelUserItem.objects.filter(
                     channel=channel)], channel_info={'id': channel.channel_id,
                                                      'url': video.video_url,
-                                                     'title': video.video_title}, is_reuploaded=False)
+                                                     'title': video.video_title}, is_reuploaded=video.is_reuploaded)
                 video.notified()
         # if channel.video_url != video_url:
         #     if channel.live_url == video_url:
@@ -203,7 +203,7 @@ def _add_youtube_channel(channel_id: str, message: Message, u: User, name: Optio
             channel_title=channel_title
         )
 
-        videos = scrape_last_videos(channel_id)[0:settings.MAX_YOUTUBE_VIDEOS]
+        videos = scrape_last_videos(channel_id)
         livestreams = scrape_livesteams(channel_id)
 
         for livestream in livestreams:
@@ -217,8 +217,7 @@ def _add_youtube_channel(channel_id: str, message: Message, u: User, name: Optio
             YouTubeVideo.objects.get_or_create(
                 video_id=video[0],
                 video_title=video[1],
-                video_published=video[2],
-                is_saved_livestream=video[3],
+                is_saved_livestream=video[2],
                 channel=channel
             )
     else:
@@ -234,7 +233,7 @@ def _add_youtube_channel(channel_id: str, message: Message, u: User, name: Optio
 
             ongoing_livestream = YouTubeLivestream.get_ongoing_livestream(
                 channel)
-            last_video = YouTubeVideo.get_last_video(channel)
+            last_video = channel.last_video
 
             if ongoing_livestream and u.status == 'P':
                 message.reply_text(

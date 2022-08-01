@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.utils.html import format_html
 
-from youtube.models import YouTubeChannel, YouTubeChannelUserItem, YouTubeVideo
+from youtube.models import YouTubeChannel, YouTubeChannelUserItem, YouTubeVideo, YouTubeDeletedVideo
 
 
 class YouTubeChannelUserItemInline(admin.TabularInline):
@@ -25,7 +25,8 @@ class YouTubeChannelUserItemInline(admin.TabularInline):
 class YouTubeVideoInline(admin.TabularInline):
     model = YouTubeVideo
 
-    fields = ['video_title', 'show_video_url', 'is_saved_livestream', ]
+    fields = ['video_id', 'video_title',
+              'show_video_url', 'is_saved_livestream', ]
     readonly_fields = ['show_video_url']
 
     verbose_name = 'Video'
@@ -46,9 +47,20 @@ class YouTubeVideoInline(admin.TabularInline):
         return True
 
 
+@admin.register(YouTubeVideo)
+class YouTubeVideoAdmin(admin.ModelAdmin):
+    model = YouTubeVideo
+
+
+@admin.register(YouTubeDeletedVideo)
+class YouTubeVideoAdmin(admin.ModelAdmin):
+    model = YouTubeDeletedVideo
+
+
 @admin.register(YouTubeChannel)
 class YouTubeChannelAdmin(admin.ModelAdmin):
     inlines = [YouTubeVideoInline, YouTubeChannelUserItemInline, ]
+    # TODO: finish this
     # search_fields = ['channel_title', 'videos.video_title',
     #                  'livestreams.livestream_title', ]
     # list_filter = ['livestreams.is_live', 'livestreams.is_upcoming', ]
