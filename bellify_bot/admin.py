@@ -16,7 +16,7 @@ from bellify_bot.models import User
 
 class YouTubeChannelsInline(admin.TabularInline):
     model = YouTubeChannelUserItem
-    readonly_fields = ('channel', 'is_muted')
+    readonly_fields = ['channel', 'is_muted']
 
     verbose_name = 'YouTube Channel'
     verbose_name_plural = 'YouTube Channels'
@@ -35,7 +35,7 @@ class YouTubeChannelsInline(admin.TabularInline):
 
 class TwitchChannelsInline(admin.TabularInline):
     model = TwitchChannelUserItem
-    readonly_fields = ('channel', 'is_muted')
+    readonly_fields = ['channel', 'is_muted']
 
     verbose_name = 'Twitch Channel'
     verbose_name_plural = 'Twitch Channels'
