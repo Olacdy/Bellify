@@ -1,5 +1,6 @@
-from typing import List, Optional
 import time
+from typing import List, Optional
+
 import bellify.tasks as tasks
 from bellify_bot.localization import localization
 from bellify_bot.models import ChannelUserItem, User
@@ -13,8 +14,7 @@ from youtube.models import (YouTubeChannel, YouTubeChannelUserItem,
                             YouTubeLivestream, YouTubeVideo)
 from youtube.utils import (get_url_from_id, get_youtube_livestreams,
                            get_youtube_videos, scrape_id_and_title_by_url,
-                           scrape_if_video_is_valid, scrape_last_videos,
-                           scrape_livesteams)
+                           scrape_last_videos, scrape_livesteams)
 
 from utils.general_utils import (get_html_bold, get_html_link,
                                  get_manage_message)
@@ -70,6 +70,10 @@ def check_youtube() -> None:
                                                      'url': video.video_url,
                                                      'title': video.video_title}, is_reuploaded=video.is_reuploaded)
                 video.notified()
+
+    for channel_premium, channels_livestreams_info_item in zip(channels_premium, channels_livestreams_info):
+        # for livestream in YouTubeLivestream.
+        pass
         # if channel.video_url != video_url:
         #     if channel.live_url == video_url:
         #         channel.update_saved_livestream_info(
@@ -231,8 +235,7 @@ def _add_youtube_channel(channel_id: str, message: Message, u: User, name: Optio
             item = YouTubeChannelUserItem.objects.create(
                 user=u, channel=channel, channel_title=channel_name)
 
-            ongoing_livestream = YouTubeLivestream.get_ongoing_livestream(
-                channel)
+            ongoing_livestream = channel.ongoing_livestream
             last_video = channel.last_video
 
             if ongoing_livestream and u.status == 'P':

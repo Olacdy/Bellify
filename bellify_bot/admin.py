@@ -98,6 +98,23 @@ class UserAdmin(admin.ModelAdmin):
             )
 
 
+def get_app_list(self, request):
+    app_dict = self._build_app_dict(request)
+    app_list = sorted(app_dict.values(), key=lambda x: x['name'].lower())
+    for app in app_list:
+        if app['app_label'] == 'youtube':
+            ordering = {
+                'YouTube Channels': 1,
+                'YouTube Videos': 2,
+                'YouTube Livestreams': 3,
+                'Deleted YouTube Videos': 4
+            }
+            app['models'].sort(key=lambda x: ordering[x['name']])
+
+    return app_list
+
+
+admin.AdminSite.get_app_list = get_app_list
 admin.site.unregister(SolarSchedule)
 admin.site.unregister(ClockedSchedule)
 admin.site.unregister(PeriodicTask)

@@ -6,6 +6,7 @@ from django.conf import settings
 from django.db import models
 from django.db.models import Q
 from django.dispatch import receiver
+from django.utils.timezone import now
 
 from utils.models import CreateUpdateTracker, nb
 
@@ -27,14 +28,26 @@ class YouTubeChannel(Channel):
         return 'youtube'
 
     @property
-    def last_video(self: 'YouTubeChannel') -> str:
-        return self.videos.all()[0]
+    def last_video(self: 'YouTubeChannel') -> Union['YouTubeVideo', bool]:
+        video = self.videos.all().first()
+        return video if video else False
+
+    @property
+    def ongoing_livestream(self: 'YouTubeChannel') -> Union['YouTubeLivestream', bool]:
+        livestream = self.livestreams.all().first()
+        return livestream if livestream else False
+
+    @property
+    def is_livestreaming(self: 'YouTubeChannel') -> bool:
+        return bool(self.ongoing_livestream)
 
 
 # YouTube livestream model
 class YouTubeLivestream(CreateUpdateTracker):
     livestream_id = models.CharField(max_length=20, **nb)
     livestream_title = models.CharField(max_length=256, **nb)
+
+    is_notified = models.BooleanField(default=True, **nb)
 
     channel = models.ForeignKey(
         YouTubeChannel, on_delete=models.CASCADE, related_name='livestreams', related_query_name='livestream')
@@ -49,11 +62,6 @@ class YouTubeLivestream(CreateUpdateTracker):
     @property
     def livestream_url(self: 'YouTubeLivestream'):
         return f'https://www.youtube.com/watch?v={self.livestream_id}'
-
-    @classmethod
-    def get_ongoing_livestream(cls, channel: YouTubeChannel) -> Union['YouTubeLivestream', bool]:
-        livestreams = channel.livestreams.all()
-        return livestreams[0] if livestreams else False
 
     def update(self: 'YouTubeLivestream', livestream_id: Optional[str] = None, livestream_title: Optional[str] = None, is_live: Optional[bool] = False, is_upcoming: Optional[bool] = False):
         self.livestream_id, self.livestream_title, self.is_live, self.is_upcoming = livestream_id, livestream_title, is_live, is_upcoming
@@ -114,13 +122,14 @@ class YouTubeVideo(CreateUpdateTracker):
 
             for video in videos:
                 disable_notifications = video[0] in saved_videos_ids or disable_notifications
+                is_reuploaded = YouTubeDeletedVideo.is_video_was_deleted(
+                    channel, video[1])
                 YouTubeVideo.objects.get_or_create(
                     video_id=video[0],
                     video_title=video[1],
                     is_saved_livestream=video[2],
                     is_notified=disable_notifications,
-                    is_reuploaded=YouTubeDeletedVideo.is_video_was_deleted(
-                        channel, video[1]),
+                    is_reuploaded=is_reuploaded,
                     channel=channel
                 )
 
@@ -133,7 +142,7 @@ class YouTubeVideo(CreateUpdateTracker):
                         channel=channel
                     )
 
-        return channel.videos.all()
+        return reversed(channel.videos.all())
 
     def update(self: 'YouTubeVideo', video: Tuple[str, str, bool], is_notified: Optional[bool] = True, is_reuploaded: Optional[bool] = False):
         self.video_id, self.video_title, self.is_saved_livestream, self.is_notified, self.is_reuploaded = * \
@@ -168,7 +177,11 @@ class YouTubeDeletedVideo(CreateUpdateTracker):
 
     @classmethod
     def is_video_was_deleted(cls, channel: YouTubeChannel, video_title: str) -> bool:
-        return video_title in channel.deleted_videos.all()
+        query_set = cls.objects.filter(
+            channel=channel, video_title__contains=video_title)
+        reuploaded_video, is_reuploaded = query_set.first(), query_set.exists()
+        reuploaded_video.delete() if is_reuploaded else None
+        return is_reuploaded
 
 
 # Custom through model with title
@@ -179,6 +192,13 @@ class YouTubeChannelUserItem(ChannelUserItem):
     @ property
     def type(self: 'YouTubeChannelUserItem') -> str:
         return 'youtube'
+
+
+@receiver(models.signals.post_save, sender=YouTubeDeletedVideo)
+def remove_deleted_video_after_time(sender: 'YouTubeDeletedVideo', instance, *args, **kwargs):
+    for deleted_video in YouTubeDeletedVideo.objects.all():
+        if (now() - deleted_video.created_at).days > 1:
+            deleted_video.delete()
 
 
 @receiver(models.signals.post_save, sender=YouTubeVideo)
