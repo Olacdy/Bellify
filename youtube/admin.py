@@ -3,8 +3,8 @@ from django.utils.html import format_html
 
 from utils.models import IsLivestreaming
 from youtube.models import (YouTubeChannel, YouTubeChannelUserItem,
-                            YouTubeDeletedVideo, YouTubeLivestream,
-                            YouTubeVideo)
+                            YouTubeDeletedVideo, YouTubeEndedLivestream,
+                            YouTubeLivestream, YouTubeVideo)
 
 
 class YouTubeChannelUserItemInline(admin.TabularInline):
@@ -75,6 +75,21 @@ class YouTubeLivestreamInline(admin.TabularInline):
         return True
 
 
+class YouTubeLivestreamAdminParent(admin.ModelAdmin):
+    fields = ['created_at', 'channel', 'livestream_id', 'livestream_title',
+              'livestream_url', ]
+    readonly_fields = ['created_at', 'livestream_url', ]
+
+    search_fields = ['livestream_title',
+                     'livestream_id', 'channel__channel_title', ]
+    list_display = ['livestream_title', 'channel', ]
+
+    extra = 0
+
+    def livestream_url(self, obj):
+        return format_html("<a href='{url}'>{url}</a>", url=obj.livestream_url)
+
+
 class YouTubeVideoAdminParent(admin.ModelAdmin):
     fields = ['created_at', 'channel', 'video_id', 'video_title',
               'video_url', 'is_saved_livestream', ]
@@ -111,18 +126,16 @@ class YouTubeDeletedVideoAdmin(YouTubeVideoAdminParent):
 class YouTubeLivestreamAdmin(admin.ModelAdmin):
     model = YouTubeLivestream
 
-    fields = ['created_at', 'channel', 'livestream_id', 'livestream_title',
-              'livestream_url', ]
-    readonly_fields = ['created_at', 'livestream_url', ]
+    verbose_name = 'Livestream'
+    verbose_name_plural = 'Livestreams'
 
-    search_fields = ['livestream_title',
-                     'livestream_id', 'channel__channel_title', ]
-    list_display = ['livestream_title', 'channel', ]
 
-    extra = 0
+@admin.register(YouTubeEndedLivestream)
+class YouTubeLivestreamAdmin(admin.ModelAdmin):
+    model = YouTubeEndedLivestream
 
-    def livestream_url(self, obj):
-        return format_html("<a href='{url}'>{url}</a>", url=obj.livestream_url)
+    verbose_name = 'Ended Livestream'
+    verbose_name_plural = 'Ended Livestreams'
 
 
 @admin.register(YouTubeChannel)
