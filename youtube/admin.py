@@ -146,7 +146,7 @@ class YouTubeChannelAdmin(admin.ModelAdmin):
                      'livestreams__livestream_title', ]
     list_filter = [IsLivestreaming, ]
     list_display = ['channel_title', 'last_video', 'is_live', ]
-    exclude = ['deleted_livestreams', ]
+    # exclude = ['deleted_livestreams', ]
 
     def last_video(self, obj):
         return obj.last_video
