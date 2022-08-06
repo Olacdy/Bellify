@@ -1,3 +1,4 @@
+from django.contrib import admin
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from polymorphic.managers import PolymorphicManager
@@ -27,3 +28,20 @@ class GetOrNoneManager(PolymorphicManager):
             return self.get(**kwargs)
         except ObjectDoesNotExist:
             return None
+
+
+class IsLivestreaming(admin.SimpleListFilter):
+    title = 'Is livestreaming'
+    parameter_name = 'is_livestreaming'
+
+    def lookups(self, request, model_admin):
+        return (
+            ('live', 'Yes'),
+            ('offline', 'No'),
+        )
+
+    def queryset(self, request, queryset):
+        if self.value() == 'live':
+            return queryset.filter(livestream__isnull=False).distinct()
+        elif self.value() == 'offline':
+            return queryset.filter(livestream__isnull=True)

@@ -167,7 +167,7 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_BEAT_SCHEDULE = {
     'check_twitch': {
         'task': 'bellify.tasks.check_twitch',
-        'schedule': crontab(minute='0-57/3'),
+        'schedule': crontab(minute='0-59/1'),
     },
     'check_youtube': {
         'task': 'bellify.tasks.check_youtube',
@@ -182,9 +182,9 @@ TWITCH_CLIENT_SECRET = env.str('TWITCH_CLIENT_SECRET')
 
 PAGINATION_SIZE = 10
 
-SPLITTING_CHARACTER = 'ø'
+ITERATIONS_TO_SKIP = 5
 
-ITERATIONS_TO_SKIP = 4
+SPLITTING_CHARACTER = 'ø'
 
 SESSION_CLIENT_COOKIES = {'CONSENT': 'YES+cb'}
 

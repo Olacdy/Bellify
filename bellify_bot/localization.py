@@ -7,7 +7,9 @@ localization = {
             'new video is out!',
             'live now!',
             'streaming',
-            'last video was reuploaded.'
+            'last video was reuploaded.',
+            'saved livestream is out!',
+            '(might be deleted)',
         ],
         'add':
         [
@@ -82,6 +84,8 @@ localization = {
             'стримит!',
             'стримит',
             'последнее видео было перезалито.',
+            'запись трансляции вышла!',
+            '(может быть удалена)',
         ],
         'add':
         [
@@ -156,6 +160,8 @@ localization = {
             'транслює!',
             'транслює',
             'останнє відео було повторно завантажено.',
+            'запис трансляції вийшов!',
+            '(може бути видалений)',
         ],
         'add':
         [

@@ -6,6 +6,7 @@ from django.apps import apps
 from django.conf import settings
 from django.db import models
 from django.db.models import Manager, Q, QuerySet
+from PIL import ImageFont
 from telegram import User as TgUser
 from utils.models import CreateUpdateTracker, GetOrNoneManager, nb
 
@@ -134,11 +135,17 @@ class ChannelUserItem(CreateUpdateTracker):
 
     @property
     def manage_title_and_type(self) -> str:
-        return f'{settings.CHANNELS_INFO[self.type]["icon"] if not self.user.is_manage_icons_disabled else ""} {self.channel_title.replace(settings.CHANNELS_INFO[self.type]["icon"], "").strip()}'.strip()
+        title = self.channel_title.replace(
+            settings.CHANNELS_INFO[self.type]["icon"], "").strip()
+        icon_or_none = f'{settings.CHANNELS_INFO[self.type]["icon"]} ' if not self.user.is_manage_icons_disabled else ''
+        return f'{icon_or_none}{title}'
 
     @property
     def message_title_and_type(self) -> str:
-        return f'{settings.CHANNELS_INFO[self.type]["icon"] if not self.user.is_message_icons_disabled else ""} {self.channel_title.replace(settings.CHANNELS_INFO[self.type]["icon"], "").strip()}'.strip()
+        title = self.channel_title.replace(
+            settings.CHANNELS_INFO[self.type]["icon"], "").strip()
+        icon_or_none = f'{settings.CHANNELS_INFO[self.type]["icon"]} ' if not self.user.is_message_icons_disabled else ''
+        return f'{icon_or_none}{title}'
 
     @classmethod
     def is_user_subscribed_to_channel(cls, u: User, channel_id: str) -> bool:
@@ -164,9 +171,6 @@ class Channel(CreateUpdateTracker):
     channel_id = models.CharField(max_length=128, unique=True)
     channel_url = models.URLField(unique=True)
     channel_title = models.CharField(max_length=128)
-
-    live_title = models.CharField(max_length=256, **nb)
-    is_live = models.BooleanField(default=False, **nb)
 
     def __str__(self):
         return f'{self.channel_id}'
