@@ -45,7 +45,8 @@ def check_twitch() -> None:
                                                      'url': channel.channel_url,
                                                      'title': channel.live_title,
                                                      'game_name': channel.game_name,
-                                                     'preview_url': channel.preview_url}, is_live=True)
+                                                     'preview_url': channel.preview_url,
+                                                     'is_live': True})
         else:
             channel.update_live_info()
 
