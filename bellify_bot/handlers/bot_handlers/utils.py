@@ -63,30 +63,34 @@ def check_youtube() -> None:
     channels_livestreams_info = get_youtube_livestreams(
         [channel.channel_id for channel in channels_premium])
 
-    for channel_premium, channel_livestreams_info_item in zip(channels_premium, channels_livestreams_info):
-        for livestream in YouTubeLivestream.get_new_livestreams(channel_premium, channel_livestreams_info_item):
-            if not livestream.is_notified:
-                tasks.notify_users([item.user for item in YouTubeChannelUserItem.objects.filter(
-                    channel=channel_premium)], content_info={'id': channel_premium.channel_id,
-                                                             'url': livestream.livestream_url,
-                                                             'title': livestream.livestream_title,
-                                                             'is_live': True})
-                livestream.notified()
+    print(channels_videos_info)
 
-    for channel, channel_videos_info_item in zip(channels, channels_videos_info):
-        for video in YouTubeVideo.get_new_videos(channel, channel_videos_info_item):
-            if not video.is_notified:
-                if video.is_saved_livestream and not video.is_able_to_notify:
-                    video.skip_iteration()
-                else:
+    if channels_livestreams_info:
+        for channel_premium, channel_livestreams_info_item in zip(channels_premium, channels_livestreams_info):
+            for livestream in YouTubeLivestream.get_new_livestreams(channel_premium, channel_livestreams_info_item):
+                if not livestream.is_notified:
                     tasks.notify_users([item.user for item in YouTubeChannelUserItem.objects.filter(
-                        channel=channel)], content_info={'id': channel.channel_id,
-                                                         'url': video.video_url,
-                                                         'title': video.video_title,
-                                                         'is_saved_livestream': video.is_saved_livestream and YouTubeEndedLivestream.is_in_ended_stream(channel_premium, video),
-                                                         'might_be_deleted': channel.is_deleting_livestreams,
-                                                         'is_reuploaded': video.is_reuploaded})
-                    video.notified()
+                        channel=channel_premium)], content_info={'id': channel_premium.channel_id,
+                                                                 'url': livestream.livestream_url,
+                                                                 'title': livestream.livestream_title,
+                                                                 'is_live': True})
+                    livestream.notified()
+
+    if channels_videos_info:
+        for channel, channel_videos_info_item in zip(channels, channels_videos_info):
+            for video in YouTubeVideo.get_new_videos(channel, channel_videos_info_item):
+                if not video.is_notified:
+                    if video.is_saved_livestream and not video.is_able_to_notify:
+                        video.skip_iteration()
+                    else:
+                        tasks.notify_users([item.user for item in YouTubeChannelUserItem.objects.filter(
+                            channel=channel)], content_info={'id': channel.channel_id,
+                                                             'url': video.video_url,
+                                                             'title': video.video_title,
+                                                             'is_saved_livestream': video.is_saved_livestream and YouTubeEndedLivestream.is_in_ended_stream(channel_premium, video),
+                                                             'might_be_deleted': channel.is_deleting_livestreams,
+                                                             'is_reuploaded': video.is_reuploaded})
+                        video.notified()
 
 
 # Checks channel url type and call add function accordingly

@@ -258,9 +258,9 @@ class YouTubeDeletedVideo(YouTubeVideoParent):
         verbose_name_plural = 'Deleted YouTube Videos'
 
     @classmethod
-    def is_video_was_deleted(cls, channel: YouTubeChannel, video_title: str) -> bool:
+    def is_video_was_deleted(cls, channel: YouTubeChannel, video: YouTubeVideo) -> bool:
         query_set = cls.objects.filter(
-            channel=channel, video_title__contains=video_title)
+            channel=channel, video_title__contains=video[1])
         reuploaded_video, is_reuploaded = query_set.first(), query_set.exists()
         reuploaded_video.delete() if is_reuploaded else None
         return is_reuploaded
