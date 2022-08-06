@@ -30,7 +30,7 @@ class YouTubeVideoInline(admin.TabularInline):
 
     fields = ['video_id', 'video_title',
               'video_url', 'is_saved_livestream', ]
-    readonly_fields = ['video_url']
+    readonly_fields = ['video_url', ]
 
     verbose_name = 'Video'
     verbose_name_plural = 'Videos'
@@ -55,7 +55,7 @@ class YouTubeLivestreamInline(admin.TabularInline):
 
     fields = ['livestream_id', 'livestream_title',
               'livestream_url', ]
-    readonly_fields = ['livestream_url']
+    readonly_fields = ['livestream_url', ]
 
     verbose_name = 'Live Stream'
     verbose_name_plural = 'Live Streams'
@@ -146,6 +146,7 @@ class YouTubeChannelAdmin(admin.ModelAdmin):
                      'livestreams__livestream_title', ]
     list_filter = [IsLivestreaming, ]
     list_display = ['channel_title', 'last_video', 'is_live', ]
+    exclude = ['deleted_livestreams', ]
 
     def last_video(self, obj):
         return obj.last_video

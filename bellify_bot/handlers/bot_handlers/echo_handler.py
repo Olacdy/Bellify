@@ -39,7 +39,6 @@ def echo_handler(update: Update, context: CallbackContext) -> None:
                     reply_markup=reply_markup)
     else:
         channel_type = get_channel_url_type(user_text)
-        print(channel_type)
         if channel_type:
             if 'YouTube' in channel_type:
                 channel_id, channel_title = scrape_id_and_title_by_url(

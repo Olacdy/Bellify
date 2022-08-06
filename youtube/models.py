@@ -15,6 +15,7 @@ from utils.models import CreateUpdateTracker, nb
 class YouTubeChannel(Channel):
     users = models.ManyToManyField(
         User, through='YouTubeChannelUserItem')
+    deleted_livestreams = models.PositiveIntegerField(default=0, **nb)
 
     class Meta:
         verbose_name = 'YouTube Channel'
@@ -40,6 +41,14 @@ class YouTubeChannel(Channel):
     @property
     def is_livestreaming(self: 'YouTubeChannel') -> bool:
         return bool(self.ongoing_livestream)
+
+    @property
+    def is_deleting_livestreams(self: 'YouTubeChannel') -> bool:
+        return bool(self.deleted_livestreams)
+
+    def increment_deleted_livestreams(self: 'YouTubeChannel') -> None:
+        self.deleted_livestreams = self.deleted_livestreams + 1
+        self.save()
 
 
 # Parent of YouTubeLivestream models
@@ -118,8 +127,8 @@ class YouTubeLivestream(YouTubeLivestreamParent):
             for saved_livestream_tuple in saved_livestreams_tuples:
                 if not saved_livestream_tuple[0] in livestreams_ids:
                     YouTubeEndedLivestream.objects.get_or_create(
-                        livestream_id=livestream[0],
-                        livestream_title=livestream[1],
+                        livestream_id=saved_livestream_tuple[0],
+                        livestream_title=saved_livestream_tuple[1],
                         channel=channel
                     )
 
@@ -141,7 +150,7 @@ class YouTubeEndedLivestream(YouTubeLivestreamParent):
 
     @classmethod
     def is_in_ended_stream(cls, channel: YouTubeChannel, video: 'YouTubeVideo') -> bool:
-        return channel.ended_livestreams.filter(livestream_id=video[0], livestream_title=video[1]).exists(0)
+        return channel.ended_livestreams.filter(livestream_id=video.video_id, livestream_title=video.video_title).exists()
 
 
 # Parent of YouTubeVideo models
@@ -169,6 +178,7 @@ class YouTubeVideoParent(CreateUpdateTracker):
 class YouTubeVideo(YouTubeVideoParent):
     is_notified = models.BooleanField(default=True, **nb)
     is_reuploaded = models.BooleanField(default=False, **nb)
+    iterations_skipped = models.PositiveSmallIntegerField(default=0, **nb)
 
     channel = models.ForeignKey(
         YouTubeChannel, on_delete=models.CASCADE, related_name='videos', related_query_name='video')
@@ -176,6 +186,10 @@ class YouTubeVideo(YouTubeVideoParent):
     class Meta:
         verbose_name = 'YouTube Video'
         verbose_name_plural = 'YouTube Videos'
+
+    @property
+    def is_able_to_notify(self: 'YouTubeVideo') -> bool:
+        return self.iterations_skipped > settings.ITERATIONS_TO_SKIP
 
     @classmethod
     def get_tuples_and_ids(cls, channel: Optional['YouTubeChannel'] = None):
@@ -220,12 +234,17 @@ class YouTubeVideo(YouTubeVideoParent):
                         is_saved_livestream=saved_video_tuple[2],
                         channel=channel
                     )
+                    channel.increment_deleted_livestreams()
 
         return reversed(channel.videos.all())
 
     def notified(self: 'YouTubeVideo') -> None:
         self.is_notified = True
         self.is_reuploaded = False
+        self.save()
+
+    def skip_iteration(self: 'YouTubeVideo') -> None:
+        self.iterations_skipped = self.iterations_skipped + 1
         self.save()
 
 
