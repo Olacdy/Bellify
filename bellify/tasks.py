@@ -14,36 +14,41 @@ logger = get_task_logger(__name__)
 
 
 @app.task(ignore_result=True)
-def notify_users(users: List[User], channel_info: dict, is_live: Optional[bool] = False, is_reuploaded: Optional[bool] = False) -> None:
+def notify_users(users: List[User], content_info: dict) -> None:
     def _get_message(user_title: str, channel_info: dict, is_twitch_thumbnail_disabled: bool):
         user_title = get_html_bold(user_title)
 
-        if is_live:
+        if content_info.get('is_live', False):
             notification = f" — {localization[u.language]['notification'][1] if not 'game_name' in channel_info or channel_info['game_name'] == 'Just Chatting' else localization[u.language]['notification'][2]+' '+channel_info['game_name']+'!'}"
             href = f"{get_html_link(url=channel_info['preview_url']) if 'preview_url' in channel_info and not is_twitch_thumbnail_disabled else get_html_link(url=channel_info['url'])}"
             return f"{user_title}{notification}{href}"
         else:
-            notification = f" — {localization[u.language]['notification'][3 if is_reuploaded else 0]}"
-            href = f"\n{get_html_link(channel_info['url'])}"
+            if channel_info['is_reuploaded']:
+                notification = f" — {localization[u.language]['notification'][3]}"
+            elif channel_info['is_saved_livestream']:
+                notification = f" — {localization[u.language]['notification'][4]}{(' ' + localization[u.language]['notification'][5]) if channel_info['might_be_deleted'] else ''}"
+            else:
+                notification = f" — {localization[u.language]['notification'][0]}"
+            href = f"{get_html_link(channel_info['url'])}"
             return f"{user_title}{notification}{href}"
 
     for u in users:
         item = ChannelUserItem.get_user_channel_by_id(
-            u, channel_info['id'])
+            u, content_info['id'])
         user_title, is_muted = item.message_title_and_type, item.is_muted
-        if is_live:
+        if content_info.get('is_live', False):
             _send_message(
                 u.user_id, _get_message(
-                    user_title, channel_info, u.is_twitch_thumbnail_disabled),
+                    user_title, content_info, u.is_twitch_thumbnail_disabled),
                 reply_markup=get_notification_reply_markup(
-                    channel_info['title'], channel_info['url']),
+                    content_info['title'], content_info['url']),
                 disable_notification=is_muted)
         else:
             _send_message(
                 u.user_id, _get_message(
-                    user_title, channel_info, u.is_twitch_thumbnail_disabled),
+                    user_title, content_info, u.is_twitch_thumbnail_disabled),
                 reply_markup=get_notification_reply_markup(
-                    channel_info['title'], channel_info['url']),
+                    content_info['title'], content_info['url']),
                 disable_notification=is_muted)
 
 

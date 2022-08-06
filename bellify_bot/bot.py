@@ -251,7 +251,8 @@ def run_pooling():
 
     bot_pool = Bot(settings.TOKEN)
 
-    if settings.DEBUG:
+    # Commands setter disabled
+    if not settings.DEBUG:
         set_up_commands(bot_pool)
     bot_info = bot_pool.get_me()
     bot_link = f'https://t.me/' + bot_info['username']

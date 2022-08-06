@@ -6,7 +6,7 @@ from bellify_bot.handlers.bot_handlers.utils import (
 from bellify_bot.localization import localization
 from bellify_bot.models import ChannelUserItem, User
 from twitch.utils import get_users_info, get_channel_title_from_url
-from youtube.utils import scrape_last_video_and_channel_title, scrape_id_by_url
+from youtube.utils import scrape_id_and_title_by_url
 
 from utils.general_utils import get_channel_url_type
 
@@ -41,11 +41,9 @@ def echo_handler(update: Update, context: CallbackContext) -> None:
         channel_type = get_channel_url_type(user_text)
         if channel_type:
             if 'YouTube' in channel_type:
-                channel_id = scrape_id_by_url(user_text)
-                if channel_id:
-                    channel_title = scrape_last_video_and_channel_title(
-                        channel_id)[-1]
-                else:
+                channel_id, channel_title = scrape_id_and_title_by_url(
+                    user_text)
+                if not (channel_id and channel_title):
                     update.message.reply_text(
                         text=localization[u.language]['echo'][5],
                         parse_mode='HTML',)
