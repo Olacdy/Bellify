@@ -217,7 +217,7 @@ class YouTubeVideo(YouTubeVideoParent):
             for video in videos:
                 disable_notifications = video[0] in saved_videos_ids or disable_notifications
                 is_reuploaded = YouTubeDeletedVideo.is_video_was_deleted(
-                    channel, video[1])
+                    channel, video)
                 YouTubeVideo.objects.get_or_create(
                     video_id=video[0],
                     video_title=video[1],
@@ -265,7 +265,7 @@ class YouTubeDeletedVideo(YouTubeVideoParent):
         verbose_name_plural = 'Deleted YouTube Videos'
 
     @classmethod
-    def is_video_was_deleted(cls, channel: YouTubeChannel, video: YouTubeVideo) -> bool:
+    def is_video_was_deleted(cls, channel: YouTubeChannel, video: Tuple[str, str, bool]) -> bool:
         query_set = cls.objects.filter(
             channel=channel, video_title__contains=video[1])
         reuploaded_video, is_reuploaded = query_set.first(), query_set.exists()
