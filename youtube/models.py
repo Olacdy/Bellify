@@ -208,6 +208,7 @@ class YouTubeVideo(YouTubeVideoParent):
     def get_new_videos(cls, channel: 'YouTubeChannel', videos: Tuple[str, str, bool]) -> List['YouTubeVideo']:
         saved_videos_tuples, saved_videos_ids = cls.get_tuples_and_ids(channel)
         videos_ids = [video[0] for video in videos]
+        is_having_deleted = False
 
         if videos != saved_videos_tuples:
             channel.videos.all().delete()
@@ -228,13 +229,19 @@ class YouTubeVideo(YouTubeVideoParent):
 
             for saved_video_tuple in saved_videos_tuples:
                 if not saved_video_tuple[0] in videos_ids:
+                    is_having_deleted = True
                     YouTubeDeletedVideo.objects.get_or_create(
                         video_id=saved_video_tuple[0],
                         video_title=saved_video_tuple[1],
                         is_saved_livestream=saved_video_tuple[2],
                         channel=channel
                     )
-                    channel.increment_deleted_livestreams()
+                    channel.increment_deleted_livestreams(
+                    ) if saved_video_tuple[2] else None
+
+            if is_having_deleted:
+                print(videos)
+                print(saved_videos_tuples)
 
         return reversed(channel.videos.all())
 

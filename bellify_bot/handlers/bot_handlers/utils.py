@@ -63,8 +63,6 @@ def check_youtube() -> None:
     channels_livestreams_info = get_youtube_livestreams(
         [channel.channel_id for channel in channels_premium])
 
-    print(channels_videos_info)
-
     if channels_livestreams_info:
         for channel_premium, channel_livestreams_info_item in zip(channels_premium, channels_livestreams_info):
             for livestream in YouTubeLivestream.get_new_livestreams(channel_premium, channel_livestreams_info_item):
