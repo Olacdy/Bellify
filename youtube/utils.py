@@ -141,9 +141,13 @@ def get_content(partial: dict, mode: Optional[str] = 'videos') -> Union[Dict[str
             for key, value in current_item.items():
                 if key == 'gridVideoRenderer':
                     try:
-                        content_item = _get_video_info(
-                            value) if mode == 'videos' else _get_livestream_info(value)
-                        content[content_item[0]] = content_item[1:]
+                        if mode == 'videos':
+                            content_item = _get_video_info(
+                                value)
+                            content[content_item[0]] = content_item[1:]
+                        else:
+                            content_item = _get_livestream_info(value)
+                            content[content_item[0]] = content_item[1]
                     except:
                         continue
                 else:

@@ -86,7 +86,7 @@ class YouTubeLivestream(YouTubeLivestreamParent):
     def get_livestreams_data(cls, channel: Optional[YouTubeChannel] = None) -> Dict[str, str]:
         return {livestream.livestream_id: livestream.livestream_title for livestream in (channel.livestreams.all() if channel else cls.objects.all())}
 
-    @ classmethod
+    @classmethod
     def get_new_livestreams(cls, channel: YouTubeChannel, livestreams: Dict[str, str]) -> List['YouTubeLivestream']:
         saved_livestreams = cls.get_livestreams_data(channel)
 
@@ -184,11 +184,10 @@ class YouTubeVideo(YouTubeVideoParent):
             disable_notifications = False
 
             for video_id in videos:
-                # print(video_id, saved_videos.keys())
-                # print(video_id in saved_videos or disable_notifications)
-                disable_notifications = video_id in saved_videos or disable_notifications
-                is_reuploaded = YouTubeDeletedVideo.is_video_was_deleted(
-                    channel, videos[video_id][0])
+                disable_notifications = (video_id in saved_videos or YouTubeDeletedVideo.is_video_was_deleted(
+                    channel, (video_id, videos[video_id][0])))
+                is_reuploaded = YouTubeDeletedVideo.is_video_was_reuploaded(
+                    channel, (video_id, videos[video_id][0]))
 
                 YouTubeVideo.objects.get_or_create(
                     video_id=video_id,
@@ -236,10 +235,18 @@ class YouTubeDeletedVideo(YouTubeVideoParent):
         verbose_name = 'Deleted YouTube Video'
         verbose_name_plural = 'Deleted YouTube Videos'
 
-    @ classmethod
-    def is_video_was_deleted(cls, channel: YouTubeChannel, video_title) -> bool:
-        query_set = cls.objects.filter(
-            channel=channel, video_title__contains=video_title)
+    @classmethod
+    def is_video_was_deleted(cls, channel: YouTubeChannel, video: Tuple[str, str]) -> bool:
+        query_set = cls.objects.filter(Q(
+            channel=channel, video_id__exact=video[0], video_title__exact=video[1]))
+        reuploaded_video, is_deleted = query_set.first(), query_set.exists()
+        reuploaded_video.delete() if is_deleted else None
+        return is_deleted
+
+    @classmethod
+    def is_video_was_reuploaded(cls, channel: YouTubeChannel, video: Tuple[str, str]) -> bool:
+        query_set = cls.objects.filter(~Q(video_id=video[0]) & Q(
+            channel=channel, video_title__exact=video[1]))
         reuploaded_video, is_reuploaded = query_set.first(), query_set.exists()
         reuploaded_video.delete() if is_reuploaded else None
         return is_reuploaded
@@ -255,8 +262,8 @@ class YouTubeChannelUserItem(ChannelUserItem):
         return 'youtube'
 
 
-@ receiver(models.signals.post_save, sender=YouTubeDeletedVideo)
-@ receiver(models.signals.post_save, sender=YouTubeEndedLivestream)
+@receiver(models.signals.post_save, sender=YouTubeDeletedVideo)
+@receiver(models.signals.post_save, sender=YouTubeEndedLivestream)
 def remove_deleted_and_ended_content_after_time(sender, instance, *args, **kwargs):
     for deleted_video in YouTubeDeletedVideo.objects.all():
         if (now() - deleted_video.created_at).days >= 1:
@@ -267,7 +274,7 @@ def remove_deleted_and_ended_content_after_time(sender, instance, *args, **kwarg
             ended_livestream.delete()
 
 
-@ receiver(models.signals.post_save, sender=YouTubeVideo)
+@receiver(models.signals.post_save, sender=YouTubeVideo)
 def remove_deleted_video_if_it_in_videos(sender: 'YouTubeVideo', instance, *args, **kwargs):
     videos_ids = sender.get_saved_video_data().keys()
     queries = [Q(video_id__contains=video_id)
@@ -276,7 +283,7 @@ def remove_deleted_video_if_it_in_videos(sender: 'YouTubeVideo', instance, *args
     YouTubeDeletedVideo.objects.filter(query).delete()
 
 
-@ receiver(models.signals.post_delete, sender=YouTubeChannelUserItem)
+@receiver(models.signals.post_delete, sender=YouTubeChannelUserItem)
 def delete_channel_if_no_users_subscribed(sender, instance, *args, **kwargs):
     YouTubeChannel.objects.filter(
         youtubechanneluseritem__isnull=True).delete()
