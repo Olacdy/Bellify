@@ -110,6 +110,9 @@ class YouTubeVideoAdminParent(admin.ModelAdmin):
 class YouTubeVideoAdmin(YouTubeVideoAdminParent):
     model = YouTubeVideo
 
+    fields = ['created_at', 'channel', 'video_id', 'video_title',
+              'video_url', 'is_saved_livestream', 'iterations_skipped', ]
+
     verbose_name = 'Video'
     verbose_name_plural = 'Videos'
 
@@ -123,7 +126,7 @@ class YouTubeDeletedVideoAdmin(YouTubeVideoAdminParent):
 
 
 @admin.register(YouTubeLivestream)
-class YouTubeLivestreamAdmin(admin.ModelAdmin):
+class YouTubeLivestreamAdmin(YouTubeLivestreamAdminParent):
     model = YouTubeLivestream
 
     verbose_name = 'Livestream'
@@ -131,7 +134,7 @@ class YouTubeLivestreamAdmin(admin.ModelAdmin):
 
 
 @admin.register(YouTubeEndedLivestream)
-class YouTubeLivestreamAdmin(admin.ModelAdmin):
+class YouTubeLivestreamAdmin(YouTubeLivestreamAdminParent):
     model = YouTubeEndedLivestream
 
     verbose_name = 'Ended Livestream'

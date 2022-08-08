@@ -2,11 +2,10 @@ import asyncio
 import datetime
 import json
 import re
-from typing import List, Optional, Tuple, Union
+from typing import List, Optional, Tuple, Union, Dict
 
 import aiohttp
 import bs4 as soup
-from django.utils import timezone
 import requests
 from asgiref import sync
 from django.conf import settings
@@ -113,8 +112,8 @@ def get_json_from_html(html: str, key: str, num_chars: int = 2, stop: str = '"')
 
 
 # Returns list of content
-def get_content(partial: dict, mode: Optional[str] = 'videos') -> List[Union[Tuple[str, str, str, bool], Tuple[str, str]]]:
-    def _get_video_info(video: dict) -> Tuple[str, str, str, bool]:
+def get_content(partial: dict, mode: Optional[str] = 'videos') -> Union[Dict[str, Tuple[str, bool]], Dict[str, str]]:
+    def _get_video_info(video: dict) -> Tuple[str, str, bool]:
         video_id = video['videoId']
         video_title = video['title']['runs'][0]['text']
 
@@ -134,7 +133,7 @@ def get_content(partial: dict, mode: Optional[str] = 'videos') -> List[Union[Tup
         raise
 
     stack = [partial]
-    content = []
+    content = {}
 
     while stack:
         current_item = stack.pop(0)
@@ -142,8 +141,9 @@ def get_content(partial: dict, mode: Optional[str] = 'videos') -> List[Union[Tup
             for key, value in current_item.items():
                 if key == 'gridVideoRenderer':
                     try:
-                        content.append(_get_video_info(
-                            value) if mode == 'videos' else _get_livestream_info(value))
+                        content_item = _get_video_info(
+                            value) if mode == 'videos' else _get_livestream_info(value)
+                        content[content_item[0]] = content_item[1:]
                     except:
                         continue
                 else:

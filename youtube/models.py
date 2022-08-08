@@ -1,5 +1,5 @@
 from functools import reduce
-from typing import List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Tuple, Union
 
 from bellify_bot.models import Channel, ChannelUserItem, User
 from django.conf import settings
@@ -46,6 +46,10 @@ class YouTubeChannel(Channel):
     def is_deleting_livestreams(self: 'YouTubeChannel') -> bool:
         return bool(self.deleted_livestreams)
 
+    def set_notified_if_not_notified_all_videos(self: 'YouTubeChannel') -> None:
+        if self.videos.filter(is_notified=False).count() == self.videos.count() and self.videos.count() > 1:
+            self.videos.update(is_notified=True)
+
     def increment_deleted_livestreams(self: 'YouTubeChannel') -> None:
         self.deleted_livestreams = self.deleted_livestreams + 1
         self.save()
@@ -63,12 +67,8 @@ class YouTubeLivestreamParent(CreateUpdateTracker):
         return f'{self.livestream_title}'
 
     @property
-    def livestream_url(self: 'YouTubeLivestreamParent'):
+    def livestream_url(self: 'YouTubeLivestreamParent') -> str:
         return f'https://www.youtube.com/watch?v={self.livestream_id}'
-
-    @property
-    def tuple(self: 'YouTubeLivestreamParent'):
-        return self.livestream_id, self.livestream_title
 
 
 # YouTube livestream model
@@ -83,52 +83,29 @@ class YouTubeLivestream(YouTubeLivestreamParent):
         verbose_name_plural = 'YouTube Livestreams'
 
     @classmethod
-    def get_tuples_and_ids(cls, channel: Optional['YouTubeChannel'] = None):
-        if channel:
-            saved_livestreams_tuples = [
-                livestreams.tuple for livestreams in channel.livestreams.all()]
-            return saved_livestreams_tuples, [saved_livestreams_tuple[0]
-                                              for saved_livestreams_tuple in saved_livestreams_tuples]
-        else:
-            saved_livestreams_tuples = [
-                livestreams.tuple for livestreams in cls.objects.all()]
-            return saved_livestreams_tuples, [saved_livestreams_tuple[0]
-                                              for saved_livestreams_tuple in saved_livestreams_tuples]
+    def get_livestreams_data(cls, channel: Optional[YouTubeChannel] = None) -> Dict[str, str]:
+        return {livestream.livestream_id: livestream.livestream_title for livestream in (channel.livestreams.all() if channel else cls.objects.all())}
 
-    @classmethod
-    def get_new_livestreams(cls, channel: YouTubeChannel, livestreams: 'YouTubeLivestream') -> List['YouTubeLivestream']:
-        saved_livestreams_tuples, saved_livestreams_ids = cls.get_tuples_and_ids(
-            channel)
-        livestreams_ids = [livestream[0] for livestream in livestreams]
+    @ classmethod
+    def get_new_livestreams(cls, channel: YouTubeChannel, livestreams: Dict[str, str]) -> List['YouTubeLivestream']:
+        saved_livestreams = cls.get_livestreams_data(channel)
 
-        if livestreams != saved_livestreams_tuples:
-            for livestream in livestreams:
-                if not livestream in saved_livestreams_tuples:
-                    YouTubeLivestream.objects.get_or_create(
-                        livestream_id=livestream[0],
-                        livestream_title=livestream[1],
-                        is_notified=False,
-                        channel=channel
-                    )
-
-        if livestreams != saved_livestreams_tuples:
+        if livestreams.keys() != saved_livestreams.keys():
             channel.livestreams.all().delete()
-            disable_notifications = False
 
-            for livestream in livestreams:
-                disable_notifications = livestream[0] in saved_livestreams_ids or disable_notifications
+            for livestream_id in livestreams:
                 YouTubeLivestream.objects.get_or_create(
-                    livestream_id=livestream[0],
-                    livestream_title=livestream[1],
-                    is_notified=disable_notifications,
+                    livestream_id=livestream_id,
+                    livestream_title=livestreams[livestream_id],
+                    is_notified=livestream_id in saved_livestreams,
                     channel=channel
                 )
 
-            for saved_livestream_tuple in saved_livestreams_tuples:
-                if not saved_livestream_tuple[0] in livestreams_ids:
+            for saved_livestream_id in saved_livestreams:
+                if not saved_livestream_id in livestreams:
                     YouTubeEndedLivestream.objects.get_or_create(
-                        livestream_id=saved_livestream_tuple[0],
-                        livestream_title=saved_livestream_tuple[1],
+                        livestream_id=saved_livestream_id,
+                        livestream_title=saved_livestreams[saved_livestream_id],
                         channel=channel
                     )
 
@@ -149,8 +126,11 @@ class YouTubeEndedLivestream(YouTubeLivestreamParent):
         verbose_name_plural = 'Ended YouTube Livestreams'
 
     @classmethod
-    def is_in_ended_stream(cls, channel: YouTubeChannel, video: 'YouTubeVideo') -> bool:
-        return channel.ended_livestreams.filter(livestream_id=video.video_id, livestream_title=video.video_title).exists()
+    def is_ended_stream(cls, channel: YouTubeChannel, video: Optional['YouTubeVideo'] = None, video_tuple: Optional[Tuple[str, str]] = None) -> bool:
+        if video:
+            return channel.ended_livestreams.filter(livestream_id=video.video_id, livestream_title=video.video_title).exists()
+        else:
+            return channel.ended_livestreams.filter(livestream_id=video_tuple[0], livestream_title=video_tuple[1]).exists()
 
 
 # Parent of YouTubeVideo models
@@ -166,12 +146,8 @@ class YouTubeVideoParent(CreateUpdateTracker):
         return f'{self.video_title}'
 
     @property
-    def video_url(self: 'YouTubeVideoParent'):
+    def video_url(self: 'YouTubeVideoParent') -> str:
         return f'https://www.youtube.com/watch?v={self.video_id}'
-
-    @property
-    def tuple(self: 'YouTubeVideoParent') -> Tuple[str, str, bool]:
-        return self.video_id, self.video_title, self.is_saved_livestream
 
 
 # YouTube video model
@@ -188,66 +164,62 @@ class YouTubeVideo(YouTubeVideoParent):
         verbose_name_plural = 'YouTube Videos'
 
     @property
+    def is_ended_livestream(self: 'YouTubeVideo') -> bool:
+        return YouTubeEndedLivestream.is_ended_stream(self.channel, self)
+
+    @property
     def is_able_to_notify(self: 'YouTubeVideo') -> bool:
         return self.iterations_skipped > settings.ITERATIONS_TO_SKIP
 
     @classmethod
-    def get_tuples_and_ids(cls, channel: Optional['YouTubeChannel'] = None):
-        if channel:
-            saved_videos_tuples = [
-                video.tuple for video in channel.videos.all()]
-            return saved_videos_tuples, [saved_video_tuple[0]
-                                         for saved_video_tuple in saved_videos_tuples]
-        else:
-            saved_videos_tuples = [
-                video.tuple for video in cls.objects.all()]
-            return saved_videos_tuples, [saved_video_tuple[0]
-                                         for saved_video_tuple in saved_videos_tuples]
+    def get_saved_video_data(cls, channel: Optional['YouTubeChannel'] = None) -> Dict[str, Tuple[str, bool, int]]:
+        return {video.video_id: (video.video_title, video.is_saved_livestream, video.iterations_skipped) for video in (channel.videos.all() if channel else cls.objects.all())}
 
     @classmethod
-    def get_new_videos(cls, channel: 'YouTubeChannel', videos: Tuple[str, str, bool]) -> List['YouTubeVideo']:
-        saved_videos_tuples, saved_videos_ids = cls.get_tuples_and_ids(channel)
-        videos_ids = [video[0] for video in videos]
-        is_having_deleted = False
+    def get_new_videos(cls, channel: 'YouTubeChannel', videos: Dict[str, Tuple[str, bool]]) -> List['YouTubeVideo']:
+        saved_videos = cls.get_saved_video_data(channel)
 
-        if videos != saved_videos_tuples:
+        if videos.keys() != saved_videos.keys():
             channel.videos.all().delete()
             disable_notifications = False
 
-            for video in videos:
-                disable_notifications = video[0] in saved_videos_ids or disable_notifications
+            for video_id in videos:
+                # print(video_id, saved_videos.keys())
+                # print(video_id in saved_videos or disable_notifications)
+                disable_notifications = video_id in saved_videos or disable_notifications
                 is_reuploaded = YouTubeDeletedVideo.is_video_was_deleted(
-                    channel, video)
+                    channel, videos[video_id][0])
+
                 YouTubeVideo.objects.get_or_create(
-                    video_id=video[0],
-                    video_title=video[1],
-                    is_saved_livestream=video[2],
+                    video_id=video_id,
+                    video_title=videos[video_id][0],
+                    is_saved_livestream=videos[video_id][1],
                     is_notified=disable_notifications,
+                    iterations_skipped=saved_videos.get(
+                        video_id, ('', '', 0))[2],
                     is_reuploaded=is_reuploaded,
                     channel=channel
                 )
 
-            for saved_video_tuple in saved_videos_tuples:
-                if not saved_video_tuple[0] in videos_ids:
-                    is_having_deleted = True
+            for saved_video_id in saved_videos:
+                if not saved_video_id in videos:
                     YouTubeDeletedVideo.objects.get_or_create(
-                        video_id=saved_video_tuple[0],
-                        video_title=saved_video_tuple[1],
-                        is_saved_livestream=saved_video_tuple[2],
+                        video_id=saved_video_id,
+                        video_title=saved_videos[saved_video_id][0],
+                        is_saved_livestream=saved_videos[saved_video_id][1],
                         channel=channel
                     )
                     channel.increment_deleted_livestreams(
-                    ) if saved_video_tuple[2] else None
+                    ) if saved_videos[saved_video_id][1] and YouTubeEndedLivestream.is_ended_stream(
+                        channel, video_tuple=(saved_video_id, saved_videos[saved_video_id][0])) else None
 
-            if is_having_deleted:
-                print(videos)
-                print(saved_videos_tuples)
-
+        channel.set_notified_if_not_notified_all_videos()
         return reversed(channel.videos.all())
 
     def notified(self: 'YouTubeVideo') -> None:
         self.is_notified = True
         self.is_reuploaded = False
+        self.iterations_skipped = 0
         self.save()
 
     def skip_iteration(self: 'YouTubeVideo') -> None:
@@ -264,10 +236,10 @@ class YouTubeDeletedVideo(YouTubeVideoParent):
         verbose_name = 'Deleted YouTube Video'
         verbose_name_plural = 'Deleted YouTube Videos'
 
-    @classmethod
-    def is_video_was_deleted(cls, channel: YouTubeChannel, video: Tuple[str, str, bool]) -> bool:
+    @ classmethod
+    def is_video_was_deleted(cls, channel: YouTubeChannel, video_title) -> bool:
         query_set = cls.objects.filter(
-            channel=channel, video_title__contains=video[1])
+            channel=channel, video_title__contains=video_title)
         reuploaded_video, is_reuploaded = query_set.first(), query_set.exists()
         reuploaded_video.delete() if is_reuploaded else None
         return is_reuploaded
@@ -283,28 +255,28 @@ class YouTubeChannelUserItem(ChannelUserItem):
         return 'youtube'
 
 
-@receiver(models.signals.post_save, sender=YouTubeDeletedVideo)
-@receiver(models.signals.post_save, sender=YouTubeEndedLivestream)
+@ receiver(models.signals.post_save, sender=YouTubeDeletedVideo)
+@ receiver(models.signals.post_save, sender=YouTubeEndedLivestream)
 def remove_deleted_and_ended_content_after_time(sender, instance, *args, **kwargs):
     for deleted_video in YouTubeDeletedVideo.objects.all():
-        if (now() - deleted_video.created_at).days > 1:
+        if (now() - deleted_video.created_at).days >= 1:
             deleted_video.delete()
 
     for ended_livestream in YouTubeEndedLivestream.objects.all():
-        if (now() - ended_livestream.created_at).days > 1:
+        if (now() - ended_livestream.created_at).days >= 1:
             ended_livestream.delete()
 
 
-@receiver(models.signals.post_save, sender=YouTubeVideo)
+@ receiver(models.signals.post_save, sender=YouTubeVideo)
 def remove_deleted_video_if_it_in_videos(sender: 'YouTubeVideo', instance, *args, **kwargs):
-    _, videos_ids = sender.get_tuples_and_ids()
+    videos_ids = sender.get_saved_video_data().keys()
     queries = [Q(video_id__contains=video_id)
                for video_id in videos_ids]
     query = reduce(lambda x, y: x & y, queries)
     YouTubeDeletedVideo.objects.filter(query).delete()
 
 
-@receiver(models.signals.post_delete, sender=YouTubeChannelUserItem)
+@ receiver(models.signals.post_delete, sender=YouTubeChannelUserItem)
 def delete_channel_if_no_users_subscribed(sender, instance, *args, **kwargs):
     YouTubeChannel.objects.filter(
         youtubechanneluseritem__isnull=True).delete()

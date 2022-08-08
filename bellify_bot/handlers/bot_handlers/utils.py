@@ -40,13 +40,22 @@ def check_twitch() -> None:
             if stream_data[3] != channel.is_live and channel.is_live == False:
                 channel.update_live_info(
                     live_title=stream_data[0], game_name=stream_data[1], thumbnail_url=stream_data[2], is_live=stream_data[3])
-                tasks.notify_users([item.user for item in TwitchChannelUserItem.objects.filter(
-                    channel=channel)], content_info={'id': channel.channel_id,
-                                                     'url': channel.channel_url,
-                                                     'title': channel.live_title,
-                                                     'game_name': channel.game_name,
-                                                     'preview_url': channel.preview_url,
-                                                     'is_live': True})
+                if settings.DEBUG:
+                    tasks.notify_users([item.user.user_id for item in TwitchChannelUserItem.objects.filter(
+                        channel=channel)], content_info={'id': channel.channel_id,
+                                                         'url': channel.channel_url,
+                                                         'title': channel.live_title,
+                                                         'game_name': channel.game_name,
+                                                         'preview_url': channel.preview_url,
+                                                         'is_live': True})
+                else:
+                    tasks.notify_users.delay([item.user.user_id for item in TwitchChannelUserItem.objects.filter(
+                        channel=channel)], content_info={'id': channel.channel_id,
+                                                         'url': channel.channel_url,
+                                                         'title': channel.live_title,
+                                                         'game_name': channel.game_name,
+                                                         'preview_url': channel.preview_url,
+                                                         'is_live': True})
         else:
             channel.update_live_info()
 
@@ -63,31 +72,46 @@ def check_youtube() -> None:
     channels_livestreams_info = get_youtube_livestreams(
         [channel.channel_id for channel in channels_premium])
 
-    if channels_livestreams_info:
-        for channel_premium, channel_livestreams_info_item in zip(channels_premium, channels_livestreams_info):
-            for livestream in YouTubeLivestream.get_new_livestreams(channel_premium, channel_livestreams_info_item):
-                if not livestream.is_notified:
-                    tasks.notify_users([item.user for item in YouTubeChannelUserItem.objects.filter(
+    for channel_premium, channel_livestreams_info_item in zip(channels_premium, channels_livestreams_info):
+        for livestream in YouTubeLivestream.get_new_livestreams(channel_premium, channel_livestreams_info_item):
+            if not livestream.is_notified:
+                if settings.DEBUG:
+                    tasks.notify_users([item.user.user_id for item in YouTubeChannelUserItem.objects.filter(
                         channel=channel_premium)], content_info={'id': channel_premium.channel_id,
                                                                  'url': livestream.livestream_url,
                                                                  'title': livestream.livestream_title,
                                                                  'is_live': True})
-                    livestream.notified()
+                else:
+                    tasks.notify_users.delay([item.user.user_id for item in YouTubeChannelUserItem.objects.filter(
+                        channel=channel_premium)], content_info={'id': channel_premium.channel_id,
+                                                                 'url': livestream.livestream_url,
+                                                                 'title': livestream.livestream_title,
+                                                                 'is_live': True})
+                livestream.notified()
 
-    if channels_videos_info:
-        for channel, channel_videos_info_item in zip(channels, channels_videos_info):
+    for channel, channel_videos_info_item in zip(channels, channels_videos_info):
+        if channel_videos_info_item:
             for video in YouTubeVideo.get_new_videos(channel, channel_videos_info_item):
-                if not video.is_notified:
-                    if video.is_saved_livestream and not video.is_able_to_notify:
+                if not video.is_notified or video.iterations_skipped > 0:
+                    if video.is_ended_livestream and not video.is_able_to_notify:
                         video.skip_iteration()
                     else:
-                        tasks.notify_users([item.user for item in YouTubeChannelUserItem.objects.filter(
-                            channel=channel)], content_info={'id': channel.channel_id,
-                                                             'url': video.video_url,
-                                                             'title': video.video_title,
-                                                             'is_saved_livestream': video.is_saved_livestream and YouTubeEndedLivestream.is_in_ended_stream(channel_premium, video),
-                                                             'might_be_deleted': channel.is_deleting_livestreams,
-                                                             'is_reuploaded': video.is_reuploaded})
+                        if settings.DEBUG:
+                            tasks.notify_users([item.user.user_id for item in YouTubeChannelUserItem.objects.filter(
+                                channel=channel)], content_info={'id': channel.channel_id,
+                                                                 'url': video.video_url,
+                                                                 'title': video.video_title,
+                                                                 'is_saved_livestream': video.is_ended_livestream,
+                                                                 'might_be_deleted': channel.is_deleting_livestreams,
+                                                                 'is_reuploaded': video.is_reuploaded})
+                        else:
+                            tasks.notify_users.delay([item.user.user_id for item in YouTubeChannelUserItem.objects.filter(
+                                channel=channel)], content_info={'id': channel.channel_id,
+                                                                 'url': video.video_url,
+                                                                 'title': video.video_title,
+                                                                 'is_saved_livestream': video.is_ended_livestream,
+                                                                 'might_be_deleted': channel.is_deleting_livestreams,
+                                                                 'is_reuploaded': video.is_reuploaded})
                         video.notified()
 
 
