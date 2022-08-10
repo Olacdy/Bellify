@@ -18,14 +18,18 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='TwitchChannel',
             fields=[
-                ('channel_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='bellify_bot.channel')),
+                ('channel_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE,
+                 parent_link=True, primary_key=True, serialize=False, to='bellify_bot.channel')),
                 ('channel_login', models.CharField(max_length=128)),
-                ('live_title', models.CharField(blank=True, max_length=256, null=True)),
-                ('is_live', models.BooleanField(blank=True, default=False, null=True)),
-                ('game_name', models.CharField(blank=True, max_length=128, null=True)),
+                ('live_title', models.CharField(
+                    blank=True, max_length=256, null=True)),
+                ('is_live', models.BooleanField(
+                    blank=True, default=False, null=True)),
+                ('game_name', models.CharField(
+                    blank=True, max_length=128, null=True)),
                 ('thumbnail_url', models.URLField(blank=True, null=True)),
-                ('thumbnail_image', models.ImageField(blank=True, null=True, upload_to=twitch.models.twitch_thumbnail_directory_path)),
-                ('live_end_datetime', models.DateTimeField(blank=True, default=django.utils.timezone.now, null=True)),
+                ('thumbnail_image', models.ImageField(blank=True, null=True,
+                 upload_to=twitch.models.twitch_thumbnail_directory_path)),
             ],
             options={
                 'verbose_name': 'Twitch Channel',
@@ -36,8 +40,10 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='TwitchChannelUserItem',
             fields=[
-                ('channeluseritem_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='bellify_bot.channeluseritem')),
-                ('channel', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='twitch.twitchchannel')),
+                ('channeluseritem_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE,
+                 parent_link=True, primary_key=True, serialize=False, to='bellify_bot.channeluseritem')),
+                ('channel', models.ForeignKey(
+                    on_delete=django.db.models.deletion.CASCADE, to='twitch.twitchchannel')),
             ],
             options={
                 'ordering': ('-created_at',),
@@ -48,6 +54,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='twitchchannel',
             name='users',
-            field=models.ManyToManyField(through='twitch.TwitchChannelUserItem', to='bellify_bot.user'),
+            field=models.ManyToManyField(
+                through='twitch.TwitchChannelUserItem', to='bellify_bot.user'),
         ),
     ]
