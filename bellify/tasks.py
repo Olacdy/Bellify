@@ -14,7 +14,7 @@ logger = get_task_logger(__name__)
 
 
 @app.task(ignore_result=True)
-def notify_users(users_ids: List[int], content_info: dict) -> None:
+def notify_users(user_ids: List[int], content_info: dict) -> None:
     def _get_message(user_title: str, channel_info: dict, user: User):
         user_title = get_html_bold(user_title)
 
@@ -32,7 +32,7 @@ def notify_users(users_ids: List[int], content_info: dict) -> None:
             href = f"{get_html_link(channel_info['url'])}"
             return f"{user_title}{notification}{href}"
 
-    for user_id in users_ids:
+    for user_id in user_ids:
         user: User = User.objects.get(user_id=user_id)
         item: ChannelUserItem = ChannelUserItem.get_user_channel_by_id(
             user, content_info['id'])

@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
 import os
+from datetime import timedelta
 from pathlib import Path
 
 import environ
@@ -177,14 +178,21 @@ CELERY_BEAT_SCHEDULE = {
 
 # Configuration settings
 
-TWITCH_CLIENT_ID = env.str('TWITCH_CLIENT_ID')
-TWITCH_CLIENT_SECRET = env.str('TWITCH_CLIENT_SECRET')
+SPLITTING_CHARACTER = 'ø'
 
 PAGINATION_SIZE = 10
 
-ITERATIONS_TO_SKIP = 5
+# Twitch
 
-SPLITTING_CHARACTER = 'ø'
+TWITCH_CLIENT_ID = env.str('TWITCH_CLIENT_ID')
+
+TWITCH_CLIENT_SECRET = env.str('TWITCH_CLIENT_SECRET')
+
+TIME_THRESHOLD = timedelta(minutes=10)
+
+# YouTube
+
+ITERATIONS_TO_SKIP = 5
 
 SESSION_CLIENT_COOKIES = {'CONSENT': 'YES+cb'}
 

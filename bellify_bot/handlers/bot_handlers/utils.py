@@ -37,8 +37,8 @@ def check_twitch() -> None:
     for channel in channels:
         if channel.channel_id in live_info:
             stream_data = live_info[channel.channel_id]
-            if stream_data[3] != channel.is_live and channel.is_live == False:
-                channel.update_live_info(
+            if stream_data[3] != channel.is_live and channel.is_threshold_passed:
+                channel.update(
                     live_title=stream_data[0], game_name=stream_data[1], thumbnail_url=stream_data[2], is_live=stream_data[3])
                 if settings.DEBUG:
                     tasks.notify_users([item.user.user_id for item in TwitchChannelUserItem.objects.filter(
@@ -57,7 +57,7 @@ def check_twitch() -> None:
                                                          'preview_url': channel.preview_url,
                                                          'is_live': True})
         else:
-            channel.update_live_info()
+            channel.update()
 
 
 # Checks for livestreams and new videos and alerts users if the are some
@@ -167,8 +167,8 @@ def _add_twitch_channel(channel_id: str, message: Message, u: User, name: Option
 
     channel_name = name if name else channel_title
 
-    channel.update_live_info(live_title=live_title, game_name=game_name,
-                             thumbnail_url=thumbnail_url, is_live=is_live)
+    channel.update(live_title=live_title, game_name=game_name,
+                   thumbnail_url=thumbnail_url, is_live=is_live)
 
     if not u in channel.users.all():
         if not TwitchChannelUserItem.objects.filter(user=u, channel_title=channel_name).exists():
@@ -219,18 +219,18 @@ def _add_youtube_channel(channel_id: str, message: Message, u: User, name: Optio
         videos = scrape_last_videos(channel_id)
         livestreams = scrape_livesteams(channel_id)
 
-        for livestream in livestreams:
+        for livestream_id in livestreams:
             YouTubeLivestream.objects.get_or_create(
-                livestream_id=livestream[0],
-                livestream_title=livestream[1],
+                livestream_id=livestream_id,
+                livestream_title=livestreams[livestream_id],
                 channel=channel
             )
 
-        for video in videos:
+        for video_id in videos:
             YouTubeVideo.objects.get_or_create(
-                video_id=video[0],
-                video_title=video[1],
-                is_saved_livestream=video[2],
+                video_id=video_id,
+                video_title=videos[video_id][0],
+                is_saved_livestream=videos[video_id][1],
                 channel=channel
             )
     else:
@@ -255,7 +255,7 @@ def _add_youtube_channel(channel_id: str, message: Message, u: User, name: Optio
                     reply_markup=get_notification_reply_markup(
                         ongoing_livestream.livestream_title, ongoing_livestream.livestream_url)
                 )
-            else:
+            elif last_video:
                 message.reply_text(
                     text=_get_youtube_channel_message(
                         u, item.message_title_and_type, last_video.video_url, False),
