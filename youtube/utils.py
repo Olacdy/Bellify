@@ -86,7 +86,11 @@ def scrape_id_and_title_by_url(url: str) -> Union[str, bool]:
     text = _get_html_response_youtube(url)
     html = soup.BeautifulSoup(text, 'lxml')
     try:
-        return html.find('meta', {'itemprop': 'channelId'})['content'], html.find('meta', {'property': 'og:title'})['content']
+        author = html.find('span', {'itemprop': 'author'})
+        if author:
+            return html.find('meta', {'itemprop': 'channelId'})['content'], author.find('link', {'itemprop': 'name'})['content']
+        else:
+            return html.find('meta', {'itemprop': 'channelId'})['content'], html.find('meta', {'property': 'og:title'})['content']
     except:
         return False, ''
 

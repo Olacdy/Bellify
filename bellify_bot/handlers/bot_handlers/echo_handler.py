@@ -28,9 +28,9 @@ def echo_handler(update: Update, context: CallbackContext) -> None:
         if 'name' in echo_data:
             if not get_channel_url_type(user_text):
                 u.set_menu_field()
-                channel_id, channel_type = echo_data[-2], echo_data[-1]
+                channel_id, channel_type = echo_data[-3], echo_data[-2]
                 add(channel_id, channel_type, update.message,
-                    u, user_text.lstrip())
+                    u, user_text.strip())
             else:
                 update.message.reply_text(
                     text=localization[u.language]['help'][7],
