@@ -23,9 +23,9 @@ def notify_users(user_ids: List[int], content_info: dict) -> None:
             href = f"{get_html_link(url=channel_info['preview_url']) if 'preview_url' in channel_info and not user.is_twitch_thumbnail_disabled else get_html_link(url=channel_info['url'])}"
             return f"{user_title}{notification}{href}"
         else:
-            if channel_info['is_reuploaded']:
+            if channel_info.get('is_reuploaded', False):
                 notification = f" — {localization[user.language]['notification'][3]}"
-            elif channel_info['is_saved_livestream']:
+            elif channel_info.get('is_saved_livestream', False):
                 notification = f" — {localization[user.language]['notification'][4]}{(' ' + localization[user.language]['notification'][5]) if channel_info['might_be_deleted'] else ''}"
             else:
                 notification = f" — {localization[user.language]['notification'][0]}"
