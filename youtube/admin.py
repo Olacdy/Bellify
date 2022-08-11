@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.utils.html import format_html
 
-from utils.models import IsLivestreaming
+from utils.models import IsLivestreaming, IsDeletingLivestreams
 from youtube.models import (YouTubeChannel, YouTubeChannelUserItem,
                             YouTubeDeletedVideo, YouTubeEndedLivestream,
                             YouTubeLivestream, YouTubeVideo)
@@ -152,8 +152,9 @@ class YouTubeChannelAdmin(admin.ModelAdmin):
                YouTubeChannelUserItemInline, ]
     search_fields = ['channel_title', 'videos__video_title',
                      'livestreams__livestream_title', ]
-    list_filter = [IsLivestreaming, ]
-    list_display = ['channel_title', 'last_video', 'is_live', ]
+    list_filter = [IsLivestreaming, IsDeletingLivestreams, ]
+    list_display = ['channel_title', 'last_video',
+                    'is_live', 'is_deleting_streams', ]
     # exclude = ['deleted_livestreams', ]
 
     def last_video(self, obj):
@@ -161,4 +162,9 @@ class YouTubeChannelAdmin(admin.ModelAdmin):
 
     def is_live(self, obj):
         return obj.is_livestreaming
+
+    def is_deleting_streams(self, obj):
+        return obj.is_deleting_livestreams
+
     is_live.boolean = True
+    is_deleting_streams.boolean = True
