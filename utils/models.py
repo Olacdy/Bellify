@@ -45,3 +45,20 @@ class IsLivestreaming(admin.SimpleListFilter):
             return queryset.filter(livestream__isnull=False).distinct()
         elif self.value() == 'offline':
             return queryset.filter(livestream__isnull=True)
+
+
+class IsDeletingLivestreams(admin.SimpleListFilter):
+    title = 'Is deleting streams'
+    parameter_name = 'is_deleting_streams'
+
+    def lookups(self, request, model_admin):
+        return (
+            ('deleting', 'Yes'),
+            ('not_deleting', 'No'),
+        )
+
+    def queryset(self, request, queryset):
+        if self.value() == 'deleting':
+            return queryset.filter(deleted_livestreams__gt=0).distinct()
+        elif self.value() == 'not_deleting':
+            return queryset.filter(deleted_livestreams__lt=1)
