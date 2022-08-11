@@ -15,6 +15,7 @@ from utils.models import CreateUpdateTracker, nb
 class YouTubeChannel(Channel):
     users = models.ManyToManyField(
         User, through='YouTubeChannelUserItem')
+
     deleted_livestreams = models.PositiveIntegerField(default=0, **nb)
 
     class Meta:
@@ -126,7 +127,7 @@ class YouTubeEndedLivestream(YouTubeLivestreamParent):
         verbose_name_plural = 'Ended YouTube Livestreams'
 
     @classmethod
-    def is_ended_stream(cls, channel: YouTubeChannel, video: Optional['YouTubeVideo'] = None, video_tuple: Optional[Tuple[str, str]] = None) -> bool:
+    def is_ended_livestream(cls, channel: YouTubeChannel, video: Optional['YouTubeVideo'] = None, video_tuple: Optional[Tuple[str, str]] = None) -> bool:
         if video:
             return channel.ended_livestreams.filter(livestream_id=video.video_id, livestream_title=video.video_title).exists()
         else:
@@ -165,7 +166,7 @@ class YouTubeVideo(YouTubeVideoParent):
 
     @property
     def is_ended_livestream(self: 'YouTubeVideo') -> bool:
-        return YouTubeEndedLivestream.is_ended_stream(self.channel, self)
+        return YouTubeEndedLivestream.is_ended_livestream(self.channel, self)
 
     @property
     def is_able_to_notify(self: 'YouTubeVideo') -> bool:
@@ -179,7 +180,7 @@ class YouTubeVideo(YouTubeVideoParent):
     def get_new_videos(cls, channel: 'YouTubeChannel', videos: Dict[str, Tuple[str, bool]]) -> List['YouTubeVideo']:
         saved_videos = cls.get_saved_video_data(channel)
 
-        if videos.keys() != saved_videos.keys():
+        if videos.keys() != saved_videos.keys() and len(videos) > 0:
             channel.videos.all().delete()
             disable_notifications = False
 
@@ -202,15 +203,17 @@ class YouTubeVideo(YouTubeVideoParent):
 
             for saved_video_id in saved_videos:
                 if not saved_video_id in videos:
+                    is_counted_as_deleted_livestream = saved_videos[saved_video_id][1] and YouTubeEndedLivestream.is_ended_livestream(
+                        channel, video_tuple=(saved_video_id, saved_videos[saved_video_id][0]))
                     YouTubeDeletedVideo.objects.get_or_create(
                         video_id=saved_video_id,
                         video_title=saved_videos[saved_video_id][0],
                         is_saved_livestream=saved_videos[saved_video_id][1],
+                        is_counted_as_deleted_livestream=is_counted_as_deleted_livestream,
                         channel=channel
                     )
                     channel.increment_deleted_livestreams(
-                    ) if saved_videos[saved_video_id][1] and YouTubeEndedLivestream.is_ended_stream(
-                        channel, video_tuple=(saved_video_id, saved_videos[saved_video_id][0])) else None
+                    ) if is_counted_as_deleted_livestream else None
 
         channel.set_notified_if_not_notified_all_videos()
         return reversed(channel.videos.all())
@@ -230,6 +233,8 @@ class YouTubeVideo(YouTubeVideoParent):
 class YouTubeDeletedVideo(YouTubeVideoParent):
     channel = models.ForeignKey(
         YouTubeChannel, on_delete=models.CASCADE, related_name='deleted_videos', related_query_name='deleted_video')
+
+    is_counted_as_deleted_livestream = models.BooleanField(default=False, **nb)
 
     class Meta:
         verbose_name = 'Deleted YouTube Video'

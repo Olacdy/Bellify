@@ -92,26 +92,40 @@ def check_youtube() -> None:
     for channel, channel_videos_info_item in zip(channels, channels_videos_info):
         if channel_videos_info_item:
             for video in YouTubeVideo.get_new_videos(channel, channel_videos_info_item):
+                if not video.is_notified:
+                    if settings.DEBUG:
+                        tasks.notify_users([item.user.user_id for item in YouTubeChannelUserItem.objects.filter(
+                            channel=channel, user__status='B')], content_info={'id': channel.channel_id,
+                                                                               'url': video.video_url,
+                                                                               'title': video.video_title,
+                                                                               'is_reuploaded': video.is_reuploaded})
+                    else:
+                        tasks.notify_users.delay([item.user.user_id for item in YouTubeChannelUserItem.objects.filter(
+                            channel=channel, user__status='B')], content_info={'id': channel.channel_id,
+                                                                               'url': video.video_url,
+                                                                               'title': video.video_title,
+                                                                               'is_reuploaded': video.is_reuploaded})
+
                 if not video.is_notified or video.iterations_skipped > 0:
-                    if video.is_ended_livestream and not video.is_able_to_notify:
+                    if video.is_ended_livestream and channel.is_deleting_livestreams and not video.is_able_to_notify:
                         video.skip_iteration()
                     else:
                         if settings.DEBUG:
                             tasks.notify_users([item.user.user_id for item in YouTubeChannelUserItem.objects.filter(
-                                channel=channel)], content_info={'id': channel.channel_id,
-                                                                 'url': video.video_url,
-                                                                 'title': video.video_title,
-                                                                 'is_saved_livestream': video.is_ended_livestream,
-                                                                 'might_be_deleted': channel.is_deleting_livestreams,
-                                                                 'is_reuploaded': video.is_reuploaded})
+                                channel=channel, user__status='P')], content_info={'id': channel.channel_id,
+                                                                                   'url': video.video_url,
+                                                                                   'title': video.video_title,
+                                                                                   'is_saved_livestream': video.is_ended_livestream,
+                                                                                   'might_be_deleted': channel.is_deleting_livestreams,
+                                                                                   'is_reuploaded': video.is_reuploaded})
                         else:
                             tasks.notify_users.delay([item.user.user_id for item in YouTubeChannelUserItem.objects.filter(
-                                channel=channel)], content_info={'id': channel.channel_id,
-                                                                 'url': video.video_url,
-                                                                 'title': video.video_title,
-                                                                 'is_saved_livestream': video.is_ended_livestream,
-                                                                 'might_be_deleted': channel.is_deleting_livestreams,
-                                                                 'is_reuploaded': video.is_reuploaded})
+                                channel=channel, user__status='P')], content_info={'id': channel.channel_id,
+                                                                                   'url': video.video_url,
+                                                                                   'title': video.video_title,
+                                                                                   'is_saved_livestream': video.is_ended_livestream,
+                                                                                   'might_be_deleted': channel.is_deleting_livestreams,
+                                                                                   'is_reuploaded': video.is_reuploaded})
                         video.notified()
 
 

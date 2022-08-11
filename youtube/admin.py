@@ -91,8 +91,6 @@ class YouTubeLivestreamAdminParent(admin.ModelAdmin):
 
 
 class YouTubeVideoAdminParent(admin.ModelAdmin):
-    fields = ['created_at', 'channel', 'video_id', 'video_title',
-              'video_url', 'is_saved_livestream', ]
     readonly_fields = ['created_at', 'video_url', ]
 
     search_fields = ['video_title', 'video_id', 'channel__channel_title', ]
@@ -120,6 +118,13 @@ class YouTubeVideoAdmin(YouTubeVideoAdminParent):
 @admin.register(YouTubeDeletedVideo)
 class YouTubeDeletedVideoAdmin(YouTubeVideoAdminParent):
     model = YouTubeDeletedVideo
+
+    fields = ['created_at', 'channel', 'video_id', 'video_title',
+              'video_url', 'is_saved_livestream', 'is_counted_as_deleted_livestream', ]
+
+    list_filter = ['is_saved_livestream', 'is_counted_as_deleted_livestream', ]
+    list_display = ['video_title', 'channel',
+                    'is_saved_livestream', 'is_counted_as_deleted_livestream', ]
 
     verbose_name = 'Deleted Video'
     verbose_name_plural = 'Deleted Videos'
