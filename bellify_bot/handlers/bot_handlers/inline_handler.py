@@ -96,7 +96,8 @@ def inline_link_handler(update: Update, context: CallbackContext) -> None:
     channel_id = query_data[-2]
     if 'remove' in query_data:
         try:
-            channel = ChannelUserItem.get_user_channel_by_id(u, channel_id)
+            channel = ChannelUserItem.get_channel_by_user_and_channel_id(
+                u, channel_id)
             remove(update, u, channel)
         except Exception as e:
             query.edit_message_text(
@@ -116,7 +117,7 @@ def inline_manage_handler(update: Update, context: CallbackContext) -> None:
 
     mode, page_num, channel_id = query_data[-1], int(
         query_data[-2]), query_data[-3]
-    channel = ChannelUserItem.get_user_channel_by_id(u, channel_id)
+    channel = ChannelUserItem.get_channel_by_user_and_channel_id(u, channel_id)
     if 'mute' in mode:
         mute(update, u, channel, page_num=page_num)
     elif 'remove' in mode and u.is_tutorial_finished:
