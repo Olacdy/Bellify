@@ -67,7 +67,7 @@ class UserAdmin(admin.ModelAdmin):
               'language', 'max_youtube_channels_number', 'max_twitch_channels_number', 'is_tutorial_finished', 'is_admin', ]
 
     def name(self, obj):
-        return obj.username or (' '.join([obj.lastname, obj.firstname])) or obj.user_id
+        return obj.tg_str
 
     @admin.action(description='Broadcast message to selected Users')
     def broadcast(self, request, queryset):
