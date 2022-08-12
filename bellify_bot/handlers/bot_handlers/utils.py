@@ -64,7 +64,7 @@ def check_youtube() -> None:
         for livestream in YouTubeLivestream.get_new_livestreams(channel_premium, channel_livestreams_info_item):
             if not livestream.is_notified:
                 notify_users(users=[item.user for item in YouTubeChannelUserItem.objects.filter(
-                    channel=channel_premium)], channel_id=channel.channel_id, url=livestream.livestream_url,
+                    channel=channel_premium)], channel_id=channel_premium.channel_id, url=livestream.livestream_url,
                     content_title=livestream.livestream_title, is_live=True)
                 livestream.notified()
 
