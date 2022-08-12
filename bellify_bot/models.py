@@ -65,6 +65,40 @@ class User(CreateUpdateTracker):
     def __str__(self):
         return f'@{self.username}' if self.username is not None else f'{self.user_id}'
 
+    @property
+    def invited_users(self) -> QuerySet[User]:
+        return User.objects.filter(deep_link=str(self.user_id), created_at__gt=self.created_at)
+
+    @property
+    def tg_str(self) -> str:
+        if self.username:
+            return f'@{self.username}'
+        elif self.last_name and self.first_name:
+            return f'{self.first_name} {self.last_name}'
+        elif self.last_name:
+            return self.last_name
+        else:
+            return self.user_id
+
+    @classmethod
+    def get_or_create_profile(cls, chat_id: str, tg_user: TgUser, reset: Optional[bool] = True):
+        user_data = cls.objects.get_or_create(
+            user_id=chat_id,
+            defaults={
+                'username': tg_user.username,
+                'first_name': tg_user.first_name,
+                'last_name': tg_user.last_name
+            }
+        )
+        if user_data[0].username == settings.BOT_NAME:
+            user_data[0].username = tg_user.username
+            user_data[0].first_name = tg_user.first_name
+            user_data[0].last_name = tg_user.last_name
+            user_data[0].save()
+        if reset:
+            user_data[0].set_menu_field()
+        return user_data
+
     def get_max_for_channel(self: User, channel_type: str) -> int:
         if 'YouTube' in channel_type:
             return self.max_youtube_channels_number
@@ -94,35 +128,6 @@ class User(CreateUpdateTracker):
     def set_tutorial_state(self: User, value: bool) -> None:
         self.is_tutorial_finished = value
         self.save()
-
-    @classmethod
-    def get_or_create_profile(cls, chat_id: str, tg_user: TgUser, reset: Optional[bool] = True):
-        user_data = cls.objects.get_or_create(
-            user_id=chat_id,
-            defaults={
-                'username': tg_user.username,
-                'first_name': tg_user.first_name,
-                'last_name': tg_user.last_name
-            }
-        )
-        if user_data[0].username == settings.BOT_NAME:
-            user_data[0].username = tg_user.username
-            user_data[0].first_name = tg_user.first_name
-            user_data[0].last_name = tg_user.last_name
-            user_data[0].save()
-        if reset:
-            user_data[0].set_menu_field()
-        return user_data
-
-    @property
-    def invited_users(self) -> QuerySet[User]:
-        return User.objects.filter(deep_link=str(self.user_id), created_at__gt=self.created_at)
-
-    @property
-    def tg_str(self) -> str:
-        if self.username:
-            return f'@{self.username}'
-        return f'{self.first_name} {self.last_name}' if self.last_name else f'{self.first_name}'
 
 
 class ChannelUserItem(CreateUpdateTracker):
