@@ -148,19 +148,19 @@ class ChannelUserItem(CreateUpdateTracker):
         return f'{icon_or_none}{title}'
 
     @classmethod
-    def is_user_subscribed_to_channel(cls, u: User, channel_id: str) -> bool:
-        return cls.objects.filter(Q(user=u) & (Q(twitchchanneluseritem__channel__channel_id=channel_id) | Q(youtubechanneluseritem__channel__channel_id=channel_id))).exists()
+    def is_user_subscribed_to_channel(cls, user: User, channel_id: str) -> bool:
+        return cls.objects.filter(Q(user=user) & (Q(twitchchanneluseritem__channel__channel_id=channel_id) | Q(youtubechanneluseritem__channel__channel_id=channel_id))).exists()
 
     @classmethod
-    def get_user_channel_by_id(cls, u: User, channel_id: str) -> 'ChannelUserItem':
-        return cls.objects.filter(Q(user=u) & (Q(twitchchanneluseritem__channel__channel_id=channel_id) | Q(youtubechanneluseritem__channel__channel_id=channel_id))).first()
+    def get_channel_by_user_and_channel_id(cls, user: User, channel_id: str) -> 'ChannelUserItem':
+        return cls.objects.filter(Q(user=user) & (Q(twitchchanneluseritem__channel__channel_id=channel_id) | Q(youtubechanneluseritem__channel__channel_id=channel_id))).first()
 
     @classmethod
-    def get_count_by_user_and_channel(cls, u, channel_type: str) -> int:
+    def get_count_by_user_and_channel(cls, user, channel_type: str) -> int:
         if 'YouTube' in channel_type:
-            return apps.get_model('youtube', 'YouTubeChannelUserItem').objects.filter(user=u).count() + 1
+            return apps.get_model('youtube', 'YouTubeChannelUserItem').objects.filter(user=user).count() + 1
         elif 'Twitch' in channel_type:
-            return apps.get_model('twitch', 'TwitchChannelUserItem').objects.filter(user=u).count() + 1
+            return apps.get_model('twitch', 'TwitchChannelUserItem').objects.filter(user=user).count() + 1
 
     def mute_channel(self: 'ChannelUserItem') -> None:
         self.is_muted = not self.is_muted

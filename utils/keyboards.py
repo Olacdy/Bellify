@@ -146,7 +146,7 @@ def get_manage_inline_keyboard(u: User, page_num: Optional[int] = 0) -> List:
 
 # Returns Inline Keyboard with given title and url
 @log_errors
-def get_notification_reply_markup(title: str, url: str):
+def get_notification_reply_markup(content_title: str, url: str):
     return InlineKeyboardMarkup([
-        [InlineKeyboardButton(text=title, url=url)]
+        [InlineKeyboardButton(text=content_title, url=url)]
     ])
