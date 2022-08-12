@@ -72,7 +72,7 @@ class User(CreateUpdateTracker):
     @property
     def tg_str(self) -> str:
         if self.username:
-            return f'@{self.username}'
+            return self.username
         elif self.last_name and self.first_name:
             return f'{self.first_name} {self.last_name}'
         elif self.last_name:
