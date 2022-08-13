@@ -47,13 +47,41 @@ class YouTubeChannel(Channel):
     def is_deleting_livestreams(self: 'YouTubeChannel') -> bool:
         return bool(self.deleted_livestreams)
 
-    def set_notified_if_not_notified_all_videos(self: 'YouTubeChannel') -> None:
-        if self.videos.filter(is_notified=False).count() == self.videos.count() and self.videos.count() > 1:
-            self.videos.update(is_notified=True)
+    @classmethod
+    def get_channels_to_review(cls) -> List['YouTubeChannel']:
+        return list(cls.objects.filter(youtubechanneluseritem__isnull=False))
+
+    @classmethod
+    def get_channels_to_review_premium(cls) -> List['YouTubeChannel']:
+        return list(cls.objects.filter(youtubechanneluseritem__isnull=False, users__status='P'))
+
+    @classmethod
+    def is_channel_exists(cls, channel_id: str) -> bool:
+        return cls.objects.filter(channel_id=channel_id, youtubechanneluseritem__isnull=False).exists()
+
+    def set_not_new_if_all_videos_are_new(self: 'YouTubeChannel') -> None:
+        if self.videos.filter(is_new=True).count() == self.videos.count() and self.videos.count() > 1:
+            self.videos.update(is_new=False)
 
     def increment_deleted_livestreams(self: 'YouTubeChannel') -> None:
         self.deleted_livestreams = self.deleted_livestreams + 1
         self.save()
+
+    def decrement_deleted_livestreams(self: 'YouTubeChannel') -> None:
+        self.deleted_livestreams = self.deleted_livestreams - 1
+        if self.deleted_livestreams < 0:
+            self.deleted_livestreams = 0
+        self.save()
+
+    def clear_videos(self: 'YouTubeChannel') -> None:
+        self.videos.all().delete()
+
+    def clear_livestreams(self: 'YouTubeChannel') -> None:
+        self.livestreams.all().delete()
+
+    def clear_content(self: 'YouTubeChannel') -> None:
+        self.clear_videos()
+        self.clear_livestreams()
 
 
 # Parent of YouTubeLivestream models
@@ -74,7 +102,7 @@ class YouTubeLivestreamParent(CreateUpdateTracker):
 
 # YouTube livestream model
 class YouTubeLivestream(YouTubeLivestreamParent):
-    is_notified = models.BooleanField(default=True, **nb)
+    is_new = models.BooleanField(default=False, **nb)
 
     channel = models.ForeignKey(
         YouTubeChannel, on_delete=models.CASCADE, related_name='livestreams', related_query_name='livestream')
@@ -92,13 +120,13 @@ class YouTubeLivestream(YouTubeLivestreamParent):
         saved_livestreams = cls.get_livestreams_data(channel)
 
         if livestreams.keys() != saved_livestreams.keys():
-            channel.livestreams.all().delete()
+            channel.clear_livestreams()
 
             for livestream_id in livestreams:
                 YouTubeLivestream.objects.get_or_create(
                     livestream_id=livestream_id,
                     livestream_title=livestreams[livestream_id],
-                    is_notified=livestream_id in saved_livestreams,
+                    is_new=not livestream_id in saved_livestreams,
                     channel=channel
                 )
 
@@ -113,7 +141,7 @@ class YouTubeLivestream(YouTubeLivestreamParent):
         return reversed(channel.livestreams.all())
 
     def notified(self: 'YouTubeLivestream') -> None:
-        self.is_notified = True
+        self.is_new = False
         self.save()
 
 
@@ -153,7 +181,7 @@ class YouTubeVideoParent(CreateUpdateTracker):
 
 # YouTube video model
 class YouTubeVideo(YouTubeVideoParent):
-    is_notified = models.BooleanField(default=True, **nb)
+    is_new = models.BooleanField(default=False, **nb)
     is_reuploaded = models.BooleanField(default=False, **nb)
     iterations_skipped = models.PositiveSmallIntegerField(default=0, **nb)
 
@@ -181,30 +209,40 @@ class YouTubeVideo(YouTubeVideoParent):
         saved_videos = cls.get_saved_video_data(channel)
 
         if videos.keys() != saved_videos.keys() and len(videos) > 0:
-            channel.videos.all().delete()
-            disable_notifications = False
+            channel.clear_videos()
+            is_new = True
+            new_videos_count = 0
 
             for video_id in videos:
-                disable_notifications = (video_id in saved_videos or YouTubeDeletedVideo.is_video_was_deleted(
-                    channel, (video_id, videos[video_id][0])))
-                is_reuploaded = YouTubeDeletedVideo.is_video_was_reuploaded(
+                is_been_deleted, is_counted_as_deleted_livestream = YouTubeDeletedVideo.is_been_deleted_and_counted_as_livestream(
                     channel, (video_id, videos[video_id][0]))
+                is_reuploaded = YouTubeDeletedVideo.is_been_reuploaded(
+                    channel, (video_id, videos[video_id][0]))
+
+                is_new = not (video_id in saved_videos or is_been_deleted)
+
+                if is_new:
+                    new_videos_count = new_videos_count + 1
 
                 YouTubeVideo.objects.get_or_create(
                     video_id=video_id,
                     video_title=videos[video_id][0],
                     is_saved_livestream=videos[video_id][1],
-                    is_notified=disable_notifications,
+                    is_new=is_new,
                     iterations_skipped=saved_videos.get(
                         video_id, ('', '', 0))[2],
                     is_reuploaded=is_reuploaded,
                     channel=channel
                 )
 
+                if is_been_deleted and is_counted_as_deleted_livestream:
+                    channel.decrement_deleted_livestreams()
+
             for saved_video_id in saved_videos:
-                if not saved_video_id in videos:
+                if not (saved_video_id in videos and saved_video_id in saved_videos.keys()[slice(-new_videos_count, None)]):
                     is_counted_as_deleted_livestream = saved_videos[saved_video_id][1] and YouTubeEndedLivestream.is_ended_livestream(
                         channel, video_tuple=(saved_video_id, saved_videos[saved_video_id][0]))
+
                     YouTubeDeletedVideo.objects.get_or_create(
                         video_id=saved_video_id,
                         video_title=saved_videos[saved_video_id][0],
@@ -212,14 +250,15 @@ class YouTubeVideo(YouTubeVideoParent):
                         is_counted_as_deleted_livestream=is_counted_as_deleted_livestream,
                         channel=channel
                     )
-                    channel.increment_deleted_livestreams(
-                    ) if is_counted_as_deleted_livestream else None
 
-        channel.set_notified_if_not_notified_all_videos()
+                    if is_counted_as_deleted_livestream:
+                        channel.increment_deleted_livestreams()
+
+        channel.set_not_new_if_all_videos_are_new()
         return reversed(channel.videos.all())
 
     def notified(self: 'YouTubeVideo') -> None:
-        self.is_notified = True
+        self.is_new = False
         self.is_reuploaded = False
         self.iterations_skipped = 0
         self.save()
@@ -241,15 +280,16 @@ class YouTubeDeletedVideo(YouTubeVideoParent):
         verbose_name_plural = 'Deleted YouTube Videos'
 
     @classmethod
-    def is_video_was_deleted(cls, channel: YouTubeChannel, video: Tuple[str, str]) -> bool:
+    def is_been_deleted_and_counted_as_livestream(cls, channel: YouTubeChannel, video: Tuple[str, str]) -> bool:
         query_set = cls.objects.filter(Q(
             channel=channel, video_id__exact=video[0], video_title__exact=video[1]))
         reuploaded_video, is_deleted = query_set.first(), query_set.exists()
+        is_counted_as_deleted_livestream = reuploaded_video.is_counted_as_deleted_livestream if reuploaded_video else False
         reuploaded_video.delete() if is_deleted else None
-        return is_deleted
+        return is_deleted, is_counted_as_deleted_livestream
 
     @classmethod
-    def is_video_was_reuploaded(cls, channel: YouTubeChannel, video: Tuple[str, str]) -> bool:
+    def is_been_reuploaded(cls, channel: YouTubeChannel, video: Tuple[str, str]) -> bool:
         query_set = cls.objects.filter(~Q(video_id=video[0]) & Q(
             channel=channel, video_title__exact=video[1]))
         reuploaded_video, is_reuploaded = query_set.first(), query_set.exists()
@@ -286,9 +326,3 @@ def remove_deleted_video_if_it_in_videos(sender: 'YouTubeVideo', instance, *args
                for video_id in videos_ids]
     query = reduce(lambda x, y: x & y, queries)
     YouTubeDeletedVideo.objects.filter(query).delete()
-
-
-@receiver(models.signals.post_delete, sender=YouTubeChannelUserItem)
-def delete_channel_if_no_users_subscribed(sender, instance, *args, **kwargs):
-    YouTubeChannel.objects.filter(
-        youtubechanneluseritem__isnull=True).delete()

@@ -27,7 +27,7 @@ logger = get_task_logger(__name__)
 # Checks for streams and alerts every premium user if there is one
 @log_errors
 def check_twitch() -> None:
-    channels: List[TwitchChannel] = list(TwitchChannel.objects.all())
+    channels: List[TwitchChannel] = TwitchChannel.get_channels_to_review()
     channels_ids = [channel.channel_id for channel in channels]
     channels_ids = [channels_ids[i * 100:(i + 1) * 100]
                     for i in range((len(channels_ids) + 100 - 1) // 100)]
@@ -38,12 +38,13 @@ def check_twitch() -> None:
     for channel in channels:
         if channel.channel_id in live_info:
             stream_data = live_info[channel.channel_id]
-            if stream_data[3] != channel.is_live and channel.is_threshold_passed:
+            if stream_data[3] != channel.is_live:
                 channel.update(
                     live_title=stream_data[0], game_name=stream_data[1], thumbnail_url=stream_data[2], is_live=stream_data[3])
-                notify_users(users=[item.user for item in TwitchChannelUserItem.objects.filter(
-                    channel=channel)], channel_id=channel.channel_id, url=channel.channel_url, content_title=channel.live_title,
-                    game_name=channel.game_name, preview_url=channel.preview_url, is_live=True)
+                if channel.is_threshold_passed:
+                    notify_users(users=[item.user for item in TwitchChannelUserItem.objects.filter(
+                        channel=channel)], channel_id=channel.channel_id, url=channel.channel_url, content_title=channel.live_title,
+                        game_name=channel.game_name, preview_url=channel.preview_url, is_live=True)
         else:
             channel.update()
 
@@ -51,9 +52,9 @@ def check_twitch() -> None:
 # Checks for livestreams and new videos and alerts users if the are some
 @ log_errors
 def check_youtube() -> None:
-    channels: List[YouTubeChannel] = list(YouTubeChannel.objects.all())
-    channels_premium: List[YouTubeChannel] = list(
-        YouTubeChannel.objects.filter(users__status='P'))
+    channels: List[YouTubeChannel] = YouTubeChannel.get_channels_to_review()
+    channels_premium: List[YouTubeChannel] = YouTubeChannel.get_channels_to_review_premium(
+    )
 
     channels_videos_info = get_youtube_videos(
         [channel.channel_id for channel in channels])
@@ -62,7 +63,7 @@ def check_youtube() -> None:
 
     for channel_premium, channel_livestreams_info_item in zip(channels_premium, channels_livestreams_info):
         for livestream in YouTubeLivestream.get_new_livestreams(channel_premium, channel_livestreams_info_item):
-            if not livestream.is_notified:
+            if livestream.is_new:
                 notify_users(users=[item.user for item in YouTubeChannelUserItem.objects.filter(
                     channel=channel_premium, user__status='P')], channel_id=channel_premium.channel_id, url=livestream.livestream_url,
                     content_title=livestream.livestream_title, is_live=True)
@@ -71,12 +72,12 @@ def check_youtube() -> None:
     for channel, channel_videos_info_item in zip(channels, channels_videos_info):
         if channel_videos_info_item:
             for video in YouTubeVideo.get_new_videos(channel, channel_videos_info_item):
-                if not video.is_notified:
+                if video.is_new:
                     notify_users(users=[item.user for item in YouTubeChannelUserItem.objects.filter(
                         channel=channel, user__status='B')], channel_id=channel.channel_id, url=video.video_url,
                         content_title=video.video_title, is_reuploaded=video.is_reuploaded)
 
-                if not video.is_notified or video.iterations_skipped > 0:
+                if video.is_new or video.iterations_skipped > 0:
                     if video.is_ended_livestream and channel.is_deleting_livestreams and not video.is_able_to_notify:
                         video.skip_iteration()
                     else:
@@ -112,12 +113,12 @@ def _add_twitch_channel(channel_id: str, message: Message, user: User, name: Opt
         thumb_href = f"{get_html_link(url=preview_url) if is_live else ''}"
         return f'{general}{name}{is_streaming}{game}{thumb_href}'
 
-    if not TwitchChannel.objects.filter(channel_id=channel_id).exists():
+    if not TwitchChannel.is_channel_exists(channel_id):
         _, channel_login, channel_title = get_users_info(
             ids=[channel_id])[0]
         channel_url = get_channel_url_from_title(channel_title)
 
-        channel, _ = TwitchChannel.objects.get_or_create(
+        channel, _ = TwitchChannel.objects.update_or_create(
             channel_id=channel_id,
             channel_title=channel_title,
             channel_login=channel_login,
@@ -178,15 +179,17 @@ def _add_youtube_channel(channel_id: str, message: Message, user: User, name: Op
         href = f'{get_html_link(url=url)}'
         return f'{general}{channel_name}{is_streaming}{href}'
 
-    if not YouTubeChannel.objects.filter(channel_id=channel_id).exists():
+    if not YouTubeChannel.is_channel_exists(channel_id):
         channel_url = get_url_from_id(channel_id)
         _, channel_title = scrape_id_and_title_by_url(channel_url)
 
-        channel, _ = YouTubeChannel.objects.get_or_create(
+        channel, _ = YouTubeChannel.objects.update_or_create(
             channel_id=channel_id,
             channel_url=channel_url,
             channel_title=channel_title
         )
+
+        channel.clear_content()
 
         videos = scrape_last_videos(channel_id)
         livestreams = scrape_livesteams(channel_id)
