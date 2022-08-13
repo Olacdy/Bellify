@@ -239,7 +239,7 @@ class YouTubeVideo(YouTubeVideoParent):
                     channel.decrement_deleted_livestreams()
 
             for saved_video_id in saved_videos:
-                if not (saved_video_id in videos and saved_video_id in saved_videos.keys()[slice(-new_videos_count, None)]):
+                if not (saved_video_id in videos and saved_video_id in list(saved_videos.keys())[slice(-new_videos_count, None)]):
                     is_counted_as_deleted_livestream = saved_videos[saved_video_id][1] and YouTubeEndedLivestream.is_ended_livestream(
                         channel, video_tuple=(saved_video_id, saved_videos[saved_video_id][0]))
 
