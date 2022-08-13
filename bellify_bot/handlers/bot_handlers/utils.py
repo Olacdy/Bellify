@@ -63,7 +63,7 @@ def check_youtube() -> None:
 
     for channel_premium, channel_livestreams_info_item in zip(channels_premium, channels_livestreams_info):
         for livestream in YouTubeLivestream.get_new_livestreams(channel_premium, channel_livestreams_info_item):
-            if not livestream.is_notified:
+            if livestream.is_new:
                 notify_users(users=[item.user for item in YouTubeChannelUserItem.objects.filter(
                     channel=channel_premium, user__status='P')], channel_id=channel_premium.channel_id, url=livestream.livestream_url,
                     content_title=livestream.livestream_title, is_live=True)
@@ -72,12 +72,12 @@ def check_youtube() -> None:
     for channel, channel_videos_info_item in zip(channels, channels_videos_info):
         if channel_videos_info_item:
             for video in YouTubeVideo.get_new_videos(channel, channel_videos_info_item):
-                if not video.is_notified:
+                if video.is_new:
                     notify_users(users=[item.user for item in YouTubeChannelUserItem.objects.filter(
                         channel=channel, user__status='B')], channel_id=channel.channel_id, url=video.video_url,
                         content_title=video.video_title, is_reuploaded=video.is_reuploaded)
 
-                if not video.is_notified or video.iterations_skipped > 0:
+                if video.is_new or video.iterations_skipped > 0:
                     if video.is_ended_livestream and channel.is_deleting_livestreams and not video.is_able_to_notify:
                         video.skip_iteration()
                     else:
