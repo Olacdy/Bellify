@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 
 import requests
 from bellify_bot.models import Channel, ChannelUserItem, User
@@ -64,6 +64,14 @@ class TwitchChannel(Channel):
         return self.live_end_datetime + settings.TIME_THRESHOLD < now()
 
     @classmethod
+    def get_channels_to_review(cls) -> List['TwitchChannel']:
+        return list(cls.objects.filter(twitchchanneluseritem__isnull=False))
+
+    @classmethod
+    def is_channel_exists(cls, channel_id: str) -> bool:
+        return cls.objects.filter(channel_id=channel_id, twitchchanneluseritem__isnull=False).exists()
+
+    @classmethod
     def get_or_update_bearer_token(cls, update: Optional[bool] = False) -> str:
         if not cls._bearer_token or update:
 
@@ -106,8 +114,3 @@ class TwitchChannelUserItem(ChannelUserItem):
     @property
     def type(self) -> str:
         return 'twitch'
-
-
-@receiver(models.signals.post_delete, sender=TwitchChannelUserItem)
-def delete_channel_if_no_users_subscribed(sender, instance, *args, **kwargs):
-    TwitchChannel.objects.filter(twitchchanneluseritem__isnull=True).delete()
