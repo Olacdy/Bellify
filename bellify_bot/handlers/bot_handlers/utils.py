@@ -38,12 +38,13 @@ def check_twitch() -> None:
     for channel in channels:
         if channel.channel_id in live_info:
             stream_data = live_info[channel.channel_id]
-            if stream_data[3] != channel.is_live and channel.is_threshold_passed:
+            if stream_data[3] != channel.is_live:
                 channel.update(
                     live_title=stream_data[0], game_name=stream_data[1], thumbnail_url=stream_data[2], is_live=stream_data[3])
-                notify_users(users=[item.user for item in TwitchChannelUserItem.objects.filter(
-                    channel=channel)], channel_id=channel.channel_id, url=channel.channel_url, content_title=channel.live_title,
-                    game_name=channel.game_name, preview_url=channel.preview_url, is_live=True)
+                if channel.is_threshold_passed:
+                    notify_users(users=[item.user for item in TwitchChannelUserItem.objects.filter(
+                        channel=channel)], channel_id=channel.channel_id, url=channel.channel_url, content_title=channel.live_title,
+                        game_name=channel.game_name, preview_url=channel.preview_url, is_live=True)
         else:
             channel.update()
 

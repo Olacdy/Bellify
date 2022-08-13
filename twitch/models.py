@@ -61,7 +61,7 @@ class TwitchChannel(Channel):
 
     @property
     def is_threshold_passed(self: 'TwitchChannel') -> bool:
-        return self.live_end_datetime + settings.TIME_THRESHOLD > now()
+        return self.live_end_datetime + settings.TIME_THRESHOLD < now()
 
     @classmethod
     def get_or_update_bearer_token(cls, update: Optional[bool] = False) -> str:
@@ -85,7 +85,11 @@ class TwitchChannel(Channel):
         return cls._bearer_token
 
     def update(self: 'TwitchChannel', live_title: Optional[str] = None, game_name: Optional[str] = None, thumbnail_url: Optional[str] = None, is_live: Optional[bool] = False) -> None:
-        self.live_title, self.game_name, self.thumbnail_url, self.is_live, self.live_end_datetime = live_title, game_name, thumbnail_url, is_live, now()
+        self.live_title, self.game_name, self.thumbnail_url, self.is_live = live_title, game_name, thumbnail_url, is_live
+
+        if not is_live:
+            self.live_end_datetime = now()
+
         if thumbnail_url:
             self.thumbnail_image.save(
                 twitch_thumbnail_directory_path(self), ContentFile(requests.get(thumbnail_url if thumbnail_url else self.thumbnail_url).content))
