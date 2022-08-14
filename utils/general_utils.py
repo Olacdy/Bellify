@@ -1,9 +1,14 @@
+import asyncio
+import json
 from typing import Dict, List, Optional, Union
 
+import aiohttp
 import telegram
+from asgiref import sync
 from bellify_bot.localization import localization
 from bellify_bot.models import ChannelUserItem, User
 from django.conf import settings
+from fake_headers import Headers
 from telegram import (CallbackQuery, InlineKeyboardButton,
                       InlineKeyboardMarkup, MessageEntity)
 from twitch.utils import is_twitch_url
@@ -76,6 +81,17 @@ def tutorial_reply(query: CallbackQuery, language: str, u: User) -> None:
             text=f'{localization[language]["help"][1][1]}',
             parse_mode='MARKDOWN',
         )
+
+
+def send_messages(urls: List[str]) -> None:
+    async def send_all(urls):
+        async with aiohttp.ClientSession(cookies=settings.SESSION_CLIENT_COOKIES) as session:
+            async def send(url):
+                return await session.get(url, headers=Headers().generate())
+            return await asyncio.gather(*[
+                send(url) for url in urls
+            ])
+    sync.async_to_sync(send_all)(urls)
 
 
 # Sends message to user
