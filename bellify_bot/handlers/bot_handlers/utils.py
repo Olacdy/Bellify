@@ -1,4 +1,5 @@
-from typing import List, Optional
+import itertools
+from typing import Dict, List, Optional
 
 from bellify_bot.localization import localization
 from bellify_bot.models import ChannelUserItem, User
@@ -15,7 +16,7 @@ from youtube.utils import (get_url_from_id, get_youtube_livestreams,
                            get_youtube_videos, scrape_id_and_title_by_url,
                            scrape_last_videos, scrape_livesteams)
 
-from utils.general_utils import (_send_message, get_html_bold, get_html_link,
+from utils.general_utils import (send_messages, get_html_bold, get_html_link,
                                  get_manage_message)
 from utils.keyboards import (get_manage_inline_keyboard,
                              get_notification_reply_markup,
@@ -35,6 +36,8 @@ def check_twitch() -> None:
     live_info = {stream_item[0]: stream_item[1:]
                  for stream_item in get_twitch_streams_info(channels_ids)}
 
+    livestream_notification_urls = []
+
     for channel in channels:
         if channel.channel_id in live_info:
             stream_data = live_info[channel.channel_id]
@@ -42,15 +45,17 @@ def check_twitch() -> None:
                 channel.update(
                     live_title=stream_data[0], game_name=stream_data[1], thumbnail_url=stream_data[2], is_live=stream_data[3])
                 if channel.is_threshold_passed:
-                    notify_users(users=[item.user for item in TwitchChannelUserItem.objects.filter(
-                        channel=channel)], channel_id=channel.channel_id, url=channel.channel_url, content_title=channel.live_title,
-                        game_name=channel.game_name, preview_url=channel.preview_url, is_live=True)
+                    livestream_notification_urls.append(get_urls_to_notify(users=[item.user for item in TwitchChannelUserItem.objects.filter(channel=channel)], channel_id=channel.channel_id, url=channel.channel_url, content_title=channel.live_title,
+                                                                           game_name=channel.game_name, preview_url=channel.preview_url, is_live=True))
         else:
             channel.update()
 
+    send_messages(list(itertools.chain.from_iterable(
+        livestream_notification_urls)))
+
 
 # Checks for livestreams and new videos and alerts users if the are some
-@ log_errors
+@log_errors
 def check_youtube() -> None:
     channels: List[YouTubeChannel] = YouTubeChannel.get_channels_to_review()
     channels_premium: List[YouTubeChannel] = YouTubeChannel.get_channels_to_review_premium(
@@ -61,35 +66,41 @@ def check_youtube() -> None:
     channels_livestreams_info = get_youtube_livestreams(
         [channel.channel_id for channel in channels_premium])
 
+    livestream_notification_urls = []
+    video_notification_urls = []
+
     for channel_premium, channel_livestreams_info_item in zip(channels_premium, channels_livestreams_info):
         for livestream in YouTubeLivestream.get_new_livestreams(channel_premium, channel_livestreams_info_item):
             if livestream.is_new:
-                notify_users(users=[item.user for item in YouTubeChannelUserItem.objects.filter(
+                livestream_notification_urls.append(get_urls_to_notify(users=[item.user for item in YouTubeChannelUserItem.objects.filter(
                     channel=channel_premium, user__status='P')], channel_id=channel_premium.channel_id, url=livestream.livestream_url,
-                    content_title=livestream.livestream_title, is_live=True)
+                    content_title=livestream.livestream_title, is_live=True))
                 livestream.notified()
 
     for channel, channel_videos_info_item in zip(channels, channels_videos_info):
         if channel_videos_info_item:
             for video in YouTubeVideo.get_new_videos(channel, channel_videos_info_item):
                 if video.is_new:
-                    notify_users(users=[item.user for item in YouTubeChannelUserItem.objects.filter(
+                    video_notification_urls.append(get_urls_to_notify(users=[item.user for item in YouTubeChannelUserItem.objects.filter(
                         channel=channel, user__status='B')], channel_id=channel.channel_id, url=video.video_url,
-                        content_title=video.video_title, is_reuploaded=video.is_reuploaded)
+                        content_title=video.video_title, is_reuploaded=video.is_reuploaded))
 
                 if video.is_new or video.iterations_skipped > 0:
                     if video.is_ended_livestream and channel.is_deleting_livestreams and not video.is_able_to_notify:
                         video.skip_iteration()
                     else:
-                        notify_users(users=[item.user for item in YouTubeChannelUserItem.objects.filter(
+                        video_notification_urls.append(get_urls_to_notify(users=[item.user for item in YouTubeChannelUserItem.objects.filter(
                             channel=channel, user__status='P')], channel_id=channel.channel_id, url=video.video_url,
                             content_title=video.video_title, is_reuploaded=video.is_reuploaded,
-                            is_ended_livestream=video.is_ended_livestream, is_might_be_deleted=channel.is_deleting_livestreams)
+                            is_ended_livestream=video.is_ended_livestream, is_might_be_deleted=channel.is_deleting_livestreams))
                         video.notified()
+
+    send_messages(list(itertools.chain.from_iterable(
+        video_notification_urls + livestream_notification_urls)))
 
 
 # Checks channel url type and call add function accordingly
-@ log_errors
+@log_errors
 def add(channel_id: str, channel_type: str, message: Message, user: User, name: Optional[str] = None) -> None:
     if 'YouTube' in channel_type:
         _add_youtube_channel(channel_id, message, user, name)
@@ -98,7 +109,7 @@ def add(channel_id: str, channel_type: str, message: Message, user: User, name: 
 
 
 # Adds Twitch channel to a given user
-@ log_errors
+@log_errors
 def _add_twitch_channel(channel_id: str, message: Message, user: User, name: Optional[str] = None) -> None:
     channel: TwitchChannel
 
@@ -168,7 +179,7 @@ def _add_twitch_channel(channel_id: str, message: Message, user: User, name: Opt
 
 
 # Adds YouTube channel to a given user
-@ log_errors
+@log_errors
 def _add_youtube_channel(channel_id: str, message: Message, user: User, name: Optional[str] = None) -> None:
     channel: YouTubeChannel
 
@@ -251,7 +262,7 @@ def _add_youtube_channel(channel_id: str, message: Message, user: User, name: Op
 
 
 # Function that handles users notifications
-def notify_users(users: List[User], channel_id: str, url: str, content_title: str, game_name: Optional[str] = None, preview_url: Optional[str] = None, is_reuploaded: Optional[bool] = False, is_live: Optional[bool] = False, is_ended_livestream: Optional[bool] = False, is_might_be_deleted: Optional[bool] = False) -> None:
+def get_urls_to_notify(users: List[User], channel_id: str, url: str, content_title: str, game_name: Optional[str] = None, preview_url: Optional[str] = None, is_reuploaded: Optional[bool] = False, is_live: Optional[bool] = False, is_ended_livestream: Optional[bool] = False, is_might_be_deleted: Optional[bool] = False) -> None:
     def _get_message(user: User, channel_title: str, url: str, game_name: Optional[str] = None, preview_url: Optional[str] = None, is_reuploaded: Optional[bool] = False, is_live: Optional[bool] = False, is_ended_livestream: Optional[bool] = False, is_might_be_deleted: Optional[bool] = False) -> str:
         channel_title = get_html_bold(channel_title)
 
@@ -269,39 +280,36 @@ def notify_users(users: List[User], channel_id: str, url: str, content_title: st
             href = f"{get_html_link(url=url)}"
             return f"{channel_title}{notification}{href}"
 
-    for user in users:
-        item: ChannelUserItem = ChannelUserItem.get_channel_by_user_and_channel_id(
-            user, channel_id)
-        channel_title, is_muted = item.message_title_and_type, item.is_muted
-        try:
-            _send_message(
-                user.user_id, _get_message(user=user, channel_title=channel_title, url=url, game_name=game_name, preview_url=preview_url,
-                                           is_reuploaded=is_reuploaded, is_live=is_live, is_ended_livestream=is_ended_livestream,
-                                           is_might_be_deleted=is_might_be_deleted),
-                reply_markup=get_notification_reply_markup(
-                    content_title, url),
-                disable_notification=is_muted)
-        except Exception as e:
-            logger.error(
-                f'Failed to send message to {user.user_id}, reason: {e}')
+    def _get_url(user_id: str, message: str, disable_notification: Optional[bool] = False, reply_markup: Optional[List[List[Dict]]] = None, parse_mode: Optional[str] = 'HTML') -> str:
+        return f'https://api.telegram.org/bot{settings.TOKEN}/sendMessage?chat_id={user_id}&parse_mode={parse_mode}&text={message}&disable_notification={disable_notification}&reply_markup={reply_markup.to_json()}'
+
+    return [_get_url(user_id=user.user_id,
+                     message=_get_message(user=user, channel_title=item.message_title_and_type, url=url,
+                                          game_name=game_name, preview_url=preview_url,
+                                          is_reuploaded=is_reuploaded, is_live=is_live,
+                                          is_ended_livestream=is_ended_livestream,
+                                          is_might_be_deleted=is_might_be_deleted),
+                     disable_notification=item.is_muted,
+                     reply_markup=get_notification_reply_markup(
+                         content_title, url)) for user, item in zip(users, [ChannelUserItem.get_channel_by_user_and_channel_id(user, channel_id) for user in users])]
 
 
 # Removes given channel user item
-@ log_errors
+@log_errors
 def remove(update: Update, u: User, channel: ChannelUserItem, page_num: Optional[int] = 0) -> None:
     channel.delete() if u.is_tutorial_finished and channel else None
     manage(update, u, mode='remove', page_num=page_num)
 
 
 # Mutes given channel user item
-@ log_errors
+@log_errors
 def mute(update: Update, u: User, channel: ChannelUserItem, page_num: Optional[int] = 0) -> None:
     channel.mute_channel() if channel else None
     manage(update, u, mode='mute', page_num=page_num)
 
 
 # Returns Manage replies according to call situation
-@ log_errors
+@log_errors
 def manage(update: Update, u: User, mode: Optional[str] = 'echo', page_num: Optional[int] = 0) -> None:
     keyboard = get_manage_inline_keyboard(u, page_num=page_num)
 
@@ -335,7 +343,7 @@ def manage(update: Update, u: User, mode: Optional[str] = 'echo', page_num: Opti
 
 
 # First reply on Upgrade command
-@ log_errors
+@log_errors
 def upgrade(message: Message, u: User):
     message.reply_text(
         text=localization[u.language]['upgrade'][0],
@@ -345,7 +353,7 @@ def upgrade(message: Message, u: User):
 
 
 # Reply on user invoice
-@ log_errors
+@log_errors
 def reply_invoice(update: Update, u: User, title: str, description: str, payload: str, buy_button_label: str, price: int, mode: Optional[str] = 'upgrade'):
     keyboard = [
         [
