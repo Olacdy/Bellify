@@ -86,7 +86,7 @@ def check_youtube() -> None:
                         content_title=video.video_title, is_reuploaded=video.is_reuploaded))
 
                 if video.is_new or video.iterations_skipped > 0:
-                    if video.is_ended_livestream and channel.is_deleting_livestreams and not video.is_able_to_notify:
+                    if video.is_ended_livestream and channel.check_for_deleting_livestreams and not video.is_able_to_notify:
                         video.skip_iteration()
                     else:
                         video_notification_urls.append(get_urls_to_notify(users=[item.user for item in YouTubeChannelUserItem.objects.filter(
@@ -199,8 +199,6 @@ def _add_youtube_channel(channel_id: str, message: Message, user: User, name: Op
             channel_url=channel_url,
             channel_title=channel_title
         )
-
-        channel.clear_content()
 
         videos = scrape_last_videos(channel_id)
         livestreams = scrape_livesteams(channel_id)
