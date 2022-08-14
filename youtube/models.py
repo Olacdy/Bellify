@@ -16,7 +16,7 @@ class YouTubeChannel(Channel):
     users = models.ManyToManyField(
         User, through='YouTubeChannelUserItem')
 
-    deleted_livestreams = models.PositiveIntegerField(default=0, **nb)
+    deleted_livestreams = models.IntegerField(default=0, **nb)
 
     class Meta:
         verbose_name = 'YouTube Channel'
@@ -30,9 +30,9 @@ class YouTubeChannel(Channel):
         return 'youtube'
 
     @property
-    def last_video(self: 'YouTubeChannel') -> Union['YouTubeVideo', bool]:
+    def last_video(self: 'YouTubeChannel') -> Union['YouTubeVideo', None]:
         video = self.videos.all().first()
-        return video if video else False
+        return video if video else None
 
     @property
     def ongoing_livestream(self: 'YouTubeChannel') -> Union['YouTubeLivestream', bool]:
@@ -44,8 +44,12 @@ class YouTubeChannel(Channel):
         return bool(self.ongoing_livestream)
 
     @property
+    def check_for_deleting_livestreams(self: 'YouTubeChannel') -> bool:
+        return self.deleted_livestreams != 0
+
+    @property
     def is_deleting_livestreams(self: 'YouTubeChannel') -> bool:
-        return bool(self.deleted_livestreams)
+        return self.deleted_livestreams > 0
 
     @classmethod
     def get_channels_to_review(cls) -> List['YouTubeChannel']:
@@ -64,7 +68,10 @@ class YouTubeChannel(Channel):
             self.videos.update(is_new=False)
 
     def increment_deleted_livestreams(self: 'YouTubeChannel') -> None:
-        self.deleted_livestreams = self.deleted_livestreams + 1
+        if self.deleted_livestreams != -1:
+            self.deleted_livestreams = self.deleted_livestreams + 1
+        else:
+            self.deleted_livestreams = 1
         self.save()
 
     def decrement_deleted_livestreams(self: 'YouTubeChannel') -> None:
@@ -82,6 +89,7 @@ class YouTubeChannel(Channel):
     def clear_content(self: 'YouTubeChannel') -> None:
         self.clear_videos()
         self.clear_livestreams()
+        self.deleted_livestreams = -1
 
 
 # Parent of YouTubeLivestream models
@@ -235,11 +243,11 @@ class YouTubeVideo(YouTubeVideoParent):
                     channel=channel
                 )
 
-                if is_been_deleted and is_counted_as_deleted_livestream:
+                if is_new and is_counted_as_deleted_livestream:
                     channel.decrement_deleted_livestreams()
 
             for saved_video_id in saved_videos:
-                if not (saved_video_id in videos and saved_video_id in list(saved_videos.keys())[slice(-new_videos_count, None)]):
+                if not saved_video_id in videos and not saved_video_id in list(saved_videos.keys())[slice(-new_videos_count, None)]:
                     is_counted_as_deleted_livestream = saved_videos[saved_video_id][1] and YouTubeEndedLivestream.is_ended_livestream(
                         channel, video_tuple=(saved_video_id, saved_videos[saved_video_id][0]))
 
@@ -317,6 +325,12 @@ def remove_deleted_and_ended_content_after_time(sender, instance, *args, **kwarg
     for ended_livestream in YouTubeEndedLivestream.objects.all():
         if (now() - ended_livestream.created_at).days >= 1:
             ended_livestream.delete()
+
+
+@receiver(models.signals.post_delete, sender=YouTubeChannelUserItem)
+def clear_channels_content_if_no_subscribers(sender, instance, *args, **kwargs):
+    for channel in YouTubeChannel.objects.filter(youtubechanneluseritem__isnull=True):
+        channel.clear_content()
 
 
 @receiver(models.signals.post_save, sender=YouTubeVideo)
