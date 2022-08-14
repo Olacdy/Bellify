@@ -1,16 +1,24 @@
 from django.contrib import admin
+from django.urls import reverse
+from django.utils.html import format_html
+from django.utils.safestring import mark_safe
 
 from twitch.models import TwitchChannel, TwitchChannelUserItem
 
 
 class TwitchChannelUserItemInline(admin.TabularInline):
     model = TwitchChannelUserItem
-    extra = 0
+
+    fields = ['username', 'channel_title', 'is_muted', ]
+    readonly_fields = ['username', ]
 
     verbose_name = 'User'
     verbose_name_plural = 'Users'
 
     extra = 0
+
+    def username(self, obj):
+        return mark_safe(f'<a href="{reverse("admin:bellify_bot_user_change", args=(obj.user_id,))}">{obj.user.tg_str}</a>')
 
     def has_add_permission(self, request, obj):
         return False
