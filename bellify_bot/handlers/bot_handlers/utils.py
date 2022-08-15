@@ -118,7 +118,7 @@ def _add_twitch_channel(channel_id: str, message: Message, user: User, name: Opt
         name = get_html_bold(channel_name) if is_live else get_html_link(
             channel_url, channel_name)
         is_streaming = localization[u.language]['add'][1][
-            1 if is_live and not 'Just Chatting' in game_name else 2 if not is_live else 3]
+            1 if is_live and not 'Just Chatting' in game_name and game_name else 2 if not is_live else 3]
         game = f" {localization[u.language]['add'][1][4]} {game_name+'.'}" if (
             is_live and not 'Just Chatting' in game_name) else ''
         thumb_href = f"{get_html_link(url=preview_url) if is_live else ''}"
