@@ -8,16 +8,16 @@ from django.conf import settings
 from telegram import (InlineKeyboardButton, InlineKeyboardMarkup, LabeledPrice,
                       Message, Update)
 from twitch.models import TwitchChannel, TwitchChannelUserItem
-from twitch.utils import (get_streams_info,
-                          get_twitch_streams_info, get_users_info)
+from twitch.utils import (get_streams_info, get_twitch_streams_info,
+                          get_users_info)
 from youtube.models import (YouTubeChannel, YouTubeChannelUserItem,
                             YouTubeLivestream, YouTubeVideo)
 from youtube.utils import (get_url_from_id, get_youtube_livestreams,
                            get_youtube_videos, scrape_id_and_title_by_url,
                            scrape_last_videos, scrape_livesteams)
 
-from utils.general_utils import (send_messages, get_html_bold, get_html_link,
-                                 get_manage_message)
+from utils.general_utils import (get_html_bold, get_html_link,
+                                 get_manage_message, send_messages)
 from utils.keyboards import (get_manage_inline_keyboard,
                              get_notification_reply_markup,
                              get_upgrade_inline_keyboard, log_errors)
