@@ -230,8 +230,9 @@ class YouTubeVideo(YouTubeVideoParent):
                 is_new = False if not is_new else not (
                     video_id in saved_videos or is_been_deleted) or is_reuploaded
 
-                if is_new:
-                    new_videos_count = new_videos_count + 1
+                new_videos_count = new_videos_count + \
+                    (1 if not (video_id in saved_videos or is_been_deleted)
+                     or is_reuploaded else 0)
 
                 YouTubeVideo.objects.get_or_create(
                     video_id=video_id,
