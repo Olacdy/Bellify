@@ -8,7 +8,7 @@ from django.conf import settings
 from telegram import (InlineKeyboardButton, InlineKeyboardMarkup, LabeledPrice,
                       Message, Update)
 from twitch.models import TwitchChannel, TwitchChannelUserItem
-from twitch.utils import (get_channel_url_from_title, get_streams_info,
+from twitch.utils import (get_streams_info,
                           get_twitch_streams_info, get_users_info)
 from youtube.models import (YouTubeChannel, YouTubeChannelUserItem,
                             YouTubeLivestream, YouTubeVideo)
@@ -127,13 +127,11 @@ def _add_twitch_channel(channel_id: str, message: Message, user: User, name: Opt
     if not TwitchChannel.is_channel_exists(channel_id):
         _, channel_login, channel_title = get_users_info(
             ids=[channel_id])[0]
-        channel_url = get_channel_url_from_title(channel_title)
 
         channel, _ = TwitchChannel.objects.update_or_create(
             channel_id=channel_id,
             channel_title=channel_title,
             channel_login=channel_login,
-            channel_url=channel_url
         )
 
         stream_data = get_streams_info([channel_id])
@@ -144,8 +142,7 @@ def _add_twitch_channel(channel_id: str, message: Message, user: User, name: Opt
     else:
         channel = TwitchChannel.objects.get(
             channel_id=channel_id)
-        channel_title, channel_url = channel.channel_title, get_channel_url_from_title(
-            channel.channel_title)
+        channel_title = channel.channel_title
 
         live_title, game_name, thumbnail_url, is_live = channel.live_title, channel.game_name, channel.thumbnail_url, channel.is_live
 
@@ -161,10 +158,11 @@ def _add_twitch_channel(channel_id: str, message: Message, user: User, name: Opt
 
             message.reply_text(
                 text=_get_twitch_channel_message(
-                    user, channel_url, item.message_title_and_type, game_name, channel.channel_url if user.is_twitch_thumbnail_disabled else channel.preview_url, is_live),
+                    user, channel.channel_url, item.message_title_and_type, game_name,
+                    channel.channel_url if user.is_twitch_thumbnail_disabled else channel.preview_url, is_live),
                 parse_mode='HTML',
                 reply_markup=get_notification_reply_markup(
-                    live_title if is_live else channel_name, channel_url)
+                    live_title if is_live else channel_name, channel.channel_url)
             )
             if not user.is_tutorial_finished:
                 message.reply_text(
@@ -191,12 +189,11 @@ def _add_youtube_channel(channel_id: str, message: Message, user: User, name: Op
         return f'{general}{channel_name}{is_streaming}{href}'
 
     if not YouTubeChannel.is_channel_exists(channel_id):
-        channel_url = get_url_from_id(channel_id)
-        _, channel_title = scrape_id_and_title_by_url(channel_url)
+        _, channel_title = scrape_id_and_title_by_url(
+            get_url_from_id(channel_id))
 
         channel, _ = YouTubeChannel.objects.update_or_create(
             channel_id=channel_id,
-            channel_url=channel_url,
             channel_title=channel_title
         )
 

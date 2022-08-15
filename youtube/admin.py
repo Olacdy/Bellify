@@ -165,7 +165,14 @@ class YouTubeChannelAdmin(admin.ModelAdmin):
     list_filter = [IsLivestreaming, IsDeletingLivestreams, ]
     list_display = ['channel_title', 'last_video',
                     'is_live', 'is_deleting_streams', ]
-    # exclude = ['deleted_livestreams', ]
+
+    readonly_fields = ['channel_url', ]
+
+    fields = ['channel_id', 'channel_url',
+              'channel_title', 'deleted_livestreams', ]
+
+    def channel_url(self, obj):
+        return format_html("<a href='{url}'>{url}</a>", url=obj.channel_url)
 
     def last_video(self, obj):
         return obj.last_video
