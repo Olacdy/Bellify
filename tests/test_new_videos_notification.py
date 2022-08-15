@@ -43,7 +43,6 @@ def channel():
     return YouTubeChannel.objects.create(
         channel_id='UCcAd5Np7fO8SeejB1FVKcYw',
         channel_title='Best Ever Food Review Show',
-        channel_url='https://www.youtube.com/channel/UCcAd5Np7fO8SeejB1FVKcYw'
     )
 
 
@@ -81,6 +80,20 @@ def one_new_video_last_one_hidden():
         '1H2l7dHq1fs': ('Blood Red Jellyfish!! EXTREME Vietnam Street Food!!', False),
         'FSogD7bAHF8': ('$1 VS $152 Filipino Lechon!! Manila’s Meat Masterpiece!!', False),
         'v0NNI5wS_GM': ('Filipino Street Food That Will Kill You!! Manila Heart Attack Tour!!', False),
+    }
+
+
+@pytest.fixture()
+def one_new_video_in_the_beginning_and_one_in_the_middle():
+    return {
+        'bbdfbdfbdfb': ('ADSADADADAD', False),
+        'bol-_4NZjWE': ('Buffalo Placenta!! World’s Most Bizarre Vegan Food!!', False),
+        'INJK-vTKPdg': ('The Surprising Noodle Vietnam Loves Most!! It’s Not Pho!!', False),
+        '1H2l7dHq1fs': ('Blood Red Jellyfish!! EXTREME Vietnam Street Food!!', False),
+        'MHUnaXJqWF4': ('EXTREME African Seafood!!! WILD Tanzania Street Food in Dar es Salaam!!', False),
+        'FSogD7bAHF8': ('$1 VS $152 Filipino Lechon!! Manila’s Meat Masterpiece!!', False),
+        'v0NNI5wS_GM': ('Filipino Street Food That Will Kill You!! Manila Heart Attack Tour!!', False),
+        'VXjrCIcGZmw': ('Bizarre Filipino Food in Pampanga!! Pets, Pigs and Pests!!', False),
     }
 
 
@@ -144,3 +157,20 @@ def test_new_video_gets_hidden(basic_user, channel, videos, one_new_video):
 
     assert len(urls_to_notify) == 0 and YouTubeDeletedVideo.objects.all()[
         0].video_id == list(one_new_video.keys())[0]
+
+
+@pytest.mark.django_db
+def test_new_videos_in_the_beginning_and_in_the_middle(basic_user, channel, videos, one_new_video_in_the_beginning_and_one_in_the_middle):
+    for video_id in videos:
+        YouTubeVideo.objects.get_or_create(
+            video_id=video_id,
+            video_title=videos[video_id][0],
+            is_saved_livestream=videos[video_id][1],
+            channel=channel
+        )
+
+    create_channel_user_item(basic_user, channel)
+    urls_to_notify = check_youtube_videos(
+        channel, YouTubeVideo.get_new_videos(channel, one_new_video_in_the_beginning_and_one_in_the_middle))
+
+    assert 'bbdfbdfbdfb' in urls_to_notify[0] and len(urls_to_notify)
