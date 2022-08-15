@@ -146,7 +146,7 @@ class YouTubeLivestream(YouTubeLivestreamParent):
                         channel=channel
                     )
 
-        return reversed(channel.livestreams.all())
+        return list(reversed(channel.livestreams.all()))
 
     def notified(self: 'YouTubeLivestream') -> None:
         self.is_new = False
@@ -248,8 +248,11 @@ class YouTubeVideo(YouTubeVideoParent):
                 if is_new and is_counted_as_deleted_livestream:
                     channel.decrement_deleted_livestreams()
 
+            potentially_hidden_videos = list(saved_videos.keys())[
+                slice(-new_videos_count, None)] if new_videos_count != 0 else []
+
             for saved_video_id in saved_videos:
-                if not saved_video_id in videos and not saved_video_id in list(saved_videos.keys())[slice(-new_videos_count, None)]:
+                if not saved_video_id in videos and not saved_video_id in potentially_hidden_videos:
                     is_counted_as_deleted_livestream = saved_videos[saved_video_id][1] and YouTubeEndedLivestream.is_ended_livestream(
                         channel, video_tuple=(saved_video_id, saved_videos[saved_video_id][0]))
 
@@ -265,7 +268,7 @@ class YouTubeVideo(YouTubeVideoParent):
                         channel.increment_deleted_livestreams()
 
         channel.set_not_new_if_all_videos_are_new()
-        return reversed(channel.videos.all())
+        return list(reversed(channel.videos.all()))
 
     def notified(self: 'YouTubeVideo') -> None:
         self.is_new = False
