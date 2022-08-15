@@ -7,6 +7,7 @@ from django.core.files.base import ContentFile
 from django.db import models
 from django.dispatch import receiver
 from django.utils.timezone import now
+from twitch.utils import get_url_from_title
 
 from utils.models import nb
 
@@ -46,6 +47,10 @@ class TwitchChannel(Channel):
         return 'twitch'
 
     @property
+    def channel_url(self: 'Channel'):
+        return get_url_from_title(self.channel_title)
+
+    @property
     def thumbnail(self: 'TwitchChannel') -> str:
         if self.thumbnail_url:
             try:
@@ -65,7 +70,7 @@ class TwitchChannel(Channel):
 
     @classmethod
     def get_channels_to_review(cls) -> List['TwitchChannel']:
-        return list(cls.objects.filter(twitchchanneluseritem__isnull=False))
+        return list(cls.objects.filter(twitchchanneluseritem__isnull=False).distinct())
 
     @classmethod
     def is_channel_exists(cls, channel_id: str) -> bool:
@@ -105,6 +110,9 @@ class TwitchChannel(Channel):
             self.thumbnail_image.delete()
         self.save()
 
+    def clear_content(self: 'TwitchChannel'):
+        self.update()
+
 
 # Custom through model with title
 class TwitchChannelUserItem(ChannelUserItem):
@@ -114,3 +122,9 @@ class TwitchChannelUserItem(ChannelUserItem):
     @property
     def type(self) -> str:
         return 'twitch'
+
+
+@receiver(models.signals.post_delete, sender=TwitchChannelUserItem)
+def clear_channels_content_if_no_subscribers(sender, instance, *args, **kwargs):
+    for channel in TwitchChannel.objects.filter(twitchchanneluseritem__isnull=True).distinct():
+        channel.clear_content()

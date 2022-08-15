@@ -173,8 +173,11 @@ class ChannelUserItem(CreateUpdateTracker):
 
 class Channel(CreateUpdateTracker):
     channel_id = models.CharField(max_length=128, unique=True)
-    channel_url = models.URLField(unique=True)
     channel_title = models.CharField(max_length=128)
 
     def __str__(self):
         return f'{self.channel_id}'
+
+    @property
+    def channel_url(self: 'Channel'):
+        return ''

@@ -9,6 +9,7 @@ from django.dispatch import receiver
 from django.utils.timezone import now
 
 from utils.models import CreateUpdateTracker, nb
+from youtube.utils import get_url_from_id
 
 
 # YouTube channel model
@@ -28,6 +29,10 @@ class YouTubeChannel(Channel):
     @property
     def type(self: 'YouTubeChannel') -> str:
         return 'youtube'
+
+    @property
+    def channel_url(self: 'Channel'):
+        return get_url_from_id(self.channel_id)
 
     @property
     def last_video(self: 'YouTubeChannel') -> Union['YouTubeVideo', None]:
@@ -53,11 +58,11 @@ class YouTubeChannel(Channel):
 
     @classmethod
     def get_channels_to_review(cls) -> List['YouTubeChannel']:
-        return list(cls.objects.filter(youtubechanneluseritem__isnull=False))
+        return list(cls.objects.filter(youtubechanneluseritem__isnull=False).distinct())
 
     @classmethod
     def get_channels_to_review_premium(cls) -> List['YouTubeChannel']:
-        return list(cls.objects.filter(youtubechanneluseritem__isnull=False, users__status='P'))
+        return list(cls.objects.filter(youtubechanneluseritem__isnull=False, users__status='P').distinct())
 
     @classmethod
     def is_channel_exists(cls, channel_id: str) -> bool:
@@ -311,7 +316,7 @@ class YouTubeDeletedVideo(YouTubeVideoParent):
         verbose_name = 'Deleted YouTube Video'
         verbose_name_plural = 'Deleted YouTube Videos'
 
-    @ classmethod
+    @classmethod
     def is_been_deleted_and_counted_as_livestream(cls, channel: YouTubeChannel, video: Tuple[str, str]) -> bool:
         query_set = cls.objects.filter(Q(
             channel=channel, video_id__exact=video[0], video_title__exact=video[1]))
@@ -320,7 +325,7 @@ class YouTubeDeletedVideo(YouTubeVideoParent):
         reuploaded_video.delete() if is_deleted else None
         return is_deleted, is_counted_as_deleted_livestream
 
-    @ classmethod
+    @classmethod
     def is_been_reuploaded(cls, channel: YouTubeChannel, video: Tuple[str, str]) -> bool:
         query_set = cls.objects.filter(~Q(video_id=video[0]) & Q(
             channel=channel, video_title__exact=video[1]))
@@ -339,8 +344,8 @@ class YouTubeChannelUserItem(ChannelUserItem):
         return 'youtube'
 
 
-@ receiver(models.signals.post_save, sender=YouTubeDeletedVideo)
-@ receiver(models.signals.post_save, sender=YouTubeEndedLivestream)
+@receiver(models.signals.post_save, sender=YouTubeDeletedVideo)
+@receiver(models.signals.post_save, sender=YouTubeEndedLivestream)
 def remove_deleted_and_ended_content_after_time(sender, instance, *args, **kwargs):
     for deleted_video in YouTubeDeletedVideo.objects.all():
         if (now() - deleted_video.created_at).days >= 1:
@@ -351,13 +356,13 @@ def remove_deleted_and_ended_content_after_time(sender, instance, *args, **kwarg
             ended_livestream.delete()
 
 
-@ receiver(models.signals.post_delete, sender=YouTubeChannelUserItem)
+@receiver(models.signals.post_delete, sender=YouTubeChannelUserItem)
 def clear_channels_content_if_no_subscribers(sender, instance, *args, **kwargs):
-    for channel in YouTubeChannel.objects.filter(youtubechanneluseritem__isnull=True):
+    for channel in YouTubeChannel.objects.filter(youtubechanneluseritem__isnull=True).distinct():
         channel.clear_content()
 
 
-@ receiver(models.signals.post_save, sender=YouTubeVideo)
+@receiver(models.signals.post_save, sender=YouTubeVideo)
 def remove_deleted_video_if_it_in_videos(sender: 'YouTubeVideo', instance, *args, **kwargs):
     videos_ids = sender.get_saved_video_data().keys()
     queries = [Q(video_id__contains=video_id)

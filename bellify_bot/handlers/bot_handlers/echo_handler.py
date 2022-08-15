@@ -5,7 +5,7 @@ from bellify_bot.handlers.bot_handlers.utils import (
     add, get_upgrade_inline_keyboard, log_errors)
 from bellify_bot.localization import localization
 from bellify_bot.models import ChannelUserItem, User
-from twitch.utils import get_users_info, get_channel_title_from_url
+from twitch.utils import get_users_info, get_title_from_url
 from youtube.utils import scrape_id_and_title_by_url
 
 from utils.general_utils import get_channel_url_type
@@ -22,7 +22,7 @@ def echo_handler(update: Update, context: CallbackContext) -> None:
     try:
         echo_data = u.menu.split(f'{settings.SPLITTING_CHARACTER}')
     except Exception as e:
-        echo_data = []
+        echo_data = ['']
 
     if all(echo_data):
         if 'name' in echo_data:
@@ -51,7 +51,7 @@ def echo_handler(update: Update, context: CallbackContext) -> None:
             elif 'Twitch' in channel_type:
                 try:
                     channel_id, _, channel_title = get_users_info(
-                        usernames=[get_channel_title_from_url(user_text)])[0]
+                        usernames=[get_title_from_url(user_text)])[0]
                 except IndexError as e:
                     update.message.reply_text(
                         text=localization[u.language]['echo'][5],
