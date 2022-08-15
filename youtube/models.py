@@ -88,12 +88,20 @@ class YouTubeChannel(Channel):
     def clear_videos(self: 'YouTubeChannel') -> None:
         self.videos.all().delete()
 
+    def clear_deleted_videos(self: 'YouTubeChannel') -> None:
+        self.deleted_videos.all().delete()
+
     def clear_livestreams(self: 'YouTubeChannel') -> None:
         self.livestreams.all().delete()
 
+    def clear_saved_livestreams(self: 'YouTubeChannel') -> None:
+        self.ended_livestreams.all().delete()
+
     def clear_content(self: 'YouTubeChannel') -> None:
         self.clear_videos()
+        self.clear_deleted_videos()
         self.clear_livestreams()
+        self.clear_saved_livestreams()
         self.deleted_livestreams = -1
 
 

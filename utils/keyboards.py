@@ -1,9 +1,10 @@
+import urllib.parse
 from typing import List, Optional
 
-from django.conf import settings
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from bellify_bot.localization import localization
 from bellify_bot.models import ChannelUserItem, User
+from django.conf import settings
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
 from utils.general_utils import log_errors
 
@@ -148,5 +149,6 @@ def get_manage_inline_keyboard(u: User, page_num: Optional[int] = 0) -> List:
 @log_errors
 def get_notification_reply_markup(content_title: str, url: str):
     return InlineKeyboardMarkup([
-        [InlineKeyboardButton(text=content_title, url=url)]
+        [InlineKeyboardButton(
+            text=urllib.parse.quote(content_title), url=url)]
     ])
