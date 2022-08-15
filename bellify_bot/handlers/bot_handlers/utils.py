@@ -286,7 +286,7 @@ def get_urls_to_notify(users: List[User], channel_id: str, url: str, content_tit
                                           is_might_be_deleted=is_might_be_deleted),
                      disable_notification=item.is_muted,
                      reply_markup=get_notification_reply_markup(
-                         content_title, url)) for user, item in zip(users, [ChannelUserItem.get_channel_by_user_and_channel_id(user, channel_id) for user in users])]
+                         content_title, url, True)) for user, item in zip(users, [ChannelUserItem.get_channel_by_user_and_channel_id(user, channel_id) for user in users])]
 
 
 # Removes given channel user item
