@@ -98,10 +98,10 @@ class TwitchChannel(Channel):
         return cls._bearer_token
 
     def update(self: 'TwitchChannel', live_title: Optional[str] = None, game_name: Optional[str] = None, thumbnail_url: Optional[str] = None, is_live: Optional[bool] = False) -> None:
-        self.live_title, self.game_name, self.thumbnail_url, self.is_live = live_title, game_name, thumbnail_url, is_live
-
-        if not is_live:
+        if not is_live and is_live != self.is_live:
             self.live_end_datetime = now()
+
+        self.live_title, self.game_name, self.thumbnail_url, self.is_live = live_title, game_name, thumbnail_url, is_live
 
         if thumbnail_url:
             self.thumbnail_image.save(
@@ -111,7 +111,9 @@ class TwitchChannel(Channel):
         self.save()
 
     def clear_content(self: 'TwitchChannel'):
-        self.update()
+        self.live_title, self.game_name, self.thumbnail_url = None, None, None
+        self.thumbnail_image.delete()
+        self.save()
 
 
 # Custom through model with title

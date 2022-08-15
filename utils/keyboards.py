@@ -147,8 +147,8 @@ def get_manage_inline_keyboard(u: User, page_num: Optional[int] = 0) -> List:
 
 # Returns Inline Keyboard with given title and url
 @log_errors
-def get_notification_reply_markup(content_title: str, url: str):
+def get_notification_reply_markup(content_title: str, url: str, is_quote: Optional[bool] = False):
     return InlineKeyboardMarkup([
         [InlineKeyboardButton(
-            text=urllib.parse.quote(content_title), url=url)]
+            text=urllib.parse.quote(content_title) if is_quote else content_title, url=url)]
     ])
