@@ -129,24 +129,34 @@ class YouTubeLivestream(YouTubeLivestreamParent):
 
         if livestreams.keys() != saved_livestreams.keys():
             channel.clear_livestreams()
+            livestreams_to_create = []
+            ended_livestreams_to_create = []
 
             for livestream_id in livestreams:
-                YouTubeLivestream.objects.get_or_create(
-                    livestream_id=livestream_id,
-                    livestream_title=livestreams[livestream_id],
-                    is_new=not livestream_id in saved_livestreams,
-                    channel=channel
+                livestreams_to_create.append(
+                    YouTubeLivestream(
+                        livestream_id=livestream_id,
+                        livestream_title=livestreams[livestream_id],
+                        is_new=not livestream_id in saved_livestreams,
+                        channel=channel
+                    )
                 )
 
             for saved_livestream_id in saved_livestreams:
                 if not saved_livestream_id in livestreams:
-                    YouTubeEndedLivestream.objects.get_or_create(
-                        livestream_id=saved_livestream_id,
-                        livestream_title=saved_livestreams[saved_livestream_id],
-                        channel=channel
+                    ended_livestreams_to_create.append(
+                        YouTubeEndedLivestream(
+                            livestream_id=saved_livestream_id,
+                            livestream_title=saved_livestreams[saved_livestream_id],
+                            channel=channel
+                        )
                     )
 
-        return reversed(channel.livestreams.all())
+            YouTubeLivestream.objects.bulk_create(livestreams_to_create)
+            YouTubeEndedLivestream.objects.bulk_create(
+                ended_livestreams_to_create)
+
+        return list(reversed(channel.livestreams.all()))
 
     def notified(self: 'YouTubeLivestream') -> None:
         self.is_new = False
@@ -220,6 +230,8 @@ class YouTubeVideo(YouTubeVideoParent):
             channel.clear_videos()
             is_new = True
             new_videos_count = 0
+            videos_to_create = []
+            deleted_videos_to_create = []
 
             for video_id in videos:
                 is_been_deleted, is_counted_as_deleted_livestream = YouTubeDeletedVideo.is_been_deleted_and_counted_as_livestream(
@@ -234,38 +246,48 @@ class YouTubeVideo(YouTubeVideoParent):
                     (1 if not (video_id in saved_videos or is_been_deleted)
                      or is_reuploaded else 0)
 
-                YouTubeVideo.objects.get_or_create(
-                    video_id=video_id,
-                    video_title=videos[video_id][0],
-                    is_saved_livestream=videos[video_id][1],
-                    is_new=is_new,
-                    iterations_skipped=saved_videos.get(
-                        video_id, ('', '', 0))[2],
-                    is_reuploaded=is_reuploaded,
-                    channel=channel
+                videos_to_create.append(
+                    YouTubeVideo(
+                        video_id=video_id,
+                        video_title=videos[video_id][0],
+                        is_saved_livestream=videos[video_id][1],
+                        is_new=is_new,
+                        iterations_skipped=saved_videos.get(
+                            video_id, ('', '', 0))[2],
+                        is_reuploaded=is_reuploaded,
+                        channel=channel
+                    )
                 )
 
                 if is_new and is_counted_as_deleted_livestream:
                     channel.decrement_deleted_livestreams()
 
+            potentially_hidden_videos = list(saved_videos.keys())[
+                slice(-new_videos_count, None)] if new_videos_count != 0 else []
+
             for saved_video_id in saved_videos:
-                if not saved_video_id in videos and not saved_video_id in list(saved_videos.keys())[slice(-new_videos_count, None)]:
+                if not saved_video_id in videos and not saved_video_id in potentially_hidden_videos:
                     is_counted_as_deleted_livestream = saved_videos[saved_video_id][1] and YouTubeEndedLivestream.is_ended_livestream(
                         channel, video_tuple=(saved_video_id, saved_videos[saved_video_id][0]))
 
-                    YouTubeDeletedVideo.objects.get_or_create(
-                        video_id=saved_video_id,
-                        video_title=saved_videos[saved_video_id][0],
-                        is_saved_livestream=saved_videos[saved_video_id][1],
-                        is_counted_as_deleted_livestream=is_counted_as_deleted_livestream,
-                        channel=channel
+                    deleted_videos_to_create.append(
+                        YouTubeDeletedVideo(
+                            video_id=saved_video_id,
+                            video_title=saved_videos[saved_video_id][0],
+                            is_saved_livestream=saved_videos[saved_video_id][1],
+                            is_counted_as_deleted_livestream=is_counted_as_deleted_livestream,
+                            channel=channel
+                        )
                     )
 
                     if is_counted_as_deleted_livestream:
                         channel.increment_deleted_livestreams()
 
+            YouTubeVideo.objects.bulk_create(videos_to_create)
+            YouTubeDeletedVideo.objects.bulk_create(deleted_videos_to_create)
+
         channel.set_not_new_if_all_videos_are_new()
-        return reversed(channel.videos.all())
+        return list(reversed(channel.videos.all()))
 
     def notified(self: 'YouTubeVideo') -> None:
         self.is_new = False

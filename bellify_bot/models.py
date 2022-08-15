@@ -6,7 +6,6 @@ from django.apps import apps
 from django.conf import settings
 from django.db import models
 from django.db.models import Manager, Q, QuerySet
-from PIL import ImageFont
 from telegram import User as TgUser
 from utils.models import CreateUpdateTracker, GetOrNoneManager, nb
 
