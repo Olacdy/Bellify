@@ -40,9 +40,9 @@ class YouTubeChannel(Channel):
         return video if video else None
 
     @property
-    def ongoing_livestream(self: 'YouTubeChannel') -> Union['YouTubeLivestream', bool]:
+    def ongoing_livestream(self: 'YouTubeChannel') -> Union['YouTubeLivestream', None]:
         livestream = self.livestreams.all().first()
-        return livestream if livestream else False
+        return livestream if livestream else None
 
     @property
     def is_livestreaming(self: 'YouTubeChannel') -> bool:
@@ -62,7 +62,7 @@ class YouTubeChannel(Channel):
 
     @classmethod
     def get_channels_to_review_premium(cls) -> List['YouTubeChannel']:
-        return list(cls.objects.filter(youtubechanneluseritem__isnull=False, users__status='P').distinct())
+        return list(cls.objects.filter(Q(youtubechanneluseritem__isnull=False, users__status='P') | Q(livestream__isnull=False)).distinct())
 
     @classmethod
     def is_channel_exists(cls, channel_id: str) -> bool:
@@ -169,7 +169,7 @@ class YouTubeLivestream(YouTubeLivestreamParent):
             YouTubeEndedLivestream.objects.bulk_create(
                 ended_livestreams_to_create)
 
-        return list(reversed(channel.livestreams.all()))
+        return channel.livestreams.all()
 
     def notified(self: 'YouTubeLivestream') -> None:
         self.is_new = False
@@ -300,11 +300,13 @@ class YouTubeVideo(YouTubeVideoParent):
             YouTubeDeletedVideo.objects.bulk_create(deleted_videos_to_create)
 
         channel.set_not_new_if_all_videos_are_new()
-        return list(reversed(channel.videos.all()))
+        return channel.videos.all()
 
     def notified(self: 'YouTubeVideo') -> None:
         self.is_new = False
         self.is_reuploaded = False
+        if self.is_saved_livestream and self.iterations_skipped != 0:
+            self.channel.decrement_deleted_livestreams()
         self.iterations_skipped = 0
         self.save()
 
@@ -372,12 +374,3 @@ def clear_channels_content_if_no_subscribers(sender, instance, *args, **kwargs):
     for channel in YouTubeChannel.objects.filter(youtubechanneluseritem__user__status='B').distinct():
         channel.clear_livestreams()
         channel.clear_saved_livestreams()
-
-
-@receiver(models.signals.post_save, sender=YouTubeVideo)
-def remove_deleted_video_if_it_in_videos(sender: 'YouTubeVideo', instance, *args, **kwargs):
-    videos_ids = sender.get_saved_video_data().keys()
-    queries = [Q(video_id__contains=video_id)
-               for video_id in videos_ids]
-    query = reduce(lambda x, y: x & y, queries)
-    YouTubeDeletedVideo.objects.filter(query).delete()
