@@ -372,12 +372,3 @@ def clear_channels_content_if_no_subscribers(sender, instance, *args, **kwargs):
     for channel in YouTubeChannel.objects.filter(youtubechanneluseritem__user__status='B').distinct():
         channel.clear_livestreams()
         channel.clear_saved_livestreams()
-
-
-@receiver(models.signals.post_save, sender=YouTubeVideo)
-def remove_deleted_video_if_it_in_videos(sender: 'YouTubeVideo', instance, *args, **kwargs):
-    videos_ids = sender.get_saved_video_data().keys()
-    queries = [Q(video_id__contains=video_id)
-               for video_id in videos_ids]
-    query = reduce(lambda x, y: x & y, queries)
-    YouTubeDeletedVideo.objects.filter(query).delete()
