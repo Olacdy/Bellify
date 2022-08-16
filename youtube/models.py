@@ -40,9 +40,9 @@ class YouTubeChannel(Channel):
         return video if video else None
 
     @property
-    def ongoing_livestream(self: 'YouTubeChannel') -> Union['YouTubeLivestream', bool]:
+    def ongoing_livestream(self: 'YouTubeChannel') -> Union['YouTubeLivestream', None]:
         livestream = self.livestreams.all().first()
-        return livestream if livestream else False
+        return livestream if livestream else None
 
     @property
     def is_livestreaming(self: 'YouTubeChannel') -> bool:
@@ -62,7 +62,7 @@ class YouTubeChannel(Channel):
 
     @classmethod
     def get_channels_to_review_premium(cls) -> List['YouTubeChannel']:
-        return list(cls.objects.filter(youtubechanneluseritem__isnull=False, users__status='P').distinct())
+        return list(cls.objects.filter(Q(youtubechanneluseritem__isnull=False, users__status='P') | Q(livestream__isnull=False)).distinct())
 
     @classmethod
     def is_channel_exists(cls, channel_id: str) -> bool:
@@ -305,6 +305,8 @@ class YouTubeVideo(YouTubeVideoParent):
     def notified(self: 'YouTubeVideo') -> None:
         self.is_new = False
         self.is_reuploaded = False
+        if self.is_saved_livestream and self.iterations_skipped != 0:
+            self.channel.decrement_deleted_livestreams()
         self.iterations_skipped = 0
         self.save()
 

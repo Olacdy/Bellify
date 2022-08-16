@@ -81,7 +81,7 @@ def check_youtube() -> None:
     for channel, channel_videos_info_item in zip(channels, channels_videos_info):
         if channel_videos_info_item:
             for video in YouTubeVideo.get_new_videos(channel, channel_videos_info_item):
-                if video.is_new:
+                if video.is_new and not video.iterations_skipped > 0:
                     video_notification_urls.append(get_urls_to_notify(users=[item.user for item in YouTubeChannelUserItem.objects.filter(
                         channel=channel, user__status='B')], channel_id=channel.channel_id, url=video.video_url,
                         content_title=video.video_title, is_reuploaded=video.is_reuploaded))

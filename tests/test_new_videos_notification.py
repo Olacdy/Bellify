@@ -11,7 +11,7 @@ def check_youtube_videos(channel, new_videos) -> None:
     video_notification_urls = []
 
     for video in new_videos:
-        if video.is_new:
+        if video.is_new and not video.iterations_skipped > 0:
             video_notification_urls.append(get_urls_to_notify(users=[item.user for item in YouTubeChannelUserItem.objects.filter(
                 channel=channel, user__status='B')], channel_id=channel.channel_id, url=video.video_url,
                 content_title=video.video_title, is_reuploaded=video.is_reuploaded))
@@ -107,7 +107,7 @@ def create_channel_user_item(user, channel):
 @pytest.mark.django_db
 def test_set_new_videos(basic_user, channel, videos, one_new_video):
     for video_id in videos:
-        YouTubeVideo.objects.get_or_create(
+        YouTubeVideo.objects.create(
             video_id=video_id,
             video_title=videos[video_id][0],
             is_saved_livestream=videos[video_id][1],
@@ -119,13 +119,15 @@ def test_set_new_videos(basic_user, channel, videos, one_new_video):
         channel, YouTubeVideo.get_new_videos(channel, one_new_video))
 
     assert f'https://api.telegram.org/bot{settings.TOKEN}/sendMessage?chat_id={basic_user.user_id}' in urls_to_notify[
-        0] and 'MHUnaXJqWF4' in urls_to_notify[0] and len(urls_to_notify) == 1
+        0]
+    assert 'MHUnaXJqWF4' in urls_to_notify[0]
+    assert len(urls_to_notify) == 1
 
 
 @pytest.mark.django_db
 def test_new_video_last_one_hidden(basic_user, channel, videos, one_new_video_last_one_hidden):
     for video_id in videos:
-        YouTubeVideo.objects.get_or_create(
+        YouTubeVideo.objects.create(
             video_id=video_id,
             video_title=videos[video_id][0],
             is_saved_livestream=videos[video_id][1],
@@ -137,13 +139,16 @@ def test_new_video_last_one_hidden(basic_user, channel, videos, one_new_video_la
         channel, YouTubeVideo.get_new_videos(channel, one_new_video_last_one_hidden))
 
     assert f'https://api.telegram.org/bot{settings.TOKEN}/sendMessage?chat_id={basic_user.user_id}' in urls_to_notify[
-        0] and 'MHUnaXJqWF4' in urls_to_notify[0] and len(urls_to_notify) == 1 and len(YouTubeDeletedVideo.objects.all()) == 0
+        0]
+    assert 'MHUnaXJqWF4' in urls_to_notify[0]
+    assert len(urls_to_notify) == 1
+    assert len(YouTubeDeletedVideo.objects.all()) == 0
 
 
 @pytest.mark.django_db
 def test_new_video_gets_hidden(basic_user, channel, videos, one_new_video):
     for video_id in videos:
-        YouTubeVideo.objects.get_or_create(
+        YouTubeVideo.objects.create(
             video_id=video_id,
             video_title=videos[video_id][0],
             is_saved_livestream=videos[video_id][1],
@@ -155,14 +160,15 @@ def test_new_video_gets_hidden(basic_user, channel, videos, one_new_video):
     urls_to_notify = check_youtube_videos(
         channel, YouTubeVideo.get_new_videos(channel, videos))
 
-    assert len(urls_to_notify) == 0 and YouTubeDeletedVideo.objects.all()[
+    assert len(urls_to_notify) == 0
+    assert YouTubeDeletedVideo.objects.all()[
         0].video_id == list(one_new_video.keys())[0]
 
 
 @pytest.mark.django_db
 def test_new_videos_in_the_beginning_and_in_the_middle(basic_user, channel, videos, one_new_video_in_the_beginning_and_one_in_the_middle):
     for video_id in videos:
-        YouTubeVideo.objects.get_or_create(
+        YouTubeVideo.objects.create(
             video_id=video_id,
             video_title=videos[video_id][0],
             is_saved_livestream=videos[video_id][1],
@@ -173,4 +179,5 @@ def test_new_videos_in_the_beginning_and_in_the_middle(basic_user, channel, vide
     urls_to_notify = check_youtube_videos(
         channel, YouTubeVideo.get_new_videos(channel, one_new_video_in_the_beginning_and_one_in_the_middle))
 
-    assert 'bbdfbdfbdfb' in urls_to_notify[0] and len(urls_to_notify)
+    assert 'bbdfbdfbdfb' in urls_to_notify[0]
+    assert len(urls_to_notify) == 1
