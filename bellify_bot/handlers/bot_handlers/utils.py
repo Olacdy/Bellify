@@ -1,4 +1,5 @@
 import itertools
+import urllib.parse
 from typing import Dict, List, Optional
 
 from bellify_bot.localization import localization
@@ -276,7 +277,7 @@ def get_urls_to_notify(users: List[User], channel_id: str, url: str, content_tit
             return f"{channel_title}{notification}{href}"
 
     def _get_url(user_id: str, message: str, disable_notification: Optional[bool] = False, reply_markup: Optional[List[List[Dict]]] = None, parse_mode: Optional[str] = 'HTML') -> str:
-        return f'https://api.telegram.org/bot{settings.TOKEN}/sendMessage?chat_id={user_id}&parse_mode={parse_mode}&text={message}&disable_notification={disable_notification}&reply_markup={reply_markup.to_json()}'
+        return f'https://api.telegram.org/bot{settings.TOKEN}/sendMessage?chat_id={user_id}&parse_mode={parse_mode}&text={message}&disable_notification={disable_notification}&reply_markup={urllib.parse.quote(reply_markup.to_json())}'
 
     return [_get_url(user_id=user.user_id,
                      message=_get_message(user=user, channel_title=item.message_title_and_type, url=url,
@@ -286,7 +287,7 @@ def get_urls_to_notify(users: List[User], channel_id: str, url: str, content_tit
                                           is_might_be_deleted=is_might_be_deleted),
                      disable_notification=item.is_muted,
                      reply_markup=get_notification_reply_markup(
-                         content_title, url, True)) for user, item in zip(users, [ChannelUserItem.get_channel_by_user_and_channel_id(user, channel_id) for user in users])]
+                         content_title, url)) for user, item in zip(users, [ChannelUserItem.get_channel_by_user_and_channel_id(user, channel_id) for user in users])]
 
 
 # Removes given channel user item

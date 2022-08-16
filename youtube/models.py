@@ -169,7 +169,7 @@ class YouTubeLivestream(YouTubeLivestreamParent):
             YouTubeEndedLivestream.objects.bulk_create(
                 ended_livestreams_to_create)
 
-        return list(reversed(channel.livestreams.all()))
+        return channel.livestreams.all()
 
     def notified(self: 'YouTubeLivestream') -> None:
         self.is_new = False
@@ -300,7 +300,7 @@ class YouTubeVideo(YouTubeVideoParent):
             YouTubeDeletedVideo.objects.bulk_create(deleted_videos_to_create)
 
         channel.set_not_new_if_all_videos_are_new()
-        return list(reversed(channel.videos.all()))
+        return channel.videos.all()
 
     def notified(self: 'YouTubeVideo') -> None:
         self.is_new = False
