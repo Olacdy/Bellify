@@ -1,14 +1,13 @@
+from bellify_bot.handlers.channels_adding_handler import add
+from bellify_bot.localization import localization
+from bellify_bot.models import ChannelUserItem, User
 from django.conf import settings
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import CallbackContext
-from bellify_bot.handlers.bot_handlers.utils import (
-    add, get_upgrade_inline_keyboard, log_errors)
-from bellify_bot.localization import localization
-from bellify_bot.models import ChannelUserItem, User
-from twitch.utils import get_users_info, get_title_from_url
-from youtube.utils import scrape_id_and_title_by_url
-
+from twitch.utils import get_title_from_url, get_users_info
 from utils.general_utils import get_channel_url_type
+from utils.inline_utils import get_upgrade_inline_keyboard, log_errors
+from youtube.utils import scrape_id_and_title_by_url
 
 
 @log_errors

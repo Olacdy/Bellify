@@ -1,107 +1,13 @@
-import itertools
-
 import pytest
-from bellify_bot.handlers.bot_handlers.utils import get_urls_to_notify
-from bellify_bot.models import User
+from bellify_bot.handlers.notification_handler import \
+    get_notifications_urls_for_youtube_videos
 from django.conf import settings
-from youtube.models import YouTubeChannel, YouTubeChannelUserItem, YouTubeDeletedVideo, YouTubeVideo
+from youtube.models import YouTubeDeletedVideo, YouTubeVideo
 
-
-def check_youtube_videos(channel, new_videos) -> None:
-    video_notification_urls = []
-
-    for video in new_videos:
-        if video.is_new and not video.iterations_skipped > 0:
-            video_notification_urls.append(get_urls_to_notify(users=[item.user for item in YouTubeChannelUserItem.objects.filter(
-                channel=channel, user__status='B')], channel_id=channel.channel_id, url=video.video_url,
-                content_title=video.video_title, is_reuploaded=video.is_reuploaded))
-
-        if video.is_new or video.iterations_skipped > 0:
-            if video.is_ended_livestream and channel.check_for_deleting_livestreams and not video.is_able_to_notify:
-                video.skip_iteration()
-            else:
-                video_notification_urls.append(get_urls_to_notify(users=[item.user for item in YouTubeChannelUserItem.objects.filter(
-                    channel=channel, user__status='P')], channel_id=channel.channel_id, url=video.video_url,
-                    content_title=video.video_title, is_reuploaded=video.is_reuploaded,
-                    is_ended_livestream=video.is_ended_livestream, is_might_be_deleted=channel.is_deleting_livestreams))
-                video.notified()
-
-    return list(itertools.chain.from_iterable(
-        video_notification_urls))
-
-
-@pytest.fixture()
-def basic_user():
-    return User.objects.create(
-        user_id='325066507',
-        username='golovakanta',
-    )
-
-
-@pytest.fixture()
-def channel():
-    return YouTubeChannel.objects.create(
-        channel_id='UCcAd5Np7fO8SeejB1FVKcYw',
-        channel_title='Best Ever Food Review Show',
-    )
-
-
-@pytest.fixture()
-def videos():
-    return {
-        'bol-_4NZjWE': ('Buffalo Placenta!! World’s Most Bizarre Vegan Food!!', False),
-        'INJK-vTKPdg': ('The Surprising Noodle Vietnam Loves Most!! It’s Not Pho!!', False),
-        '1H2l7dHq1fs': ('Blood Red Jellyfish!! EXTREME Vietnam Street Food!!', False),
-        'FSogD7bAHF8': ('$1 VS $152 Filipino Lechon!! Manila’s Meat Masterpiece!!', False),
-        'v0NNI5wS_GM': ('Filipino Street Food That Will Kill You!! Manila Heart Attack Tour!!', False),
-        'VXjrCIcGZmw': ('Bizarre Filipino Food in Pampanga!! Pets, Pigs and Pests!!', False),
-    }
-
-
-@pytest.fixture()
-def one_new_video():
-    return {
-        'MHUnaXJqWF4': ('EXTREME African Seafood!!! WILD Tanzania Street Food in Dar es Salaam!!', False),
-        'bol-_4NZjWE': ('Buffalo Placenta!! World’s Most Bizarre Vegan Food!!', False),
-        'INJK-vTKPdg': ('The Surprising Noodle Vietnam Loves Most!! It’s Not Pho!!', False),
-        '1H2l7dHq1fs': ('Blood Red Jellyfish!! EXTREME Vietnam Street Food!!', False),
-        'FSogD7bAHF8': ('$1 VS $152 Filipino Lechon!! Manila’s Meat Masterpiece!!', False),
-        'v0NNI5wS_GM': ('Filipino Street Food That Will Kill You!! Manila Heart Attack Tour!!', False),
-        'VXjrCIcGZmw': ('Bizarre Filipino Food in Pampanga!! Pets, Pigs and Pests!!', False),
-    }
-
-
-@pytest.fixture()
-def one_new_video_last_one_hidden():
-    return {
-        'MHUnaXJqWF4': ('EXTREME African Seafood!!! WILD Tanzania Street Food in Dar es Salaam!!', False),
-        'bol-_4NZjWE': ('Buffalo Placenta!! World’s Most Bizarre Vegan Food!!', False),
-        'INJK-vTKPdg': ('The Surprising Noodle Vietnam Loves Most!! It’s Not Pho!!', False),
-        '1H2l7dHq1fs': ('Blood Red Jellyfish!! EXTREME Vietnam Street Food!!', False),
-        'FSogD7bAHF8': ('$1 VS $152 Filipino Lechon!! Manila’s Meat Masterpiece!!', False),
-        'v0NNI5wS_GM': ('Filipino Street Food That Will Kill You!! Manila Heart Attack Tour!!', False),
-    }
-
-
-@pytest.fixture()
-def one_new_video_in_the_beginning_and_one_in_the_middle():
-    return {
-        'bbdfbdfbdfb': ('ADSADADADAD', False),
-        'bol-_4NZjWE': ('Buffalo Placenta!! World’s Most Bizarre Vegan Food!!', False),
-        'INJK-vTKPdg': ('The Surprising Noodle Vietnam Loves Most!! It’s Not Pho!!', False),
-        '1H2l7dHq1fs': ('Blood Red Jellyfish!! EXTREME Vietnam Street Food!!', False),
-        'MHUnaXJqWF4': ('EXTREME African Seafood!!! WILD Tanzania Street Food in Dar es Salaam!!', False),
-        'FSogD7bAHF8': ('$1 VS $152 Filipino Lechon!! Manila’s Meat Masterpiece!!', False),
-        'v0NNI5wS_GM': ('Filipino Street Food That Will Kill You!! Manila Heart Attack Tour!!', False),
-        'VXjrCIcGZmw': ('Bizarre Filipino Food in Pampanga!! Pets, Pigs and Pests!!', False),
-    }
-
-
-def create_channel_user_item(user, channel):
-    return YouTubeChannelUserItem.objects.create(
-        user=user,
-        channel=channel
-    )
+from tests.utils import (basic_user, channel, create_channel_user_item,
+                         one_new_video,
+                         one_new_video_in_the_beginning_and_one_in_the_middle,
+                         one_new_video_last_one_hidden, premium_user, videos)
 
 
 @pytest.mark.django_db
@@ -115,13 +21,15 @@ def test_set_new_videos(basic_user, channel, videos, one_new_video):
         )
 
     create_channel_user_item(basic_user, channel)
-    urls_to_notify = check_youtube_videos(
-        channel, YouTubeVideo.get_new_videos(channel, one_new_video))
+    videos_notification_urls_basic_users, _ = get_notifications_urls_for_youtube_videos(
+        [channel], [one_new_video])
 
-    assert f'https://api.telegram.org/bot{settings.TOKEN}/sendMessage?chat_id={basic_user.user_id}' in urls_to_notify[
+    assert f'https://api.telegram.org/bot{settings.TOKEN}/sendMessage?chat_id={basic_user.user_id}' in videos_notification_urls_basic_users[
         0]
-    assert 'MHUnaXJqWF4' in urls_to_notify[0]
-    assert len(urls_to_notify) == 1
+
+    assert 'MHUnaXJqWF4' in videos_notification_urls_basic_users[0]
+
+    assert len(videos_notification_urls_basic_users) == 1
 
 
 @pytest.mark.django_db
@@ -135,13 +43,13 @@ def test_new_video_last_one_hidden(basic_user, channel, videos, one_new_video_la
         )
 
     create_channel_user_item(basic_user, channel)
-    urls_to_notify = check_youtube_videos(
-        channel, YouTubeVideo.get_new_videos(channel, one_new_video_last_one_hidden))
+    videos_notification_urls_basic_users, _ = get_notifications_urls_for_youtube_videos(
+        [channel], [one_new_video_last_one_hidden])
 
-    assert f'https://api.telegram.org/bot{settings.TOKEN}/sendMessage?chat_id={basic_user.user_id}' in urls_to_notify[
+    assert f'https://api.telegram.org/bot{settings.TOKEN}/sendMessage?chat_id={basic_user.user_id}' in videos_notification_urls_basic_users[
         0]
-    assert 'MHUnaXJqWF4' in urls_to_notify[0]
-    assert len(urls_to_notify) == 1
+    assert 'MHUnaXJqWF4' in videos_notification_urls_basic_users[0]
+    assert len(videos_notification_urls_basic_users) == 1
     assert len(YouTubeDeletedVideo.objects.all()) == 0
 
 
@@ -157,10 +65,10 @@ def test_new_video_gets_hidden(basic_user, channel, videos, one_new_video):
 
     create_channel_user_item(basic_user, channel)
     YouTubeVideo.get_new_videos(channel, one_new_video)
-    urls_to_notify = check_youtube_videos(
-        channel, YouTubeVideo.get_new_videos(channel, videos))
+    videos_notification_urls_basic_users, _ = get_notifications_urls_for_youtube_videos(
+        [channel], [videos])
 
-    assert len(urls_to_notify) == 0
+    assert len(videos_notification_urls_basic_users) == 0
     assert YouTubeDeletedVideo.objects.all()[
         0].video_id == list(one_new_video.keys())[0]
 
@@ -176,8 +84,8 @@ def test_new_videos_in_the_beginning_and_in_the_middle(basic_user, channel, vide
         )
 
     create_channel_user_item(basic_user, channel)
-    urls_to_notify = check_youtube_videos(
-        channel, YouTubeVideo.get_new_videos(channel, one_new_video_in_the_beginning_and_one_in_the_middle))
+    videos_notification_urls_basic_users, _ = get_notifications_urls_for_youtube_videos(
+        [channel], [one_new_video_in_the_beginning_and_one_in_the_middle])
 
-    assert 'bbdfbdfbdfb' in urls_to_notify[0]
-    assert len(urls_to_notify) == 1
+    assert 'test_id_1' in videos_notification_urls_basic_users[0]
+    assert len(videos_notification_urls_basic_users) == 1

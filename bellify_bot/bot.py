@@ -13,13 +13,13 @@ from telegram.ext import (CallbackContext, CallbackQueryHandler,
 from bellify.celery import app
 from utils.keyboards import get_language_inline_keyboard, get_settings_inline_keyboard
 
-from bellify_bot.handlers.bot_handlers.echo_handler import echo_handler
-from bellify_bot.handlers.bot_handlers.inline_handler import (
+from bellify_bot.handlers.echo_handler import echo_handler
+from bellify_bot.handlers.inline_handler import (
     inline_add_handler, inline_language_handler, inline_link_handler,
     inline_manage_handler, inline_pagination_handler, inline_start_handler,
     inline_tutorial_handler, inline_upgrade_handler, inline_settings_handler)
-from bellify_bot.handlers.bot_handlers.utils import (log_errors, manage,
-                                                     upgrade)
+from utils.inline_utils import (log_errors, manage,
+                                upgrade)
 from bellify_bot.localization import localization
 from bellify_bot.models import User, LANGUAGE_CHOICES
 

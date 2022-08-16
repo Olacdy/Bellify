@@ -1,5 +1,4 @@
 import asyncio
-import json
 from typing import Dict, List, Optional, Union
 
 import aiohttp
@@ -10,7 +9,8 @@ from bellify_bot.models import ChannelUserItem, User
 from django.conf import settings
 from fake_headers import Headers
 from telegram import (CallbackQuery, InlineKeyboardButton,
-                      InlineKeyboardMarkup, MessageEntity)
+                      InlineKeyboardMarkup, LabeledPrice, MessageEntity,
+                      Update)
 from twitch.utils import is_twitch_url
 from youtube.utils import is_youtube_url
 
@@ -81,6 +81,32 @@ def tutorial_reply(query: CallbackQuery, language: str, u: User) -> None:
             text=f'{localization[language]["help"][1][1]}',
             parse_mode='MARKDOWN',
         )
+
+
+# Reply on user invoice
+@log_errors
+def reply_invoice(update: Update, u: User, title: str, description: str, payload: str, buy_button_label: str, price: int, mode: Optional[str] = 'upgrade'):
+    keyboard = [
+        [
+            InlineKeyboardButton(buy_button_label, pay=True)
+        ],
+        [
+            InlineKeyboardButton(
+                localization[u.language]['upgrade'][6], callback_data=f'upgrade{settings.SPLITTING_CHARACTER}back{settings.SPLITTING_CHARACTER}{mode}')
+        ]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+
+    update.callback_query.message.reply_invoice(
+        title=title,
+        description=description,
+        payload=payload,
+        provider_token=settings.PROVIDER_TOKEN,
+        currency=settings.CURRENCY,
+        prices=[LabeledPrice(description[:-1], (price - 1)
+                             if not repr(price)[-1] == '5' else price)],
+        reply_markup=reply_markup
+    )
 
 
 def send_messages(urls: List[str]) -> None:
