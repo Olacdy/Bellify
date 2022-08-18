@@ -1,13 +1,16 @@
 import asyncio
 import json
 import re
-from typing import List, Optional, Tuple, Union, Dict
+from datetime import datetime
+from dateutil.relativedelta import relativedelta
+from typing import Dict, List, Optional, Tuple, Union
 
 import aiohttp
 import bs4 as soup
 import requests
 from asgiref import sync
 from django.conf import settings
+from django.utils.timezone import now
 from fake_headers import Headers
 
 
@@ -116,15 +119,18 @@ def get_json_from_html(html: str, key: str, num_chars: int = 2, stop: str = '"')
 
 # Returns list of content
 def get_content(partial: dict, mode: Optional[str] = 'videos') -> Union[Dict[str, Tuple[str, bool]], Dict[str, str]]:
-    def _get_video_info(video: dict) -> Tuple[str, str, bool]:
+    def _get_video_info(video: dict) -> Tuple[str, str, datetime]:
+        def _get_datetime_of_published(published_time_text: str) -> datetime:
+            matches = re.findall(
+                r'(\d+) (second(?:s)?|minute(?:s)?|hour(?:s)?|day(?:s)?|week(?:s)?|month(?:s)?|year(?:s)?)', published_time_text)
+            timedelta_kwargs = {key: int(value) for value, key in matches}
+            return now() - relativedelta(**timedelta_kwargs)
+
         video_id = video['videoId']
         video_title = video['title']['runs'][0]['text']
 
-        is_saved_livestream = 'streamed' in video['publishedTimeText']['simpleText'].lower(
-        )
-
         if not video['thumbnailOverlays'][0]['thumbnailOverlayTimeStatusRenderer']['style'].lower() in ['live', 'upcoming']:
-            return video_id, video_title, is_saved_livestream
+            return video_id, video_title, _get_datetime_of_published(video['publishedTimeText']['simpleText'])
         raise
 
     def _get_livestream_info(livestream: dict) -> Tuple[str, str]:
