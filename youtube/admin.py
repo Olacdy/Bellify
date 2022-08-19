@@ -5,7 +5,7 @@ from django.utils.safestring import mark_safe
 
 from utils.models import IsDeletingLivestreams, IsLivestreaming
 from youtube.models import (YouTubeChannel, YouTubeChannelUserItem,
-                            YouTubeDeletedVideo, YouTubeEndedLivestream,
+                            YouTubeEndedLivestream,
                             YouTubeLivestream, YouTubeVideo)
 
 
@@ -41,6 +41,8 @@ class YouTubeVideoInline(admin.TabularInline):
     fields = ['video_id', 'video_title',
               'video_url', 'is_saved_livestream', ]
     readonly_fields = ['video_url', ]
+
+    ordering = ['-published_datetime', ]
 
     verbose_name = 'Video'
     verbose_name_plural = 'Videos'
@@ -85,6 +87,29 @@ class YouTubeLivestreamInline(admin.TabularInline):
         return True
 
 
+@admin.register(YouTubeVideo)
+class YouTubeVideoAdmin(admin.ModelAdmin):
+    model = YouTubeVideo
+
+    readonly_fields = ['created_at', 'video_url', ]
+
+    fields = ['created_at', 'channel', 'video_id', 'video_title',
+              'video_url', 'is_saved_livestream', 'iterations_skipped', ]
+
+    search_fields = ['video_title', 'video_id', 'channel__channel_title', ]
+
+    list_filter = ['is_saved_livestream', ]
+    list_display = ['video_title', 'channel', 'is_saved_livestream', ]
+
+    extra = 0
+
+    verbose_name = 'Video'
+    verbose_name_plural = 'Videos'
+
+    def video_url(self, obj):
+        return format_html("<a href='{url}'>{url}</a>", url=obj.video_url)
+
+
 class YouTubeLivestreamAdminParent(admin.ModelAdmin):
     fields = ['created_at', 'channel', 'livestream_id', 'livestream_title',
               'livestream_url', ]
@@ -98,46 +123,6 @@ class YouTubeLivestreamAdminParent(admin.ModelAdmin):
 
     def livestream_url(self, obj):
         return format_html("<a href='{url}'>{url}</a>", url=obj.livestream_url)
-
-
-class YouTubeVideoAdminParent(admin.ModelAdmin):
-    readonly_fields = ['created_at', 'video_url', ]
-
-    search_fields = ['video_title', 'video_id', 'channel__channel_title', ]
-
-    list_filter = ['is_saved_livestream', ]
-    list_display = ['video_title', 'channel', 'is_saved_livestream', ]
-
-    extra = 0
-
-    def video_url(self, obj):
-        return format_html("<a href='{url}'>{url}</a>", url=obj.video_url)
-
-
-@admin.register(YouTubeVideo)
-class YouTubeVideoAdmin(YouTubeVideoAdminParent):
-    model = YouTubeVideo
-
-    fields = ['created_at', 'channel', 'video_id', 'video_title',
-              'video_url', 'is_saved_livestream', 'iterations_skipped', ]
-
-    verbose_name = 'Video'
-    verbose_name_plural = 'Videos'
-
-
-@admin.register(YouTubeDeletedVideo)
-class YouTubeDeletedVideoAdmin(YouTubeVideoAdminParent):
-    model = YouTubeDeletedVideo
-
-    fields = ['created_at', 'channel', 'video_id', 'video_title',
-              'video_url', 'is_saved_livestream', 'is_counted_as_deleted_livestream', ]
-
-    list_filter = ['is_saved_livestream', 'is_counted_as_deleted_livestream', ]
-    list_display = ['video_title', 'channel',
-                    'is_saved_livestream', 'is_counted_as_deleted_livestream', ]
-
-    verbose_name = 'Deleted Video'
-    verbose_name_plural = 'Deleted Videos'
 
 
 @admin.register(YouTubeLivestream)
@@ -181,7 +166,7 @@ class YouTubeChannelAdmin(admin.ModelAdmin):
         return obj.is_livestreaming
 
     def is_deleting_streams(self, obj):
-        return obj.is_deleting_livestreams
+        return obj.is_deleting_livestreams_for_admin
 
     is_live.boolean = True
     is_deleting_streams.boolean = True

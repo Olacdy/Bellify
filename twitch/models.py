@@ -66,7 +66,7 @@ class TwitchChannel(Channel):
 
     @property
     def is_threshold_passed(self: 'TwitchChannel') -> bool:
-        return self.live_end_datetime + settings.TIME_THRESHOLD < now()
+        return self.live_end_datetime + settings.TWITCH_TIME_THRESHOLD < now()
 
     @classmethod
     def get_channels_to_review(cls) -> List['TwitchChannel']:

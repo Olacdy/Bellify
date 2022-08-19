@@ -126,7 +126,7 @@ def _add_youtube_channel(channel_id: str, message: Message, user: User, name: Op
             YouTubeVideo.objects.get_or_create(
                 video_id=video_id,
                 video_title=videos[video_id][0],
-                is_saved_livestream=videos[video_id][1],
+                published_datetime=videos[video_id][1],
                 channel=channel
             )
     else:

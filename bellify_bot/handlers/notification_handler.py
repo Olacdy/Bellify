@@ -43,20 +43,18 @@ def get_notifications_urls_for_youtube_videos(channels: List[YouTubeChannel], vi
 
     for channel, channel_videos in zip(channels, videos):
         for video in YouTubeVideo.get_new_videos(channel, channel_videos):
-            if video.is_new and not video.iterations_skipped > 0:
+            if not video.is_basic_notified:
                 videos_notification_urls_basic_users.extend(get_urls_to_notify(users=[item.user for item in YouTubeChannelUserItem.objects.filter(
                     channel=channel, user__status='B')], channel_id=channel.channel_id, url=video.video_url,
                     content_title=video.video_title, is_reuploaded=video.is_reuploaded))
+                video.notify_basic()
 
-            if video.is_new or video.iterations_skipped > 0:
-                if video.is_ended_livestream and channel.check_for_deleting_livestreams and not video.is_able_to_notify:
-                    video.skip_iteration()
-                else:
-                    videos_notification_urls_premium_users.extend(get_urls_to_notify(users=[item.user for item in YouTubeChannelUserItem.objects.filter(
-                        channel=channel, user__status='P')], channel_id=channel.channel_id, url=video.video_url,
-                        content_title=video.video_title, is_reuploaded=video.is_reuploaded,
-                        is_ended_livestream=video.is_ended_livestream, is_might_be_deleted=channel.is_deleting_livestreams))
-                    video.notified()
+            if not video.is_premium_notified:
+                videos_notification_urls_premium_users.extend(get_urls_to_notify(users=[item.user for item in YouTubeChannelUserItem.objects.filter(
+                    channel=channel, user__status='P')], channel_id=channel.channel_id, url=video.video_url,
+                    content_title=video.video_title, is_reuploaded=video.is_reuploaded,
+                    is_ended_livestream=video.is_ended_livestream, is_might_be_deleted=channel.is_deleting_livestreams))
+                video.notify_premium()
 
     return videos_notification_urls_basic_users, videos_notification_urls_premium_users
 
