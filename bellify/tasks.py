@@ -1,14 +1,14 @@
 import time
-from typing import Dict, List, Optional, Union, Tuple
+from typing import Dict, List, Optional, Union
 
-from utils.general_utils import get_html_link, get_html_bold, _send_message, _from_celery_entities_to_entities, _from_celery_markup_to_markup
-from utils.keyboards import get_notification_reply_markup
 from django.core.management import call_command
-from bellify_bot.localization import localization
-from bellify_bot.models import User, ChannelUserItem
+from django.utils.timezone import now
+from utils.general_utils import (_from_celery_entities_to_entities,
+                                 _from_celery_markup_to_markup, _send_message)
+from youtube.models import YouTubeChannel
 
-from celery.utils.log import get_task_logger
 from bellify.celery import app
+from celery.utils.log import get_task_logger
 
 logger = get_task_logger(__name__)
 
@@ -42,6 +42,15 @@ def broadcast_message(
         time.sleep(max(sleep_between, 0.1))
 
     logger.info('Broadcast finished!')
+
+
+@app.task(ignore_result=True)
+def check_for_deleted_livestreams():
+    for channel in YouTubeChannel.objects.all():
+        for video in channel.videos.all():
+            if (now() - video.create_at).seconds > 3600 and video.iterations_skipped > 0:
+                video.delete()
+                channel.increment_deleted_livestreams()
 
 
 @app.task(ignore_result=True)

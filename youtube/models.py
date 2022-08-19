@@ -36,7 +36,7 @@ class YouTubeChannel(Channel):
 
     @property
     def last_video(self: 'YouTubeChannel') -> Union['YouTubeVideo', None]:
-        video = self.videos.all().first()
+        video = self.videos.all().order_by('-published_datetime').first()
         return video if video else None
 
     @property
@@ -47,6 +47,10 @@ class YouTubeChannel(Channel):
     @property
     def is_livestreaming(self: 'YouTubeChannel') -> bool:
         return bool(self.ongoing_livestream)
+
+    @property
+    def is_deleting_livestreams_for_admin(self: 'YouTubeChannel') -> bool:
+        return self.deleted_livestreams > 0
 
     @property
     def is_deleting_livestreams(self: 'YouTubeChannel') -> bool:
@@ -232,7 +236,6 @@ class YouTubeVideo(CreateUpdateTracker):
                 channel=channel
             )
 
-        # channel.clear_videos()
         videos_to_create = []
 
         for video_id in videos:
@@ -305,6 +308,10 @@ class YouTubeVideo(CreateUpdateTracker):
         self.iterations_skipped = self.iterations_skipped + 1
         self.save()
 
+    def reset_iterations(self: 'YouTubeVideo') -> None:
+        self.iterations_skipped = 0
+        self.save()
+
     def notify_premium(self: 'YouTubeVideo') -> None:
         self.is_premium_notified = True
         self.iterations_skipped = 0
@@ -340,9 +347,7 @@ class YouTubeChannelUserItem(ChannelUserItem):
 
 
 @receiver(models.signals.post_save, sender=YouTubeEndedLivestream)
-def remove_deleted_and_ended_content_after_time(sender, instance, *args, **kwargs):
-    # TODO: make functionality for notified videos
-
+def remove_ended_livestreams_after_time(sender, instance, *args, **kwargs):
     for ended_livestream in YouTubeEndedLivestream.objects.all():
         if (now() - ended_livestream.created_at).days >= 1:
             ended_livestream.delete()
