@@ -176,7 +176,7 @@ CELERY_BEAT_SCHEDULE = {
     },
     'check_for_deleted_livestreams': {
         'task': 'bellify.tasks.check_for_deleted_livestreams',
-        'schedule': crontab(minute=30),
+        'schedule': crontab(minute='*/30'),
     }
 }
 
