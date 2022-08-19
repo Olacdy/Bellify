@@ -251,7 +251,7 @@ class YouTubeVideo(CreateUpdateTracker):
                 if is_saved_livestream:
                     if video.is_able_to_notify:
                         video.unnotify_premium()
-                    else:
+                    elif video.iterations_skipped > 0:
                         video.skip_iteration()
             else:
                 if is_saved_livestream:
