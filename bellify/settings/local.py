@@ -174,6 +174,10 @@ CELERY_BEAT_SCHEDULE = {
         'task': 'bellify.tasks.check_youtube',
         'schedule': crontab(minute='1-58/3'),
     },
+    'check_for_deleted_livestreams': {
+        'task': 'bellify.tasks.check_for_deleted_livestreams',
+        'schedule': crontab(minute=30),
+    }
 }
 
 # Configuration settings
