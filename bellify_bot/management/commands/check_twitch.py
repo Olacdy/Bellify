@@ -1,5 +1,5 @@
 from django.core.management import BaseCommand
-from bellify_bot.handlers.bot_handlers.utils import check_twitch
+from bellify_bot.handlers.notification_handler import check_twitch
 
 
 class Command(BaseCommand):

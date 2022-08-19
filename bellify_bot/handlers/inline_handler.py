@@ -1,8 +1,9 @@
 from typing import List, Optional, Union
 
-from bellify_bot.handlers.bot_handlers.utils import (
-    add, get_manage_inline_keyboard, get_upgrade_inline_keyboard, log_errors,
-    mute, remove, reply_invoice, upgrade)
+from bellify_bot.handlers.channels_adding_handler import add
+from utils.inline_utils import (get_manage_inline_keyboard,
+                                get_upgrade_inline_keyboard,
+                                log_errors, mute, remove, upgrade)
 from bellify_bot.localization import localization
 from bellify_bot.models import User
 from django.conf import settings
@@ -10,7 +11,8 @@ from telegram import CallbackQuery, InlineKeyboardMarkup, Update, error
 from telegram.ext import CallbackContext
 from twitch.models import ChannelUserItem
 
-from utils.general_utils import get_manage_message, tutorial_reply
+from utils.general_utils import (get_manage_message, reply_invoice,
+                                 tutorial_reply)
 from utils.keyboards import get_settings_inline_keyboard
 
 

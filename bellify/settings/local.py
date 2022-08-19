@@ -188,13 +188,15 @@ TWITCH_CLIENT_ID = env.str('TWITCH_CLIENT_ID')
 
 TWITCH_CLIENT_SECRET = env.str('TWITCH_CLIENT_SECRET')
 
-TIME_THRESHOLD = timedelta(minutes=10)
+TWITCH_TIME_THRESHOLD = timedelta(minutes=10)
 
 # YouTube
 
 ITERATIONS_TO_SKIP = 5
 
 SESSION_CLIENT_COOKIES = {'CONSENT': 'YES+cb'}
+
+YOUTUBE_TIME_THRESHOLD = timedelta(minutes=20)
 
 # Upgrades section
 
