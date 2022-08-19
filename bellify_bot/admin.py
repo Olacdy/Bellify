@@ -110,7 +110,6 @@ def get_app_list(self, request):
                 'YouTube Channels': 1,
                 'YouTube Videos': 2,
                 'YouTube Livestreams': 3,
-                'Deleted YouTube Videos': 4,
                 'Ended YouTube Livestreams': 5,
             }
             app['models'].sort(key=lambda x: ordering[x['name']])
