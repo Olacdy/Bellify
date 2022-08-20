@@ -48,7 +48,7 @@ def broadcast_message(
 def check_for_deleted_livestreams():
     for channel in YouTubeChannel.objects.all():
         for video in channel.videos.all():
-            if (now() - video.create_at).seconds > 3600 and video.iterations_skipped > 0:
+            if (now() - video.created_at).seconds > 3600 and video.iterations_skipped > 0:
                 video.delete()
                 channel.increment_deleted_livestreams()
 
