@@ -49,7 +49,7 @@ class YouTubeChannel(Channel):
         return bool(self.ongoing_livestream)
 
     @property
-    def is_deleting_livestreams_for_admin(self: 'YouTubeChannel') -> bool:
+    def is_deleted_its_livestreams(self: 'YouTubeChannel') -> bool:
         return self.deleted_livestreams > 0
 
     @property
