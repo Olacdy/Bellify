@@ -166,7 +166,7 @@ class YouTubeChannelAdmin(admin.ModelAdmin):
         return obj.is_livestreaming
 
     def is_deleting_streams(self, obj):
-        return obj.is_deleting_livestreams_for_admin
+        return obj.is_deleted_its_livestreams
 
     is_live.boolean = True
     is_deleting_streams.boolean = True
