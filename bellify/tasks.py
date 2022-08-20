@@ -2,10 +2,8 @@ import time
 from typing import Dict, List, Optional, Union
 
 from django.core.management import call_command
-from django.utils.timezone import now
 from utils.general_utils import (_from_celery_entities_to_entities,
                                  _from_celery_markup_to_markup, _send_message)
-from youtube.models import YouTubeChannel
 
 from bellify.celery import app
 from celery.utils.log import get_task_logger
@@ -46,11 +44,7 @@ def broadcast_message(
 
 @app.task(ignore_result=True)
 def check_for_deleted_livestreams():
-    for channel in YouTubeChannel.objects.all():
-        for video in channel.videos.all():
-            if (now() - video.created_at).seconds > 3600 and video.iterations_skipped > 0:
-                video.delete()
-                channel.increment_deleted_livestreams()
+    call_command('check_for_deleted_livestreams')
 
 
 @app.task(ignore_result=True)
