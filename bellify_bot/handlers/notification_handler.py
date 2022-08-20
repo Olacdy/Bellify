@@ -51,9 +51,14 @@ def get_notifications_urls_for_youtube_videos(channels: List[YouTubeChannel], vi
 
             if not video.is_premium_notified:
                 videos_notification_urls_premium_users.extend(get_urls_to_notify(users=[item.user for item in YouTubeChannelUserItem.objects.filter(
-                    channel=channel, user__status='P')], channel_id=channel.channel_id, url=video.video_url,
-                    content_title=video.video_title, is_reuploaded=video.is_reuploaded,
-                    is_ended_livestream=video.is_ended_livestream, is_might_be_deleted=channel.is_deleting_livestreams))
+                    channel=channel, user__status='P')],
+                    channel_id=channel.channel_id,
+                    url=video.video_url,
+                    content_title=video.video_title,
+                    is_reuploaded=video.is_reuploaded,
+                    is_ended_livestream=video.is_ended_livestream,
+                    is_might_be_deleted=channel.is_deleted_its_livestreams)
+                )
                 video.notify_premium()
 
     return videos_notification_urls_basic_users, videos_notification_urls_premium_users
