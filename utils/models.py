@@ -47,6 +47,23 @@ class IsLivestreaming(admin.SimpleListFilter):
             return queryset.filter(livestream__isnull=True)
 
 
+class IsEnded(admin.SimpleListFilter):
+    title = 'Is livestream ended'
+    parameter_name = 'is_ended'
+
+    def lookups(self, request, model_admin):
+        return (
+            ('ended', 'Yes'),
+            ('live', 'No'),
+        )
+
+    def queryset(self, request, queryset):
+        if self.value() == 'ended':
+            return queryset.filter(livestream__ended_at__isnull=False).distinct()
+        elif self.value() == 'live':
+            return queryset.filter(livestream__ended_at__isnull=True)
+
+
 class IsDeletingLivestreams(admin.SimpleListFilter):
     title = 'Is deleting streams'
     parameter_name = 'is_deleting_streams'

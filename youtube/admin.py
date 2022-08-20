@@ -3,9 +3,8 @@ from django.urls import reverse
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 
-from utils.models import IsDeletingLivestreams, IsLivestreaming
+from utils.models import IsDeletingLivestreams, IsLivestreaming, IsEnded
 from youtube.models import (YouTubeChannel, YouTubeChannelUserItem,
-                            YouTubeEndedLivestream,
                             YouTubeLivestream, YouTubeVideo)
 
 
@@ -42,7 +41,7 @@ class YouTubeVideoInline(admin.TabularInline):
               'video_url', 'is_saved_livestream', ]
     readonly_fields = ['video_url', ]
 
-    ordering = ['-published_datetime', ]
+    ordering = ['created_at', ]
 
     verbose_name = 'Video'
     verbose_name_plural = 'Videos'
@@ -66,8 +65,8 @@ class YouTubeLivestreamInline(admin.TabularInline):
     model = YouTubeLivestream
 
     fields = ['livestream_id', 'livestream_title',
-              'livestream_url', ]
-    readonly_fields = ['livestream_url', ]
+              'livestream_url', 'is_ended', ]
+    readonly_fields = ['livestream_url', 'is_ended', ]
 
     verbose_name = 'Live Stream'
     verbose_name_plural = 'Live Streams'
@@ -76,6 +75,9 @@ class YouTubeLivestreamInline(admin.TabularInline):
 
     def livestream_url(self, obj):
         return format_html("<a href='{url}'>{url}</a>", url=obj.livestream_url)
+
+    def is_ended(self, obj):
+        return bool(obj.ended_at)
 
     def has_add_permission(self, request, obj):
         return True
@@ -110,35 +112,29 @@ class YouTubeVideoAdmin(admin.ModelAdmin):
         return format_html("<a href='{url}'>{url}</a>", url=obj.video_url)
 
 
-class YouTubeLivestreamAdminParent(admin.ModelAdmin):
+@admin.register(YouTubeLivestream)
+class YouTubeLivestreamAdmin(admin.ModelAdmin):
+    model = YouTubeLivestream
+
     fields = ['created_at', 'channel', 'livestream_id', 'livestream_title',
-              'livestream_url', ]
-    readonly_fields = ['created_at', 'livestream_url', ]
+              'livestream_url', 'is_ended', ]
+    readonly_fields = ['created_at', 'livestream_url', 'is_ended', ]
 
     search_fields = ['livestream_title',
                      'livestream_id', 'channel__channel_title', ]
-    list_display = ['livestream_title', 'channel', ]
+    list_filter = [IsEnded, ]
+    list_display = ['livestream_title', 'channel', 'is_ended', ]
 
     extra = 0
-
-    def livestream_url(self, obj):
-        return format_html("<a href='{url}'>{url}</a>", url=obj.livestream_url)
-
-
-@admin.register(YouTubeLivestream)
-class YouTubeLivestreamAdmin(YouTubeLivestreamAdminParent):
-    model = YouTubeLivestream
 
     verbose_name = 'Livestream'
     verbose_name_plural = 'Livestreams'
 
+    def livestream_url(self, obj):
+        return format_html("<a href='{url}'>{url}</a>", url=obj.livestream_url)
 
-@admin.register(YouTubeEndedLivestream)
-class YouTubeLivestreamAdmin(YouTubeLivestreamAdminParent):
-    model = YouTubeEndedLivestream
-
-    verbose_name = 'Ended Livestream'
-    verbose_name_plural = 'Ended Livestreams'
+    def is_ended(self, obj):
+        return bool(obj.ended_at)
 
 
 @admin.register(YouTubeChannel)

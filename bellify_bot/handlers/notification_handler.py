@@ -56,7 +56,7 @@ def get_notifications_urls_for_youtube_videos(channels: List[YouTubeChannel], vi
                     url=video.video_url,
                     content_title=video.video_title,
                     is_reuploaded=video.is_reuploaded,
-                    is_ended_livestream=video.is_ended_livestream,
+                    is_saved_livestream=video.is_saved_livestream,
                     is_might_be_deleted=channel.is_deleted_its_livestreams)
                 )
                 video.notify_premium()
@@ -71,7 +71,7 @@ def get_notifications_urls_for_youtube_livestreams(channels: YouTubeChannel, liv
 
     for channel, channel_livestreams in zip(channels, livestreams):
         for livestream in YouTubeLivestream.get_new_livestreams(channel, channel_livestreams):
-            if livestream.is_new:
+            if not livestream.is_notified and not livestream.is_ended:
                 livestream_notification_urls.extend(get_urls_to_notify(users=[item.user for item in YouTubeChannelUserItem.objects.filter(
                     channel=channel, user__status='P')], channel_id=channel.channel_id, url=livestream.livestream_url,
                     content_title=livestream.livestream_title, is_live=True))
@@ -110,7 +110,7 @@ def check_youtube() -> None:
         [channel.channel_id for channel in channels_premium])
 
     livestreams_notification_urls = get_notifications_urls_for_youtube_livestreams(
-        channels, livestreams)
+        channels_premium, livestreams)
 
     videos_notification_urls_basic_users, videos_notification_urls_premium_users = get_notifications_urls_for_youtube_videos(
         channels, videos)
@@ -120,8 +120,8 @@ def check_youtube() -> None:
 
 
 # Function that handles users notifications
-def get_urls_to_notify(users: List[User], channel_id: str, url: str, content_title: str, game_name: Optional[str] = None, preview_url: Optional[str] = None, is_reuploaded: Optional[bool] = False, is_live: Optional[bool] = False, is_ended_livestream: Optional[bool] = False, is_might_be_deleted: Optional[bool] = False) -> None:
-    def _get_message(user: User, channel_title: str, url: str, game_name: Optional[str] = None, preview_url: Optional[str] = None, is_reuploaded: Optional[bool] = False, is_live: Optional[bool] = False, is_ended_livestream: Optional[bool] = False, is_might_be_deleted: Optional[bool] = False) -> str:
+def get_urls_to_notify(users: List[User], channel_id: str, url: str, content_title: str, game_name: Optional[str] = None, preview_url: Optional[str] = None, is_reuploaded: Optional[bool] = False, is_live: Optional[bool] = False, is_saved_livestream: Optional[bool] = False, is_might_be_deleted: Optional[bool] = False) -> None:
+    def _get_message(user: User, channel_title: str, url: str, game_name: Optional[str] = None, preview_url: Optional[str] = None, is_reuploaded: Optional[bool] = False, is_live: Optional[bool] = False, is_saved_livestream: Optional[bool] = False, is_might_be_deleted: Optional[bool] = False) -> str:
         channel_title = get_html_bold(channel_title)
 
         if is_live:
@@ -131,7 +131,7 @@ def get_urls_to_notify(users: List[User], channel_id: str, url: str, content_tit
         else:
             if is_reuploaded:
                 notification = f" — {localization[user.language]['notification'][3]}"
-            elif is_ended_livestream:
+            elif is_saved_livestream:
                 notification = f" — {localization[user.language]['notification'][4]}{(' ' + localization[user.language]['notification'][5]) if is_might_be_deleted else ''}"
             else:
                 notification = f" — {localization[user.language]['notification'][0]}"
@@ -145,7 +145,7 @@ def get_urls_to_notify(users: List[User], channel_id: str, url: str, content_tit
                      message=_get_message(user=user, channel_title=item.message_title_and_type, url=url,
                                           game_name=game_name, preview_url=preview_url,
                                           is_reuploaded=is_reuploaded, is_live=is_live,
-                                          is_ended_livestream=is_ended_livestream,
+                                          is_saved_livestream=is_saved_livestream,
                                           is_might_be_deleted=is_might_be_deleted),
                      disable_notification=item.is_muted,
                      reply_markup=get_notification_reply_markup(
