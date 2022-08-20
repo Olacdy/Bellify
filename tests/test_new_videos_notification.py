@@ -17,7 +17,7 @@ def test_set_new_videos(basic_user, channel, videos, one_new_video):
         YouTubeVideo.objects.create(
             video_id=video_id,
             video_title=videos[video_id][0],
-            published_datetime=videos[video_id][1],
+            published_at=videos[video_id][1],
             channel=channel
         )
 
@@ -39,7 +39,7 @@ def test_new_video_last_one_hidden(basic_user, channel, videos, one_new_video_la
         YouTubeVideo.objects.create(
             video_id=video_id,
             video_title=videos[video_id][0],
-            published_datetime=videos[video_id][1],
+            published_at=videos[video_id][1],
             channel=channel
         )
 
@@ -59,7 +59,7 @@ def test_new_video_gets_hidden(basic_user, channel, videos, one_new_video):
         YouTubeVideo.objects.create(
             video_id=video_id,
             video_title=videos[video_id][0],
-            published_datetime=videos[video_id][1],
+            published_at=videos[video_id][1],
             channel=channel
         )
 
@@ -79,7 +79,7 @@ def test_new_videos_in_the_beginning_and_in_the_middle(basic_user, channel, vide
         YouTubeVideo.objects.create(
             video_id=video_id,
             video_title=videos[video_id][0],
-            published_datetime=videos[video_id][1],
+            published_at=videos[video_id][1],
             channel=channel
         )
 
@@ -97,7 +97,7 @@ def test_content_clear(channel, videos, one_livestream):
         YouTubeVideo.objects.create(
             video_id=video_id,
             video_title=videos[video_id][0],
-            published_datetime=videos[video_id][1],
+            published_at=videos[video_id][1],
             channel=channel
         )
 

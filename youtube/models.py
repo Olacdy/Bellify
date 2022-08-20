@@ -205,7 +205,7 @@ class YouTubeVideo(CreateUpdateTracker):
             return YouTubeVideo(
                 video_id=video[0],
                 video_title=video[1],
-                published_datetime=video[2],
+                published_at=video[2],
                 is_saved_livestream=video[3],
                 is_reuploaded=video[4],
                 is_basic_notified=is_basic_notified,
