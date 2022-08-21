@@ -42,7 +42,7 @@ class YouTubeChannel(Channel):
 
     @property
     def ongoing_livestream(self: 'YouTubeChannel') -> Union['YouTubeLivestream', None]:
-        livestream = self.livestreams.all().first()
+        livestream = self.livestreams.filter(ended_at=None).first()
         return livestream if livestream else None
 
     @property
