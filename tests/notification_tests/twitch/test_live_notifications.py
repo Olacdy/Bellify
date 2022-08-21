@@ -15,6 +15,8 @@ def test_channel_goes_live(premium_user, twitch_channel, twitch_livestreams):
     live_notification_urls = get_notifications_urls_for_twitch(
         [twitch_channel], twitch_livestreams)
 
+    twitch_channel.delete()
+
     assert len(live_notification_urls) == 1
 
 
@@ -27,6 +29,8 @@ def test_channel_goes_live_before_threshold_is_passed(premium_user, twitch_chann
         twitch_channel], {})
     live_notification_urls = get_notifications_urls_for_twitch(
         [twitch_channel], twitch_livestreams)
+
+    twitch_channel.delete()
 
     assert len(live_notification_urls) == 0
     assert twitch_channel.live_title == list(*twitch_livestreams.values())[0]
@@ -46,6 +50,8 @@ def test_notification_message_of_different_games(premium_user, twitch_channel, t
 
     live_notification_urls_just_chatting = get_notifications_urls_for_twitch(
         [twitch_channel], twitch_livestreams_just_chatting)
+
+    twitch_channel.delete()
 
     assert 'streaming' not in live_notification_urls_just_chatting[0]
     assert 'live' in live_notification_urls_just_chatting[0]

@@ -88,6 +88,8 @@ class YouTubeLivestreamInline(admin.TabularInline):
     def has_delete_permission(self, request, obj=None):
         return True
 
+    is_ended.boolean = True
+
 
 @admin.register(YouTubeVideo)
 class YouTubeVideoAdmin(admin.ModelAdmin):
@@ -135,6 +137,8 @@ class YouTubeLivestreamAdmin(admin.ModelAdmin):
 
     def is_ended(self, obj):
         return bool(obj.ended_at)
+
+    is_ended.boolean = True
 
 
 @admin.register(YouTubeChannel)
