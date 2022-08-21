@@ -116,20 +116,31 @@ def _add_youtube_channel(channel_id: str, message: Message, user: User, name: Op
         videos = scrape_last_videos(channel_id)
         livestreams = scrape_livesteams(channel_id)
 
+        videos_to_create = []
+        livestreams_to_create = []
+
         for livestream_id in livestreams:
-            YouTubeLivestream.objects.get_or_create(
-                livestream_id=livestream_id,
-                livestream_title=livestreams[livestream_id],
-                channel=channel
+            livestreams_to_create.append(
+                YouTubeLivestream(
+                    livestream_id=livestream_id,
+                    livestream_title=livestreams[livestream_id],
+                    channel=channel
+                )
             )
 
         for video_id in videos:
-            YouTubeVideo.objects.get_or_create(
-                video_id=video_id,
-                video_title=videos[video_id][0],
-                published_at=videos[video_id][1],
-                channel=channel
+            videos_to_create.append(
+                YouTubeVideo(
+                    video_id=video_id,
+                    video_title=videos[video_id][0],
+                    published_at=videos[video_id][1],
+                    channel=channel
+                )
             )
+
+        YouTubeVideo.objects.bulk_create(videos_to_create)
+        YouTubeLivestream.objects.bulk_create(livestreams_to_create)
+
     else:
         channel = YouTubeChannel.objects.get(channel_id=channel_id)
         channel_title = channel.channel_title

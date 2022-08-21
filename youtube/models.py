@@ -37,7 +37,7 @@ class YouTubeChannel(Channel):
 
     @property
     def last_video(self: 'YouTubeChannel') -> Union['YouTubeVideo', None]:
-        video = self.videos.all().order_by('created_at').first()
+        video = self.videos.all().order_by('-published_at', '-created_at').first()
         return video if video else None
 
     @property
@@ -249,12 +249,14 @@ class YouTubeVideo(CreateUpdateTracker):
                         settings.YOUTUBE_TIME_THRESHOLD > now()
                     if is_reuploaded:
                         YouTubeVideo.objects.get(video_title=videos[video_id][0]).update(video_id=video_id, is_reuploaded=is_reuploaded,
-                                                                                         is_basic_notified=is_should_be_notified, is_premium_notified=is_should_be_notified)
+                                                                                         is_basic_notified=is_should_be_notified,
+                                                                                         is_premium_notified=is_should_be_notified)
                     else:
                         videos_to_create.append(
                             _add_video(channel=channel, video=(
                                 video_id, videos[video_id][0], videos[video_id][1], False, is_reuploaded),
-                                is_basic_notified=not is_should_be_notified, is_premium_notified=not is_should_be_notified)
+                                is_basic_notified=not is_should_be_notified,
+                                is_premium_notified=not is_should_be_notified)
                         )
 
         YouTubeVideo.objects.bulk_create(videos_to_create)
