@@ -71,7 +71,7 @@ def get_notifications_urls_for_youtube_livestreams(channels: YouTubeChannel, liv
 
     for channel, channel_livestreams in zip(channels, livestreams):
         for livestream in YouTubeLivestream.get_new_livestreams(channel, channel_livestreams):
-            if not livestream.is_notified and not livestream.is_ended:
+            if not livestream.is_notified and not bool(livestream.ended_at):
                 livestream_notification_urls.extend(get_urls_to_notify(users=[item.user for item in YouTubeChannelUserItem.objects.filter(
                     channel=channel, user__status='P')], channel_id=channel.channel_id, url=livestream.livestream_url,
                     content_title=livestream.livestream_title, is_live=True))
@@ -88,8 +88,7 @@ def check_twitch() -> None:
     channels_ids = [channels_ids[i * 100:(i + 1) * 100]
                     for i in range((len(channels_ids) + 100 - 1) // 100)]
 
-    livestreams = {stream_item[0]: stream_item[1:]
-                   for stream_item in get_twitch_streams_info(channels_ids)}
+    livestreams = get_twitch_streams_info(channels_ids)
 
     livestream_notification_urls = get_notifications_urls_for_twitch(
         channels, livestreams)

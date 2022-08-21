@@ -1,7 +1,7 @@
 import asyncio
-import itertools
+from collections import ChainMap
 import re
-from typing import List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import aiohttp
 import requests
@@ -12,7 +12,7 @@ import twitch.models as models
 
 
 # Returns Twitch streams info for a list of ids consisting of chunks of 100
-def get_twitch_streams_info(ids: List[List[str]]) -> List[Tuple[str]]:
+def get_twitch_streams_info(ids: List[List[str]]) -> Dict[str, Tuple[str, str, str, bool]]:
     token = models.TwitchChannel.get_or_update_bearer_token()
 
     async def get_all(ids: List[List[str]]):
@@ -30,15 +30,15 @@ def get_twitch_streams_info(ids: List[List[str]]) -> List[Tuple[str]]:
                 async with session.get('https://api.twitch.tv/helix/streams', headers=headers, params=params) as response:
                     if response.status == 200:
                         response_data = await response.json()
-                        return [(response_data_item['user_id'], response_data_item['title'], response_data_item['game_name'],
-                                 get_formatted_thumbnail_url(response_data_item['thumbnail_url']), True)
-                                for response_data_item in response_data['data']]
+                        return {response_data_item['user_id']: (response_data_item['title'], response_data_item['game_name'],
+                                                                get_formatted_thumbnail_url(response_data_item['thumbnail_url']), True)
+                                for response_data_item in response_data['data']}
                     elif response.status == 401:
                         return get_streams_info(ids_100)
             return await asyncio.gather(*[
                 fetch(ids_100, token) for ids_100 in ids
             ])
-    return list(itertools.chain(*sync.async_to_sync(get_all)(ids)))
+    return dict(ChainMap(*sync.async_to_sync(get_all)(ids)))
 
 
 # Returns channel id, login, display_name from ids or usernames
@@ -66,7 +66,7 @@ def get_users_info(ids: Optional[List[str]] = None, usernames: Optional[List[str
 
 
 # Returns Twitch streams info from channels ids
-def get_streams_info(ids: List[str]) -> List[tuple]:
+def get_streams_info(ids: List[str]) -> Dict[str, Tuple[str, str, str, bool]]:
     token = models.TwitchChannel.get_or_update_bearer_token()
 
     headers = {
@@ -83,9 +83,9 @@ def get_streams_info(ids: List[str]) -> List[tuple]:
 
     if response.status_code == 200:
         response_data = response.json()['data']
-        return [(response_data_item['user_id'], response_data_item['title'], response_data_item['game_name'],
+        return {response_data_item['user_id']: (response_data_item['title'], response_data_item['game_name'],
                 get_formatted_thumbnail_url(response_data_item['thumbnail_url']), True)
-                for response_data_item in response_data]
+                for response_data_item in response_data}
     elif response.status_code == 401:
         models.TwitchChannel.get_or_update_bearer_token()(update=True)
         return get_streams_info(ids=ids)

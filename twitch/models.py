@@ -30,7 +30,7 @@ class TwitchChannel(Channel):
     thumbnail_image = models.ImageField(
         upload_to=twitch_thumbnail_directory_path, **nb)
 
-    live_end_datetime = models.DateTimeField(default=now, **nb)
+    live_end_datetime = models.DateTimeField(default=None, **nb)
 
     users = models.ManyToManyField(
         User, through='TwitchChannelUserItem')
@@ -66,7 +66,7 @@ class TwitchChannel(Channel):
 
     @property
     def is_threshold_passed(self: 'TwitchChannel') -> bool:
-        return self.live_end_datetime + settings.TWITCH_TIME_THRESHOLD < now()
+        return (self.live_end_datetime + settings.TWITCH_TIME_THRESHOLD < now()) if self.live_end_datetime else True
 
     @classmethod
     def get_channels_to_review(cls) -> List['TwitchChannel']:

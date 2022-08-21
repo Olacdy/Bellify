@@ -3,10 +3,18 @@ from bellify_bot.models import User
 from dateutil.relativedelta import relativedelta
 from django.utils.timezone import now
 from youtube.models import YouTubeChannel, YouTubeChannelUserItem
+from twitch.models import TwitchChannel, TwitchChannelUserItem
 
 
-def create_channel_user_item(user, channel):
+def create_youtube_channel_user_item(user, channel):
     return YouTubeChannelUserItem.objects.create(
+        user=user,
+        channel=channel
+    )
+
+
+def create_twitch_channel_user_item(user, channel):
+    return TwitchChannelUserItem.objects.create(
         user=user,
         channel=channel
     )
@@ -30,7 +38,15 @@ def premium_user():
 
 
 @pytest.fixture()
-def channel():
+def twitch_channel():
+    return TwitchChannel.objects.create(
+        channel_id='40488774',
+        channel_title='GGwpLanaya',
+    )
+
+
+@pytest.fixture()
+def youtube_channel():
     return YouTubeChannel.objects.create(
         channel_id='UCcAd5Np7fO8SeejB1FVKcYw',
         channel_title='Best Ever Food Review Show',
@@ -38,7 +54,7 @@ def channel():
 
 
 @pytest.fixture()
-def channel_deleted_livestreams_0():
+def youtube_channel_deleted_livestreams_0():
     return YouTubeChannel.objects.create(
         channel_id='UCcAd5Np7fO8SeejB1FVKcYw',
         channel_title='Best Ever Food Review Show',
@@ -47,7 +63,7 @@ def channel_deleted_livestreams_0():
 
 
 @pytest.fixture()
-def channel_deleted_livestreams_1():
+def youtube_channel_deleted_livestreams_1():
     return YouTubeChannel.objects.create(
         channel_id='UCcAd5Np7fO8SeejB1FVKcYw',
         channel_title='Best Ever Food Review Show',
@@ -56,7 +72,17 @@ def channel_deleted_livestreams_1():
 
 
 @pytest.fixture()
-def videos():
+def twitch_livestreams():
+    return {'40488774': ('Test_Livestream_Title', 'Test_Game_Name', 'https://static-cdn.jtvnw.net/previews-ttv/live_user_ggwplanaya-1280x720.jpg', True)}
+
+
+@pytest.fixture()
+def twitch_livestreams_just_chatting():
+    return {'40488774': ('Test_Livestream_Title', 'Just Chatting', 'https://static-cdn.jtvnw.net/previews-ttv/live_user_ggwplanaya-1280x720.jpg', True)}
+
+
+@pytest.fixture()
+def youtube_videos():
     return {
         'bol-_4NZjWE': ('Buffalo Placenta!! World’s Most Bizarre Vegan Food!!', now() - relativedelta(hour=1)),
         'INJK-vTKPdg': ('The Surprising Noodle Vietnam Loves Most!! It’s Not Pho!!', now() - relativedelta(hour=2)),
@@ -68,7 +94,7 @@ def videos():
 
 
 @pytest.fixture()
-def livestreams():
+def youtube_livestreams():
     return {
         'test_id_1': 'Test Livestream 1',
         'test_id_2': 'Test Livestream 2',
@@ -76,14 +102,14 @@ def livestreams():
 
 
 @pytest.fixture()
-def one_livestream():
+def youtube_one_livestream():
     return {
         'test_id_2': 'Test Livestream 2',
     }
 
 
 @pytest.fixture()
-def one_saved_livestream():
+def youtube_one_saved_livestream():
     return {
         'test_id_1': ('Test Livestream 1', now() - relativedelta(hour=1)),
         'bol-_4NZjWE': ('Buffalo Placenta!! World’s Most Bizarre Vegan Food!!', now() - relativedelta(hour=2)),
@@ -95,7 +121,7 @@ def one_saved_livestream():
 
 
 @pytest.fixture()
-def one_new_video():
+def youtube_one_new_video():
     return {
         'MHUnaXJqWF4': ('EXTREME African Seafood!!! WILD Tanzania Street Food in Dar es Salaam!!', now() - relativedelta(minutes=1)),
         'bol-_4NZjWE': ('Buffalo Placenta!! World’s Most Bizarre Vegan Food!!', now() - relativedelta(hour=1)),
@@ -108,7 +134,7 @@ def one_new_video():
 
 
 @pytest.fixture()
-def one_new_video_last_one_hidden():
+def youtube_one_new_video_last_one_hidden():
     return {
         'MHUnaXJqWF4': ('EXTREME African Seafood!!! WILD Tanzania Street Food in Dar es Salaam!!', now() - relativedelta(minutes=1)),
         'bol-_4NZjWE': ('Buffalo Placenta!! World’s Most Bizarre Vegan Food!!', now() - relativedelta(hour=1)),
@@ -120,7 +146,7 @@ def one_new_video_last_one_hidden():
 
 
 @pytest.fixture()
-def one_new_video_in_the_beginning_and_one_in_the_middle():
+def youtube_one_new_video_in_the_beginning_and_one_in_the_middle():
     return {
         'test_id_1': ('Test Title 1', now() - relativedelta(minutes=5)),
         'bol-_4NZjWE': ('Buffalo Placenta!! World’s Most Bizarre Vegan Food!!', now() - relativedelta(hour=1)),

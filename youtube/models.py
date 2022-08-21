@@ -225,7 +225,7 @@ class YouTubeVideo(CreateUpdateTracker):
 
             if is_notified:
                 video: YouTubeVideo = YouTubeVideo.objects.filter(
-                    video_id__exact=video_id).first()
+                    video_id__exact=video_id).distinct().first()
                 if is_saved_livestream:
                     if video.is_able_to_notify:
                         video.unnotify_premium()
