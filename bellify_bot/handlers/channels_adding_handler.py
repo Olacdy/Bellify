@@ -51,7 +51,8 @@ def _add_twitch_channel(channel_id: str, message: Message, user: User, name: Opt
 
         stream_data = get_streams_info([channel_id])
         if stream_data:
-            _, live_title, game_name, thumbnail_url, is_live = stream_data[0]
+            live_title, game_name, thumbnail_url, is_live = list(
+                *stream_data.values())
         else:
             live_title, game_name, thumbnail_url, is_live = None, None, None, False
     else:
