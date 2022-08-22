@@ -141,7 +141,8 @@ class YouTubeLivestream(CreateUpdateTracker):
 
         for saved_livestream_id in saved_livestreams:
             if not saved_livestream_id in list(livestreams.keys()):
-                saved_livestreams[saved_livestream_id].set_ended()
+                if not saved_livestreams[saved_livestream_id].ended_at:
+                    saved_livestreams[saved_livestream_id].set_ended()
 
         YouTubeLivestream.objects.bulk_create(livestreams_to_create)
 
