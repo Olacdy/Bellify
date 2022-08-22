@@ -47,7 +47,7 @@ def get_notifications_urls_for_youtube_videos(channels: List[YouTubeChannel], vi
                 videos_notification_urls_basic_users.extend(get_urls_to_notify(users=[item.user for item in YouTubeChannelUserItem.objects.filter(
                     channel=channel, user__status='B')], channel_id=channel.channel_id, url=video.video_url,
                     content_title=video.video_title, is_reuploaded=video.is_reuploaded))
-                video.notify_basic()
+                video.set_notified_basic()
 
             if not video.is_premium_notified:
                 videos_notification_urls_premium_users.extend(get_urls_to_notify(users=[item.user for item in YouTubeChannelUserItem.objects.filter(
@@ -59,7 +59,7 @@ def get_notifications_urls_for_youtube_videos(channels: List[YouTubeChannel], vi
                     is_saved_livestream=video.is_saved_livestream,
                     is_might_be_deleted=channel.is_deleted_its_livestreams)
                 )
-                video.notify_premium()
+                video.set_notified_premium()
 
     return videos_notification_urls_basic_users, videos_notification_urls_premium_users
 
@@ -75,7 +75,7 @@ def get_notifications_urls_for_youtube_livestreams(channels: YouTubeChannel, liv
                 livestream_notification_urls.extend(get_urls_to_notify(users=[item.user for item in YouTubeChannelUserItem.objects.filter(
                     channel=channel, user__status='P')], channel_id=channel.channel_id, url=livestream.livestream_url,
                     content_title=livestream.livestream_title, is_live=True))
-                livestream.notified()
+                livestream.set_notified()
 
     return livestream_notification_urls
 
