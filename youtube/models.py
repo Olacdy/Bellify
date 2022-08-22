@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from re import L
 from typing import Dict, List, Optional, Tuple, Union
 
@@ -37,7 +37,7 @@ class YouTubeChannel(Channel):
 
     @property
     def last_video(self: 'YouTubeChannel') -> Union['YouTubeVideo', None]:
-        video = self.videos.all().order_by('-published_at', '-created_at').first()
+        video = self.videos.all().order_by('added_at').first()
         return video if video else None
 
     @property
@@ -175,6 +175,8 @@ class YouTubeVideo(CreateUpdateTracker):
     is_saved_livestream = models.BooleanField(default=False, **nb)
 
     is_reuploaded = models.BooleanField(default=False, **nb)
+
+    added_at = models.DateTimeField(default=now)
     published_at = models.DateTimeField(default=now)
 
     is_basic_notified = models.BooleanField(default=True, **nb)
@@ -202,13 +204,14 @@ class YouTubeVideo(CreateUpdateTracker):
 
     @classmethod
     def get_new_videos(cls, channel: 'YouTubeChannel', videos: Dict[str, Tuple[str, bool]]) -> List['YouTubeVideo']:
-        def _add_video(channel: YouTubeChannel, video: Tuple[str, str, datetime, bool, bool], is_basic_notified: Optional[bool] = False, is_premium_notified: Optional[bool] = False, iterations_skipped: Optional[int] = 0) -> 'YouTubeVideo':
+        def _add_video(channel: YouTubeChannel, video: Dict[str, Union[datetime, str, bool]], index: int, is_basic_notified: Optional[bool] = False, is_premium_notified: Optional[bool] = False, iterations_skipped: Optional[int] = 0) -> 'YouTubeVideo':
             return YouTubeVideo(
-                video_id=video[0],
-                video_title=video[1],
-                published_at=video[2],
-                is_saved_livestream=video[3],
-                is_reuploaded=video[4],
+                added_at=now() + timedelta(seconds=index),
+                video_id=video['video_id'],
+                video_title=video['video_title'],
+                published_at=video['published_at'],
+                is_saved_livestream=video['is_saved_livestream'],
+                is_reuploaded=video['is_reuploaded'],
                 is_basic_notified=is_basic_notified,
                 is_premium_notified=is_premium_notified,
                 iterations_skipped=iterations_skipped,
@@ -217,7 +220,7 @@ class YouTubeVideo(CreateUpdateTracker):
 
         videos_to_create = []
 
-        for video_id in videos:
+        for index, video_id in enumerate(videos):
             is_notified, is_reuploaded = YouTubeVideo.is_video_notified_and_reuploaded(
                 channel=channel, video=(video_id, videos[video_id][0]))
 
@@ -236,14 +239,29 @@ class YouTubeVideo(CreateUpdateTracker):
                 if is_saved_livestream:
                     if channel.is_deleting_livestreams:
                         videos_to_create.append(
-                            _add_video(channel=channel, video=(
-                                video_id, videos[video_id][0], videos[video_id][1], True, is_reuploaded),
-                                is_premium_notified=True, iterations_skipped=1)
+                            _add_video(channel=channel,
+                                       video={
+                                           'video_id': video_id,
+                                           'video_title': videos[video_id][0],
+                                           'published_at': videos[video_id][1],
+                                           'is_saved_livestream': True,
+                                           'is_reuploaded': is_reuploaded,
+                                       },
+                                       index=index,
+                                       is_premium_notified=True,
+                                       iterations_skipped=1)
                         )
                     else:
                         videos_to_create.append(
-                            _add_video(channel=channel, video=(
-                                video_id, videos[video_id][0], videos[video_id][1], True, is_reuploaded))
+                            _add_video(channel=channel,
+                                       video={
+                                           'video_id': video_id,
+                                           'video_title': videos[video_id][0],
+                                           'published_at': videos[video_id][1],
+                                           'is_saved_livestream': True,
+                                           'is_reuploaded': is_reuploaded
+                                       },
+                                       index=index)
                         )
                 else:
                     is_should_be_notified = videos[video_id][1] + \
@@ -254,10 +272,17 @@ class YouTubeVideo(CreateUpdateTracker):
                                                                                          is_premium_notified=is_should_be_notified)
                     else:
                         videos_to_create.append(
-                            _add_video(channel=channel, video=(
-                                video_id, videos[video_id][0], videos[video_id][1], False, is_reuploaded),
-                                is_basic_notified=not is_should_be_notified,
-                                is_premium_notified=not is_should_be_notified)
+                            _add_video(channel=channel,
+                                       video={
+                                           'video_id': video_id,
+                                           'video_title': videos[video_id][0],
+                                           'published_at': videos[video_id][1],
+                                           'is_saved_livestream': False,
+                                           'is_reuploaded': is_reuploaded
+                                       },
+                                       index=index,
+                                       is_basic_notified=not is_should_be_notified,
+                                       is_premium_notified=not is_should_be_notified)
                         )
 
         YouTubeVideo.objects.bulk_create(videos_to_create)
