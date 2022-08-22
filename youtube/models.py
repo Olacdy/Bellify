@@ -37,7 +37,7 @@ class YouTubeChannel(Channel):
 
     @property
     def last_video(self: 'YouTubeChannel') -> Union['YouTubeVideo', None]:
-        video = self.videos.all().order_by('added_at').first()
+        video = self.videos.all().order_by('-added_at').first()
         return video if video else None
 
     @property
@@ -206,7 +206,7 @@ class YouTubeVideo(CreateUpdateTracker):
     def get_new_videos(cls, channel: 'YouTubeChannel', videos: Dict[str, Tuple[str, bool]]) -> List['YouTubeVideo']:
         def _add_video(channel: YouTubeChannel, video: Dict[str, Union[datetime, str, bool]], index: int, is_basic_notified: Optional[bool] = False, is_premium_notified: Optional[bool] = False, iterations_skipped: Optional[int] = 0) -> 'YouTubeVideo':
             return YouTubeVideo(
-                added_at=now() + timedelta(seconds=index),
+                added_at=now() - timedelta(seconds=index),
                 video_id=video['video_id'],
                 video_title=video['video_title'],
                 published_at=video['published_at'],

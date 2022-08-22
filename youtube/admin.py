@@ -41,7 +41,7 @@ class YouTubeVideoInline(admin.TabularInline):
               'video_url', 'is_saved_livestream', ]
     readonly_fields = ['video_url', ]
 
-    ordering = ['added_at', ]
+    ordering = ['-added_at', ]
 
     verbose_name = 'Video'
     verbose_name_plural = 'Videos'
