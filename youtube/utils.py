@@ -111,6 +111,12 @@ def scrape_livesteams(channel_id: str) -> Tuple[str, str]:
     return get_content(json.loads(get_json_from_html(livestream_text, "var ytInitialData = ", 0, "};") + "}"), mode='livestream')
 
 
+def check_if_video_is_exists(video_url: str) -> bool:
+    text = _get_html_response_youtube(video_url)
+    html = soup.BeautifulSoup(text, 'lxml')
+    return bool(html.find('meta', {'name': 'title'})['content'])
+
+
 def get_json_from_html(html: str, key: str, num_chars: int = 2, stop: str = '"') -> str:
     pos_begin = html.find(key) + len(key) + num_chars
     pos_end = html.find(stop, pos_begin)

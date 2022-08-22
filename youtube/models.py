@@ -102,7 +102,8 @@ class YouTubeLivestream(CreateUpdateTracker):
     is_notified = models.BooleanField(default=False, **nb)
 
     ended_at = models.DateTimeField(default=None, **nb)
-    counted_as_deleted = models.BooleanField(default=False, **nb)
+
+    is_checked_for_deleted = models.BooleanField(default=False, **nb)
 
     channel = models.ForeignKey(
         YouTubeChannel, on_delete=models.CASCADE, related_name='livestreams', related_query_name='livestream')
@@ -153,13 +154,12 @@ class YouTubeLivestream(CreateUpdateTracker):
         elif isinstance(video, tuple):
             return channel.livestreams.filter(livestream_id=video[0], livestream_title=video[1]).exists()
 
-    def notified(self: 'YouTubeLivestream') -> None:
+    def set_notified(self: 'YouTubeLivestream') -> None:
         self.is_notified = True
         self.save()
 
-    def count_as_deleted(self: 'YouTubeLivestream') -> None:
-        self.counted_as_deleted = True
-        self.channel.increment_deleted_livestreams()
+    def set_checked(self: 'YouTubeLivestream') -> None:
+        self.is_checked_for_deleted = True
         self.save()
 
     def set_ended(self: 'YouTubeLivestream') -> None:
@@ -228,7 +228,7 @@ class YouTubeVideo(CreateUpdateTracker):
                     video_id__exact=video_id).distinct().first()
                 if is_saved_livestream:
                     if video.is_able_to_notify:
-                        video.unnotify_premium()
+                        video.set_unnotified_premium()
                     elif video.iterations_skipped > 0:
                         video.skip_iteration()
             else:
@@ -292,26 +292,26 @@ class YouTubeVideo(CreateUpdateTracker):
         self.iterations_skipped = 0
         self.save()
 
-    def notify_premium(self: 'YouTubeVideo') -> None:
+    def set_notified_premium(self: 'YouTubeVideo') -> None:
         self.is_premium_notified = True
         self.iterations_skipped = 0
         if self.is_saved_livestream:
             self.channel.decrement_deleted_livestreams()
         self.save()
 
-    def unnotify_premium(self: 'YouTubeVideo') -> None:
+    def set_unnotified_premium(self: 'YouTubeVideo') -> None:
         self.is_premium_notified = False
         self.save()
 
-    def notify_basic(self: 'YouTubeVideo') -> None:
+    def set_notified_basic(self: 'YouTubeVideo') -> None:
         self.is_basic_notified = True
         self.save()
 
-    def unnotify_basic(self: 'YouTubeVideo') -> None:
+    def set_unnotified_basic(self: 'YouTubeVideo') -> None:
         self.is_basic_notified = False
         self.save()
 
-    def update_title(self: 'YouTubeVideo', video_title: str) -> None:
+    def set_title(self: 'YouTubeVideo', video_title: str) -> None:
         self.video_title = video_title
         self.save()
 
@@ -329,7 +329,7 @@ class YouTubeChannelUserItem(ChannelUserItem):
 @receiver(models.signals.post_save, sender=YouTubeLivestream)
 def remove_ended_livestreams_after_time(sender, instance, *args, **kwargs):
     for livestream in YouTubeLivestream.objects.all():
-        if (now() - livestream.created_at).days >= 1 and livestream.is_ended:
+        if (now() - livestream.created_at).total_seconds() >= 86400 and livestream.is_ended:
             livestream.delete()
 
 
