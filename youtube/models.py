@@ -289,18 +289,18 @@ class YouTubeVideo(CreateUpdateTracker):
         return channel.videos.all()
 
     @classmethod
-    def is_video_notified(cls, channel: YouTubeChannel, video: Tuple[str, str]) -> bool:
+    def is_video_notified(cls, channel: YouTubeChannel, video_id: str) -> bool:
         return cls.objects.filter(
-            channel=channel, video_id__exact=video[0], video_title__exact=video[1]).exists()
+            channel=channel, video_id__exact=video_id).exists()
 
     @classmethod
     def is_video_reuploaded(cls, channel: YouTubeChannel, video: Tuple[str, str]) -> bool:
-        return cls.objects.filter(~Q(video_id=video[0]) & Q(
+        return cls.objects.filter(~Q(video_id__exact=video[0]) & Q(
             channel=channel, video_title__exact=video[1])).exists()
 
     @classmethod
     def is_video_notified_and_reuploaded(cls, channel: YouTubeChannel, video: Tuple[str, str]) -> Tuple[bool, bool]:
-        return cls.is_video_notified(channel=channel, video=video), cls.is_video_reuploaded(channel=channel, video=video)
+        return cls.is_video_notified(channel=channel, video_id=video[0]), cls.is_video_reuploaded(channel=channel, video=video)
 
     @classmethod
     def update_id_of_reuploaded_video(cls, channel: YouTubeChannel, video: Tuple[str, str]) -> None:
