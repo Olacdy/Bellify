@@ -1,17 +1,18 @@
+from datetime import timedelta
 from typing import Optional
 
 from bellify_bot.localization import localization
 from bellify_bot.models import User
+from django.utils.timezone import now
 from telegram import Message
 from twitch.models import TwitchChannel, TwitchChannelUserItem
 from twitch.utils import get_streams_info, get_users_info
+from utils.general_utils import get_html_bold, get_html_link
+from utils.keyboards import get_notification_reply_markup, log_errors
 from youtube.models import (YouTubeChannel, YouTubeChannelUserItem,
                             YouTubeLivestream, YouTubeVideo)
 from youtube.utils import (get_url_from_id, scrape_id_and_title_by_url,
                            scrape_last_videos, scrape_livesteams)
-
-from utils.general_utils import get_html_bold, get_html_link
-from utils.keyboards import get_notification_reply_markup, log_errors
 
 
 # Checks channel url type and call add function accordingly
@@ -128,9 +129,10 @@ def _add_youtube_channel(channel_id: str, message: Message, user: User, name: Op
                 )
             )
 
-        for video_id in videos:
+        for index, video_id in enumerate(videos):
             videos_to_create.append(
                 YouTubeVideo(
+                    added_at=now() + timedelta(seconds=index),
                     video_id=video_id,
                     video_title=videos[video_id][0],
                     published_at=videos[video_id][1],
