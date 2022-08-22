@@ -119,7 +119,7 @@ class YouTubeLivestreamAdmin(admin.ModelAdmin):
     model = YouTubeLivestream
 
     fields = ['created_at', 'channel', 'livestream_id', 'livestream_title',
-              'livestream_url', 'is_ended', ]
+              'livestream_url', 'ended_at', 'is_ended', 'is_checked_for_deleted', ]
     readonly_fields = ['created_at', 'livestream_url', 'is_ended', ]
 
     search_fields = ['livestream_title',
