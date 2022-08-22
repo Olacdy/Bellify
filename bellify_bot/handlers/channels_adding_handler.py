@@ -132,7 +132,7 @@ def _add_youtube_channel(channel_id: str, message: Message, user: User, name: Op
         for index, video_id in enumerate(videos):
             videos_to_create.append(
                 YouTubeVideo(
-                    added_at=now() + timedelta(seconds=index),
+                    added_at=now() - timedelta(seconds=index),
                     video_id=video_id,
                     video_title=videos[video_id][0],
                     published_at=videos[video_id][1],
