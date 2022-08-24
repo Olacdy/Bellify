@@ -355,7 +355,7 @@ class YouTubeChannelUserItem(ChannelUserItem):
 @receiver(models.signals.post_save, sender=YouTubeLivestream)
 def remove_ended_livestreams_after_time(sender, instance, *args, **kwargs):
     for livestream in YouTubeLivestream.objects.all():
-        if (now() - livestream.created_at).total_seconds() >= 86400 and livestream.is_ended:
+        if (now() - livestream.created_at).total_seconds() >= 86400 and livestream.ended_at:
             livestream.delete()
 
 
