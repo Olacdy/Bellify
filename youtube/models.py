@@ -99,7 +99,7 @@ class YouTubeLivestream(CreateUpdateTracker):
     livestream_id = models.CharField(max_length=20, **nb)
     livestream_title = models.CharField(max_length=256, **nb)
 
-    is_notified = models.BooleanField(default=False, **nb)
+    is_notified = models.BooleanField(default=True, **nb)
 
     ended_at = models.DateTimeField(default=None, **nb)
 
@@ -135,6 +135,7 @@ class YouTubeLivestream(CreateUpdateTracker):
                     YouTubeLivestream(
                         livestream_id=livestream_id,
                         livestream_title=livestreams[livestream_id],
+                        is_notified=False,
                         channel=channel
                     )
                 )
