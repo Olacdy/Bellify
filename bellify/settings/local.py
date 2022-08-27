@@ -200,7 +200,10 @@ ITERATIONS_TO_SKIP = 5
 
 SESSION_CLIENT_COOKIES = {'CONSENT': 'YES+cb'}
 
-YOUTUBE_TIME_THRESHOLD = timedelta(minutes=20)
+YOUTUBE_TIME_THRESHOLD = {
+    True: timedelta(minutes=40),
+    False: timedelta(minutes=20)
+}
 
 # Upgrades section
 

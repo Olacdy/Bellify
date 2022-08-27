@@ -88,7 +88,7 @@ def test_new_videos_in_the_beginning_and_in_the_middle(basic_user, youtube_chann
         [youtube_channel], [youtube_one_new_video_in_the_beginning_and_one_in_the_middle])
 
     assert 'test_id_1' in videos_notification_urls_basic_users[0]
-    assert len(videos_notification_urls_basic_users) == 1
+    assert len(videos_notification_urls_basic_users) == 2
 
 
 @pytest.mark.django_db
