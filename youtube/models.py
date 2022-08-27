@@ -220,6 +220,7 @@ class YouTubeVideo(CreateUpdateTracker):
             )
 
         videos_to_create = []
+        is_trully_new = True
 
         for index, video_id in enumerate(videos):
             is_notified, is_reuploaded = YouTubeVideo.is_video_notified_and_reuploaded(
@@ -229,6 +230,7 @@ class YouTubeVideo(CreateUpdateTracker):
                 channel=channel, video=(video_id, videos[video_id][0]))
 
             if is_notified:
+                is_trully_new = False
                 video: YouTubeVideo = YouTubeVideo.objects.filter(
                     video_id__exact=video_id).distinct().first()
                 if is_saved_livestream:
@@ -266,11 +268,11 @@ class YouTubeVideo(CreateUpdateTracker):
                         )
                 else:
                     is_should_be_notified = videos[video_id][1] + \
-                        settings.YOUTUBE_TIME_THRESHOLD > now()
+                        settings.YOUTUBE_TIME_THRESHOLD[is_trully_new] > now()
                     if is_reuploaded:
-                        YouTubeVideo.objects.get(video_title=videos[video_id][0]).update(video_id=video_id, is_reuploaded=is_reuploaded,
-                                                                                         is_basic_notified=is_should_be_notified,
-                                                                                         is_premium_notified=is_should_be_notified)
+                        YouTubeVideo.objects.filter(video_title=videos[video_id][0]).update(video_id=video_id, is_reuploaded=is_reuploaded,
+                                                                                            is_basic_notified=is_should_be_notified,
+                                                                                            is_premium_notified=is_should_be_notified)
                     else:
                         videos_to_create.append(
                             _add_video(channel=channel,
