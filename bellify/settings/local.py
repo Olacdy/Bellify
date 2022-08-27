@@ -192,7 +192,7 @@ TWITCH_CLIENT_ID = env.str('TWITCH_CLIENT_ID')
 
 TWITCH_CLIENT_SECRET = env.str('TWITCH_CLIENT_SECRET')
 
-TWITCH_TIME_THRESHOLD = timedelta(minutes=10)
+TWITCH_TIME_THRESHOLD = timedelta(minutes=30)
 
 # YouTube
 
