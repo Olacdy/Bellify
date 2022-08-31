@@ -84,76 +84,101 @@ def twitch_livestreams_just_chatting():
 @pytest.fixture()
 def youtube_videos():
     return {
-        'bol-_4NZjWE': ('Buffalo Placenta!! World’s Most Bizarre Vegan Food!!', now() - relativedelta(hour=1)),
-        'INJK-vTKPdg': ('The Surprising Noodle Vietnam Loves Most!! It’s Not Pho!!', now() - relativedelta(hour=2)),
-        '1H2l7dHq1fs': ('Blood Red Jellyfish!! EXTREME Vietnam Street Food!!', now() - relativedelta(hour=3)),
-        'FSogD7bAHF8': ('$1 VS $152 Filipino Lechon!! Manila’s Meat Masterpiece!!', now() - relativedelta(hour=4)),
-        'v0NNI5wS_GM': ('Filipino Street Food That Will Kill You!! Manila Heart Attack Tour!!', now() - relativedelta(hour=5)),
-        'VXjrCIcGZmw': ('Bizarre Filipino Food in Pampanga!! Pets, Pigs and Pests!!', now() - relativedelta(hour=6)),
+        'test_video_id_6': ('Test Video Title 6', now() - relativedelta(hour=1)),
+        'test_video_id_5': ('Test Video Title 5', now() - relativedelta(hour=2)),
+        'test_video_id_4': ('Test Video Title 4', now() - relativedelta(hour=3)),
+        'test_video_id_3': ('Test Video Title 3', now() - relativedelta(hour=4)),
+        'test_video_id_2': ('Test Video Title 2', now() - relativedelta(hour=5)),
+        'test_video_id_1': ('Test Video Title 1', now() - relativedelta(hour=6)),
     }
 
 
 @pytest.fixture()
 def youtube_livestreams():
     return {
-        'test_id_1': 'Test Livestream 1',
-        'test_id_2': 'Test Livestream 2',
+        'test_livestream_id_2': 'Test Livestream Title 2',
+        'test_livestream_id_1': 'Test Livestream Title 1',
     }
 
 
 @pytest.fixture()
 def youtube_one_livestream():
     return {
-        'test_id_2': 'Test Livestream 2',
+        'test_livestream_id_1': 'Test Livestream Title 1',
     }
 
 
 @pytest.fixture()
 def youtube_one_saved_livestream():
     return {
-        'test_id_1': ('Test Livestream 1', now() - relativedelta(hour=1)),
-        'bol-_4NZjWE': ('Buffalo Placenta!! World’s Most Bizarre Vegan Food!!', now() - relativedelta(hour=2)),
-        'INJK-vTKPdg': ('The Surprising Noodle Vietnam Loves Most!! It’s Not Pho!!', now() - relativedelta(hour=3)),
-        '1H2l7dHq1fs': ('Blood Red Jellyfish!! EXTREME Vietnam Street Food!!', now() - relativedelta(hour=4)),
-        'FSogD7bAHF8': ('$1 VS $152 Filipino Lechon!! Manila’s Meat Masterpiece!!', now() - relativedelta(hour=5)),
-        'v0NNI5wS_GM': ('Filipino Street Food That Will Kill You!! Manila Heart Attack Tour!!', now() - relativedelta(hour=6)),
+        'test_livestream_id_1': ('Test Livestream Title 1', now() - relativedelta(hour=1)),
+        'test_video_id_6': ('Test Video Title 6', now() - relativedelta(hour=2)),
+        'test_video_id_5': ('Test Video Title 5', now() - relativedelta(hour=3)),
+        'test_video_id_4': ('Test Video Title 4', now() - relativedelta(hour=4)),
+        'test_video_id_3': ('Test Video Title 3', now() - relativedelta(hour=5)),
+        'test_video_id_2': ('Test Video Title 2', now() - relativedelta(hour=6)),
     }
 
 
 @pytest.fixture()
-def youtube_one_new_video():
+def youtube_new_video():
     return {
-        'MHUnaXJqWF4': ('EXTREME African Seafood!!! WILD Tanzania Street Food in Dar es Salaam!!', now() - relativedelta(minutes=1)),
-        'bol-_4NZjWE': ('Buffalo Placenta!! World’s Most Bizarre Vegan Food!!', now() - relativedelta(hour=1)),
-        'INJK-vTKPdg': ('The Surprising Noodle Vietnam Loves Most!! It’s Not Pho!!', now() - relativedelta(hour=2)),
-        '1H2l7dHq1fs': ('Blood Red Jellyfish!! EXTREME Vietnam Street Food!!', now() - relativedelta(hour=3)),
-        'FSogD7bAHF8': ('$1 VS $152 Filipino Lechon!! Manila’s Meat Masterpiece!!', now() - relativedelta(hour=4)),
-        'v0NNI5wS_GM': ('Filipino Street Food That Will Kill You!! Manila Heart Attack Tour!!', now() - relativedelta(hour=5)),
-        'VXjrCIcGZmw': ('Bizarre Filipino Food in Pampanga!! Pets, Pigs and Pests!!', now() - relativedelta(hour=6)),
+        'test_video_id_7': ('Test Video Title 7', now() - relativedelta(minutes=1)),
+        'test_video_id_6': ('Test Video Title 6', now() - relativedelta(hour=1)),
+        'test_video_id_5': ('Test Video Title 5', now() - relativedelta(hour=2)),
+        'test_video_id_4': ('Test Video Title 4', now() - relativedelta(hour=3)),
+        'test_video_id_3': ('Test Video Title 3', now() - relativedelta(hour=4)),
+        'test_video_id_2': ('Test Video Title 2', now() - relativedelta(hour=5)),
+        'test_video_id_1': ('Test Video Title 1', now() - relativedelta(hour=6)),
     }
 
 
 @pytest.fixture()
-def youtube_one_new_video_last_one_hidden():
+def youtube_new_video_threshold_passed():
     return {
-        'MHUnaXJqWF4': ('EXTREME African Seafood!!! WILD Tanzania Street Food in Dar es Salaam!!', now() - relativedelta(minutes=1)),
-        'bol-_4NZjWE': ('Buffalo Placenta!! World’s Most Bizarre Vegan Food!!', now() - relativedelta(hour=1)),
-        'INJK-vTKPdg': ('The Surprising Noodle Vietnam Loves Most!! It’s Not Pho!!', now() - relativedelta(hour=2)),
-        '1H2l7dHq1fs': ('Blood Red Jellyfish!! EXTREME Vietnam Street Food!!', now() - relativedelta(hour=3)),
-        'FSogD7bAHF8': ('$1 VS $152 Filipino Lechon!! Manila’s Meat Masterpiece!!', now() - relativedelta(hour=4)),
-        'v0NNI5wS_GM': ('Filipino Street Food That Will Kill You!! Manila Heart Attack Tour!!', now() - relativedelta(hour=5)),
+        'test_video_id_7': ('Test Video Title 7', now() - relativedelta(hour=1)),
+        'test_video_id_6': ('Test Video Title 6', now() - relativedelta(hour=1)),
+        'test_video_id_5': ('Test Video Title 5', now() - relativedelta(hour=2)),
+        'test_video_id_4': ('Test Video Title 4', now() - relativedelta(hour=3)),
+        'test_video_id_3': ('Test Video Title 3', now() - relativedelta(hour=4)),
+        'test_video_id_2': ('Test Video Title 2', now() - relativedelta(hour=5)),
+        'test_video_id_1': ('Test Video Title 1', now() - relativedelta(hour=6)),
     }
 
 
 @pytest.fixture()
-def youtube_one_new_video_in_the_beginning_and_one_in_the_middle():
+def youtube_new_video_reupload():
     return {
-        'test_id_1': ('Test Title 1', now() - relativedelta(minutes=5)),
-        'bol-_4NZjWE': ('Buffalo Placenta!! World’s Most Bizarre Vegan Food!!', now() - relativedelta(hour=1)),
-        'INJK-vTKPdg': ('The Surprising Noodle Vietnam Loves Most!! It’s Not Pho!!', now() - relativedelta(hour=2)),
-        '1H2l7dHq1fs': ('Blood Red Jellyfish!! EXTREME Vietnam Street Food!!', now() - relativedelta(hour=3)),
-        'MHUnaXJqWF4': ('EXTREME African Seafood!!! WILD Tanzania Street Food in Dar es Salaam!!', now() - relativedelta(minutes=15)),
-        'FSogD7bAHF8': ('$1 VS $152 Filipino Lechon!! Manila’s Meat Masterpiece!!', now() - relativedelta(hour=4)),
-        'v0NNI5wS_GM': ('Filipino Street Food That Will Kill You!! Manila Heart Attack Tour!!', now() - relativedelta(hour=5)),
-        'VXjrCIcGZmw': ('Bizarre Filipino Food in Pampanga!! Pets, Pigs and Pests!!', now() - relativedelta(hour=6)),
+        'test_video_id_7': ('Test Video Title 6', now() - relativedelta(hour=1)),
+        'test_video_id_5': ('Test Video Title 5', now() - relativedelta(hour=2)),
+        'test_video_id_4': ('Test Video Title 4', now() - relativedelta(hour=3)),
+        'test_video_id_3': ('Test Video Title 3', now() - relativedelta(hour=4)),
+        'test_video_id_2': ('Test Video Title 2', now() - relativedelta(hour=5)),
+        'test_video_id_1': ('Test Video Title 1', now() - relativedelta(hour=6)),
+    }
+
+
+@pytest.fixture()
+def youtube_new_video_last_hidden():
+    return {
+        'test_video_id_7': ('Test Video Title 7', now() - relativedelta(minutes=1)),
+        'test_video_id_6': ('Test Video Title 6', now() - relativedelta(hour=1)),
+        'test_video_id_5': ('Test Video Title 5', now() - relativedelta(hour=2)),
+        'test_video_id_4': ('Test Video Title 4', now() - relativedelta(hour=3)),
+        'test_video_id_3': ('Test Video Title 3', now() - relativedelta(hour=4)),
+        'test_video_id_2': ('Test Video Title 2', now() - relativedelta(hour=5)),
+    }
+
+
+@pytest.fixture()
+def youtube_new_videos_beginning_and_middle():
+    return {
+        'test_video_id_7': ('Test Video Title 7', now() - relativedelta(minutes=5)),
+        'test_video_id_6': ('Test Video Title 6', now() - relativedelta(hour=1)),
+        'test_video_id_5': ('Test Video Title 5', now() - relativedelta(hour=2)),
+        'test_video_id_4': ('Test Video Title 4', now() - relativedelta(hour=3)),
+        'test_video_id_8': ('Test Video Title 8', now() - relativedelta(minutes=15)),
+        'test_video_id_3': ('Test Video Title 3', now() - relativedelta(hour=4)),
+        'test_video_id_2': ('Test Video Title 2', now() - relativedelta(hour=5)),
+        'test_video_id_1': ('Test Video Title 1', now() - relativedelta(hour=6)),
     }

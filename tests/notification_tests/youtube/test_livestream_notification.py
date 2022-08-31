@@ -52,7 +52,8 @@ def test_saved_livestream_notification_for_basic_user(basic_user, youtube_channe
     _, videos_notification_urls_basic_users_second_iteration, _ = get_notifications_urls_for_youtube_livestreams(
         [youtube_channel], [youtube_one_livestream]), *get_notifications_urls_for_youtube_videos([youtube_channel], [youtube_one_saved_livestream])
 
-    assert 'test_id_1' in videos_notification_urls_basic_users_first_iteration[0]
+    assert list(youtube_one_livestream.keys())[
+        0] in videos_notification_urls_basic_users_first_iteration[0]
     assert len(videos_notification_urls_basic_users_first_iteration) == 1
     assert len(videos_notification_urls_basic_users_second_iteration) == 0
 

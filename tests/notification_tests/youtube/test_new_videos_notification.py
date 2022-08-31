@@ -1,18 +1,21 @@
 import pytest
 from bellify_bot.handlers.notification_handler import \
     get_notifications_urls_for_youtube_videos
-from django.conf import settings
-from youtube.models import YouTubeVideo, YouTubeLivestream
 from bellify_bot.models import User
+from django.conf import settings
+from tests.utils import (basic_user, create_youtube_channel_user_item,
+                         premium_user, youtube_channel, youtube_new_video,
+                         youtube_new_video_last_hidden,
+                         youtube_new_video_reupload,
+                         youtube_new_video_threshold_passed,
+                         youtube_new_videos_beginning_and_middle,
+                         youtube_one_livestream, youtube_videos)
 
-from tests.utils import (basic_user, youtube_channel, create_youtube_channel_user_item,
-                         youtube_one_livestream, youtube_one_new_video,
-                         youtube_one_new_video_in_the_beginning_and_one_in_the_middle,
-                         youtube_one_new_video_last_one_hidden, premium_user, youtube_videos)
+from youtube.models import YouTubeLivestream, YouTubeVideo
 
 
 @pytest.mark.django_db
-def test_set_new_videos(basic_user, youtube_channel, youtube_videos, youtube_one_new_video):
+def test_new_videos(basic_user, youtube_channel, youtube_videos, youtube_new_video):
     for video_id in youtube_videos:
         YouTubeVideo.objects.create(
             video_id=video_id,
@@ -23,18 +26,15 @@ def test_set_new_videos(basic_user, youtube_channel, youtube_videos, youtube_one
 
     create_youtube_channel_user_item(basic_user, youtube_channel)
     videos_notification_urls_basic_users, _ = get_notifications_urls_for_youtube_videos(
-        [youtube_channel], [youtube_one_new_video])
+        [youtube_channel], [youtube_new_video])
 
-    assert f'https://api.telegram.org/bot{settings.TOKEN}/sendMessage?chat_id={basic_user.user_id}' in videos_notification_urls_basic_users[
-        0]
-
-    assert 'MHUnaXJqWF4' in videos_notification_urls_basic_users[0]
-
+    assert list(youtube_new_video.keys(
+    ))[0] in videos_notification_urls_basic_users[0]
     assert len(videos_notification_urls_basic_users) == 1
 
 
 @pytest.mark.django_db
-def test_new_video_last_one_hidden(basic_user, youtube_channel, youtube_videos, youtube_one_new_video_last_one_hidden):
+def test_new_video_reupload(basic_user, youtube_channel, youtube_videos, youtube_new_video_reupload):
     for video_id in youtube_videos:
         YouTubeVideo.objects.create(
             video_id=video_id,
@@ -45,16 +45,53 @@ def test_new_video_last_one_hidden(basic_user, youtube_channel, youtube_videos, 
 
     create_youtube_channel_user_item(basic_user, youtube_channel)
     videos_notification_urls_basic_users, _ = get_notifications_urls_for_youtube_videos(
-        [youtube_channel], [youtube_one_new_video_last_one_hidden])
+        [youtube_channel], [youtube_new_video_reupload])
 
-    assert f'https://api.telegram.org/bot{settings.TOKEN}/sendMessage?chat_id={basic_user.user_id}' in videos_notification_urls_basic_users[
-        0]
-    assert 'MHUnaXJqWF4' in videos_notification_urls_basic_users[0]
+    assert list(youtube_new_video_reupload.keys(
+    ))[0] in videos_notification_urls_basic_users[0]
     assert len(videos_notification_urls_basic_users) == 1
 
 
 @pytest.mark.django_db
-def test_new_video_gets_hidden(basic_user, youtube_channel, youtube_videos, youtube_one_new_video):
+def test_new_video_threshold_passed(basic_user, youtube_channel, youtube_videos, youtube_new_video_threshold_passed):
+    for video_id in youtube_videos:
+        YouTubeVideo.objects.create(
+            video_id=video_id,
+            video_title=youtube_videos[video_id][0],
+            published_at=youtube_videos[video_id][1],
+            channel=youtube_channel
+        )
+
+    create_youtube_channel_user_item(basic_user, youtube_channel)
+    videos_notification_urls_basic_users, _ = get_notifications_urls_for_youtube_videos(
+        [youtube_channel], [youtube_new_video_threshold_passed])
+
+    assert list(youtube_new_video_threshold_passed.keys(
+    ))[0] == youtube_channel.videos.last().video_id
+    assert len(videos_notification_urls_basic_users) == 0
+
+
+@pytest.mark.django_db
+def test_new_video_last_hidden(basic_user, youtube_channel, youtube_videos, youtube_new_video_last_hidden):
+    for video_id in youtube_videos:
+        YouTubeVideo.objects.create(
+            video_id=video_id,
+            video_title=youtube_videos[video_id][0],
+            published_at=youtube_videos[video_id][1],
+            channel=youtube_channel
+        )
+
+    create_youtube_channel_user_item(basic_user, youtube_channel)
+    videos_notification_urls_basic_users, _ = get_notifications_urls_for_youtube_videos(
+        [youtube_channel], [youtube_new_video_last_hidden])
+
+    assert list(youtube_new_video_last_hidden.keys(
+    ))[0] in videos_notification_urls_basic_users[0]
+    assert len(videos_notification_urls_basic_users) == 1
+
+
+@pytest.mark.django_db
+def test_new_video_gets_hidden(basic_user, youtube_channel, youtube_videos, youtube_new_video):
     for video_id in youtube_videos:
         YouTubeVideo.objects.create(
             video_id=video_id,
@@ -65,7 +102,7 @@ def test_new_video_gets_hidden(basic_user, youtube_channel, youtube_videos, yout
 
     create_youtube_channel_user_item(basic_user, youtube_channel)
     videos_notification_urls_basic_users_one_new, _ = get_notifications_urls_for_youtube_videos(
-        [youtube_channel], [youtube_one_new_video])
+        [youtube_channel], [youtube_new_video])
     videos_notification_urls_basic_users_last_hidden, _ = get_notifications_urls_for_youtube_videos(
         [youtube_channel], [youtube_videos])
 
@@ -74,7 +111,7 @@ def test_new_video_gets_hidden(basic_user, youtube_channel, youtube_videos, yout
 
 
 @pytest.mark.django_db
-def test_new_videos_in_the_beginning_and_in_the_middle(basic_user, youtube_channel, youtube_videos, youtube_one_new_video_in_the_beginning_and_one_in_the_middle):
+def test_new_videos_beginning_and_middle(basic_user, youtube_channel, youtube_videos, youtube_new_videos_beginning_and_middle):
     for video_id in youtube_videos:
         YouTubeVideo.objects.create(
             video_id=video_id,
@@ -85,9 +122,10 @@ def test_new_videos_in_the_beginning_and_in_the_middle(basic_user, youtube_chann
 
     create_youtube_channel_user_item(basic_user, youtube_channel)
     videos_notification_urls_basic_users, _ = get_notifications_urls_for_youtube_videos(
-        [youtube_channel], [youtube_one_new_video_in_the_beginning_and_one_in_the_middle])
+        [youtube_channel], [youtube_new_videos_beginning_and_middle])
 
-    assert 'test_id_1' in videos_notification_urls_basic_users[0]
+    assert list(youtube_new_videos_beginning_and_middle.keys(
+    ))[0] in videos_notification_urls_basic_users[0]
     assert len(videos_notification_urls_basic_users) == 2
 
 
