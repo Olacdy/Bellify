@@ -8,8 +8,8 @@ autopep8 = "*"
 pytest-django = "*"
 
 [packages]
-django = "*"
 redis = "*"
+django = "*"
 psycopg2-binary = "*"
 whitenoise = "*"
 django-environ = "*"
