@@ -107,7 +107,7 @@ def scrape_last_videos(channel_id: str) -> Tuple[str, str, str]:
 # Scrapes livestreams for a single channel
 def scrape_livesteams(channel_id: str) -> Tuple[str, str]:
     livestream_text = _get_html_response_youtube(
-        f'https://www.youtube.com/channel/{channel_id}/videos?view=2&sort=dd&live_view=501&shelf_id=0')
+        f'https://www.youtube.com/channel/{channel_id}/featured')
     return get_content(json.loads(get_json_from_html(livestream_text, "var ytInitialData = ", 0, "};") + "}"), mode='livestream')
 
 
@@ -154,19 +154,27 @@ def get_content(partial: dict, mode: Optional[str] = 'videos') -> Union[Dict[str
         current_item = stack.pop(0)
         if isinstance(current_item, dict):
             for key, value in current_item.items():
-                if key == 'gridVideoRenderer':
-                    try:
-                        if mode == 'videos':
+                if mode == 'livestream':
+                    if key == 'channelFeaturedContentRenderer':
+                        try:
+                            for featured_item in value['items']:
+                                content_item = _get_livestream_info(
+                                    featured_item['videoRenderer'])
+                                content[content_item[0]] = content_item[1]
+                        except:
+                            continue
+                    else:
+                        stack.append(value)
+                else:
+                    if key == 'videoRenderer':
+                        try:
                             content_item = _get_video_info(
                                 value)
                             content[content_item[0]] = content_item[1:]
-                        else:
-                            content_item = _get_livestream_info(value)
-                            content[content_item[0]] = content_item[1]
-                    except:
-                        continue
-                else:
-                    stack.append(value)
+                        except:
+                            continue
+                    else:
+                        stack.append(value)
         elif isinstance(current_item, list):
             for value in current_item:
                 stack.append(value)
