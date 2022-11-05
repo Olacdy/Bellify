@@ -30,7 +30,7 @@ def get_youtube_livestreams(ids: List[str]) -> List[Tuple[str]]:
     async def get_all(ids):
         async with aiohttp.ClientSession(cookies=settings.SESSION_CLIENT_COOKIES) as session:
             async def fetch(id):
-                async with session.get(f'https://www.youtube.com/channel/{id}/videos?view=2&sort=dd&live_view=501&shelf_id=0', headers=HeadersYouTube().generate()) as response:
+                async with session.get(f'https://www.youtube.com/channel/{id}/featured', headers=HeadersYouTube().generate()) as response:
                     livestream_text = await response.text()
                 return get_content(json.loads(get_json_from_html(livestream_text, "var ytInitialData = ", 0, "};") + "}"), mode='livestream')
             return await asyncio.gather(*[
