@@ -10,7 +10,6 @@ pytest-django = "*"
 [packages]
 redis = "*"
 django = "*"
-psycopg2-binary = "*"
 whitenoise = "*"
 django-environ = "*"
 gunicorn = "*"
@@ -29,6 +28,8 @@ fake-headers = "*"
 django-polymorphic = "*"
 pillow = "*"
 django-cleanup = "*"
+django-import-export = "*"
+psycopg2-binary = "*"
 
 [requires]
 python_version = "3.9"
