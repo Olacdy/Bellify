@@ -122,6 +122,8 @@ def precheckout_callback(update: Update, context: CallbackContext) -> None:
     if 'youtube' in payload_data:
         if 'premium' in payload_data:
             u.status = 'P'
+            u.max_youtube_channels_number += 5
+            u.max_twitch_channels_number += 5
         elif payload_data[-1].isdigit():
             u.max_youtube_channels_number += int(payload_data[-1])
         u.save()

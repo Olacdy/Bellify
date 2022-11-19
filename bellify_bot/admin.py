@@ -1,4 +1,3 @@
-from bellify.tasks import broadcast_message
 from django.conf import settings
 from django.contrib import admin
 from django.http import HttpResponseRedirect
@@ -6,12 +5,17 @@ from django.shortcuts import render
 from django_celery_beat.models import (ClockedSchedule, CrontabSchedule,
                                        IntervalSchedule, PeriodicTask,
                                        SolarSchedule)
+from import_export import resources
+from import_export.admin import ImportExportModelAdmin
+from import_export.fields import Field
+from import_export.widgets import ManyToManyWidget
+
+from bellify.tasks import broadcast_message
+from bellify_bot.forms import BroadcastForm
+from bellify_bot.models import User
 from twitch.models import TwitchChannelUserItem
 from utils.general_utils import _send_message
 from youtube.models import YouTubeChannelUserItem
-
-from bellify_bot.forms import BroadcastForm
-from bellify_bot.models import User
 
 
 class YouTubeChannelsInline(admin.TabularInline):
@@ -53,7 +57,7 @@ class TwitchChannelsInline(admin.TabularInline):
 
 
 @admin.register(User)
-class UserAdmin(admin.ModelAdmin):
+class UserAdmin(ImportExportModelAdmin):
     inlines = [
         YouTubeChannelsInline,
         TwitchChannelsInline,
