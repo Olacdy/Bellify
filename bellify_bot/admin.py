@@ -5,10 +5,6 @@ from django.shortcuts import render
 from django_celery_beat.models import (ClockedSchedule, CrontabSchedule,
                                        IntervalSchedule, PeriodicTask,
                                        SolarSchedule)
-from import_export import resources
-from import_export.admin import ImportExportModelAdmin
-from import_export.fields import Field
-from import_export.widgets import ManyToManyWidget
 
 from bellify.tasks import broadcast_message
 from bellify_bot.forms import BroadcastForm
@@ -57,7 +53,7 @@ class TwitchChannelsInline(admin.TabularInline):
 
 
 @admin.register(User)
-class UserAdmin(ImportExportModelAdmin):
+class UserAdmin(admin.ModelAdmin):
     inlines = [
         YouTubeChannelsInline,
         TwitchChannelsInline,
