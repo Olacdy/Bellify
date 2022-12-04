@@ -37,7 +37,7 @@ class YouTubeChannel(Channel):
 
     @property
     def last_video(self: 'YouTubeChannel') -> Union['YouTubeVideo', None]:
-        video = self.videos.all().order_by('-added_at').first()
+        video = self.videos.all().order_by('-published_at', '-added_at').first()
         return video if video else None
 
     @property

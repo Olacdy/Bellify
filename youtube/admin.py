@@ -41,7 +41,7 @@ class YouTubeVideoInline(admin.TabularInline):
               'video_url', 'is_saved_livestream', ]
     readonly_fields = ['video_url', ]
 
-    ordering = ['-added_at', ]
+    ordering = ['-published_at', '-added_at']
 
     verbose_name = 'Video'
     verbose_name_plural = 'Videos'
@@ -97,7 +97,7 @@ class YouTubeVideoAdmin(admin.ModelAdmin):
 
     readonly_fields = ['created_at', 'video_url', ]
 
-    fields = ['created_at', 'added_at', 'channel', 'video_id', 'video_title',
+    fields = ['created_at', 'published_at', 'added_at', 'channel', 'video_id', 'video_title',
               'video_url', 'is_saved_livestream', 'iterations_skipped', ]
 
     search_fields = ['video_title', 'video_id', 'channel__channel_title', ]
