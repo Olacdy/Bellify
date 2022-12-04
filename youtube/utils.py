@@ -46,7 +46,13 @@ def get_youtube_videos(ids: List[str]) -> List[Tuple[str]]:
             async def fetch(id):
                 async with session.get(f'https://www.youtube.com/channel/{id}/videos?sort=dd', headers=HeadersYouTube().generate()) as response:
                     video_text = await response.text()
-                return get_content(json.loads(get_json_from_html(video_text, "var ytInitialData = ", 0, "};") + "}"))
+                async with session.get(f'https://www.youtube.com/channel/{id}/streams?sort=dd', headers=HeadersYouTube().generate()) as response:
+                    streams_text = await response.text()
+                content = get_content(json.loads(get_json_from_html(
+                    video_text, "var ytInitialData = ", 0, "};") + "}"))
+                content.update(get_content(json.loads(get_json_from_html(
+                    streams_text, "var ytInitialData = ", 0, "};") + "}")))
+                return content
             return await asyncio.gather(*[
                 fetch(id) for id in ids
             ])
@@ -55,7 +61,7 @@ def get_youtube_videos(ids: List[str]) -> List[Tuple[str]]:
 
 # Checks if given string is a youtube channel url
 def is_youtube_channel_url(string: str) -> bool:
-    return bool(re.search(r'http[s]*://(?:www\.)?youtube.com/(?:c|user|channel)/([\%\w-]+)(?:[/]*)', string))
+    return bool(re.search(r'http[s]*://(?:www\.)?youtube.com/(?:(?:c|user|channel)/([\%\w-]+)(?:[/]*)|@(\w+))', string))
 
 
 # Checks if given string is a youtube video url
@@ -101,7 +107,13 @@ def scrape_id_and_title_by_url(url: str) -> Union[str, bool]:
 def scrape_last_videos(channel_id: str) -> Tuple[str, str, str]:
     video_text = _get_html_response_youtube(
         f'https://www.youtube.com/channel/{channel_id}/videos?sort=dd')
-    return get_content(json.loads(get_json_from_html(video_text, "var ytInitialData = ", 0, "};") + "}"))
+    streams_text = _get_html_response_youtube(
+        f'https://www.youtube.com/channel/{channel_id}/streams?sort=dd')
+    content = get_content(json.loads(get_json_from_html(
+        video_text, "var ytInitialData = ", 0, "};") + "}"))
+    content.update(get_content(json.loads(get_json_from_html(
+        streams_text, "var ytInitialData = ", 0, "};") + "}")))
+    return content
 
 
 # Scrapes livestreams for a single channel
@@ -129,7 +141,8 @@ def get_content(partial: dict, mode: Optional[str] = 'videos') -> Union[Dict[str
         def _get_datetime_of_published(published_time_text: str) -> datetime:
             matches = re.findall(
                 r'(\d+) (second(?:s)?|minute(?:s)?|hour(?:s)?|day(?:s)?|week(?:s)?|month(?:s)?|year(?:s)?)', published_time_text)
-            timedelta_kwargs = {key: int(value) for value, key in matches}
+            timedelta_kwargs = {
+                key if key[-1] == 's' else key + 's': int(value) for value, key in matches}
             return now() - relativedelta(**timedelta_kwargs)
 
         video_id = video['videoId']
