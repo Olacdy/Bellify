@@ -12,6 +12,13 @@ from bellify_bot.bot import process_telegram_event
 logger = logging.getLogger(__name__)
 
 
+class LandingPageView(View):
+    template_name = 'index.html'
+
+    def get(self, request):
+        return render(request, self.template_name)
+
+
 class StreamPageView(View):
     template_name = 'twitch/stream_page.html'
 
