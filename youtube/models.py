@@ -267,13 +267,13 @@ class YouTubeVideo(CreateUpdateTracker):
                                        index=index)
                         )
                 else:
-                    is_should_be_notified = videos[video_id][1] + \
-                        settings.YOUTUBE_TIME_THRESHOLD[is_trully_new] > now()
                     if is_reuploaded:
                         YouTubeVideo.objects.filter(video_title=videos[video_id][0]).update(video_id=video_id, is_reuploaded=is_reuploaded,
-                                                                                            is_basic_notified=is_should_be_notified,
-                                                                                            is_premium_notified=is_should_be_notified)
+                                                                                            is_basic_notified=False,
+                                                                                            is_premium_notified=False)
                     else:
+                        is_should_be_notified = videos[video_id][1] + \
+                        settings.YOUTUBE_TIME_THRESHOLD[is_trully_new] > now()
                         videos_to_create.append(
                             _add_video(channel=channel,
                                        video={
