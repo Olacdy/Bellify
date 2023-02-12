@@ -59,7 +59,7 @@ class UserAdmin(admin.ModelAdmin):
         TwitchChannelsInline,
     ]
     list_display = ['name', 'username', 'first_name',
-                    'last_name', 'language', 'max_youtube_channels_number', 'max_twitch_channels_number', 'status', ]
+                    'last_name', 'language', 'max_youtube_channels_number', 'max_twitch_channels_number', 'status', 'has_added_channels', ]
     list_filter = ['is_blocked_bot', 'language', 'status', ]
     search_fields = ['username', 'user_id', ]
     actions = ['broadcast', ]
@@ -68,6 +68,9 @@ class UserAdmin(admin.ModelAdmin):
 
     def name(self, obj):
         return obj.tg_str
+
+    def has_added_channels(self, obj):
+        return bool(obj.channeluseritem_set.all().count() > 0)
 
     @admin.action(description='Broadcast message to selected Users')
     def broadcast(self, request, queryset):
@@ -99,6 +102,8 @@ class UserAdmin(admin.ModelAdmin):
                 request, 'admin/broadcast_message.html', {
                     'form': form, 'title': u'Broadcast message'}
             )
+
+    has_added_channels.boolean = True
 
 
 def get_app_list(self, request):
