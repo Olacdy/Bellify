@@ -66,7 +66,7 @@ def is_youtube_channel_url(string: str) -> bool:
 
 # Checks if given string is a youtube video url
 def is_youtube_video_url(string: str) -> bool:
-    return bool(re.search(r'http[s]*://(?:www\.)?(?:youtu\.be|youtube\.com)/(?:watch\?v=|shorts/)?([\%\w-]+)(?:[/]*)', string))
+    return bool(re.search(r'http[s]*://(?:www\.)?(?:youtu\.be|youtube\.com)/(?:watch\?v=|shorts/|live/)?([\%\w-]+)(?:[/]*)', string))
 
 
 # Checks if given string is a youtube url
