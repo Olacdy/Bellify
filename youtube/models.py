@@ -152,9 +152,9 @@ class YouTubeLivestream(CreateUpdateTracker):
     @classmethod
     def is_ended_livestream(cls, channel: YouTubeChannel, video: Union['YouTubeVideo', Tuple[str, str]]) -> bool:
         if isinstance(video, YouTubeChannel):
-            return channel.livestreams.filter(livestream_id=video.video_id, livestream_title=video.video_title).exists()
+            return channel.livestreams.filter(livestream_id=video.video_id).exists()
         elif isinstance(video, tuple):
-            return channel.livestreams.filter(livestream_id=video[0], livestream_title=video[1]).exists()
+            return channel.livestreams.filter(livestream_id=video[0]).exists()
 
     def set_notified(self: 'YouTubeLivestream') -> None:
         self.is_notified = True
@@ -273,7 +273,8 @@ class YouTubeVideo(CreateUpdateTracker):
                                                                                             is_premium_notified=False)
                     else:
                         is_should_be_notified = videos[video_id][1] + \
-                        settings.YOUTUBE_TIME_THRESHOLD[is_trully_new] > now()
+                            settings.YOUTUBE_TIME_THRESHOLD[is_trully_new] > now(
+                        )
                         videos_to_create.append(
                             _add_video(channel=channel,
                                        video={

@@ -265,7 +265,7 @@ def run_pooling():
     updater.idle()
 
 
-@app.task(ignore_result=True)
+@app.task(name='process_event', ignore_result=True)
 def process_telegram_event(update_json):
     global bot, dispatcher
     update = Update.de_json(update_json, bot)

@@ -31,9 +31,9 @@ env.read_env(f'{BASE_DIR}/.env')
 SECRET_KEY = env.str('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env.bool('DEBUG')
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']  # env.list('ALLOWED_HOSTS')
 
 # Application definition
 
@@ -172,14 +172,17 @@ CELERY_BEAT_SCHEDULE = {
     'check_twitch': {
         'task': 'bellify.tasks.check_twitch',
         'schedule': crontab(minute='0-59/1'),
+        'options': {'queue': 'periodic_tasks'},
     },
     'check_youtube': {
         'task': 'bellify.tasks.check_youtube',
         'schedule': crontab(minute='1-58/3'),
+        'options': {'queue': 'periodic_tasks'},
     },
     'check_for_deleted_livestreams': {
         'task': 'bellify.tasks.check_for_deleted_livestreams',
         'schedule': crontab(minute='*/30'),
+        'options': {'queue': 'periodic_tasks'},
     }
 }
 

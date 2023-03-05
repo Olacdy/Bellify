@@ -8,7 +8,7 @@ from celery import Celery
 os.environ.setdefault('DJANGO_SETTINGS_MODULE',
                       'bellify.settings.local')
 
-app = Celery('bellify', include=['bellify.tasks'])
+app = Celery('bellify', include=['bellify.tasks', 'bellify_bot.bot'])
 
 # Using a string here means the worker doesn't have to serialize
 # the configuration object to child processes.
