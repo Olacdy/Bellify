@@ -5,9 +5,10 @@ from django.conf import settings
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.views import View
-from twitch.models import TwitchChannel
 
-from bellify_bot.bot import process_telegram_event
+from bellify.celery import app
+import bellify_bot
+from twitch.models import TwitchChannel
 
 logger = logging.getLogger(__name__)
 
@@ -34,10 +35,8 @@ class StreamPageView(View):
 
 class TelegramBotWebhookView(View):
     def post(self, request, *args, **kwargs):
-        if settings.DEBUG:
-            process_telegram_event(json.loads(request.body))
-        else:
-            process_telegram_event.delay(json.loads(request.body))
+        app.send_task('process_event', args=[
+            json.loads(request.body)], queue='telegram_events')
         return JsonResponse({'ok': 'POST request processed'})
 
     def get(self, request, *args, **kwargs):

@@ -18,9 +18,6 @@ MEDIA_ROOT = '/app/storage'
 
 ABSOLUTE_URL = f'https://{ALLOWED_HOSTS[0]}'
 
-# STATICFILES_DIRS = [
-#     '/var/www/bellify/static/',
-# ]
 
 if 'DATABASE_URL' in env:
     DATABASES['default'] = env.db('DATABASE_URL')
