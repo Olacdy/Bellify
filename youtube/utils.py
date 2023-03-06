@@ -36,10 +36,13 @@ def get_youtube_livestreams(ids: List[str]) -> List[Tuple[str]]:
                 try:
                     content = get_content(json.loads(get_json_from_html(
                         livestream_text, "var ytInitialData = ", 0, "};") + "}"), mode='livestream')
+                    return content
                 except:
+                    print("Livestreams page response content:")
+                    print(livestream_text)
+                    print("Initial data in JSON format from html:")
                     print(get_json_from_html(
                         livestream_text, "var ytInitialData = ", 0, "};") + "}")
-                return content
             return await asyncio.gather(*[
                 fetch(id) for id in ids
             ])
@@ -59,15 +62,21 @@ def get_youtube_videos(ids: List[str]) -> List[Tuple[str]]:
                     content = get_content(json.loads(get_json_from_html(
                         video_text, "var ytInitialData = ", 0, "};") + "}"))
                 except:
+                    print("Videos page response content:")
+                    print(video_text)
+                    print("Initial data in JSON format from html:")
                     print(get_json_from_html(
                         video_text, "var ytInitialData = ", 0, "};") + "}")
                 try:
                     content.update(get_content(json.loads(get_json_from_html(
                         streams_text, "var ytInitialData = ", 0, "};") + "}")))
+                    return content
                 except:
+                    print("Steams page response content:")
+                    print(streams_text)
+                    print("Initial data in JSON format from html:")
                     print(get_json_from_html(
                         streams_text, "var ytInitialData = ", 0, "};") + "}")
-                return content
             return await asyncio.gather(*[
                 fetch(id) for id in ids
             ])
