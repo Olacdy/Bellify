@@ -1,10 +1,11 @@
-import itertools
 import urllib.parse
+from datetime import datetime
 from typing import Dict, List, Optional, Tuple
+
+from django.conf import settings
 
 from bellify_bot.localization import localization
 from bellify_bot.models import ChannelUserItem, User
-from django.conf import settings
 from twitch.models import TwitchChannel, TwitchChannelUserItem
 from twitch.utils import get_twitch_streams_info
 from utils.general_utils import get_html_bold, get_html_link, send_messages
@@ -37,7 +38,7 @@ def get_notifications_urls_for_twitch(channels: List[TwitchChannel], livestreams
 
 # Util function that returns url to notify users of youtube videos
 @log_errors
-def get_notifications_urls_for_youtube_videos(channels: List[YouTubeChannel], videos: List[Dict[str, Tuple[str, bool]]]) -> Tuple[List[str], List[str]]:
+def get_notifications_urls_for_youtube_videos(channels: List[YouTubeChannel], videos: List[Dict[str, Tuple[str, datetime]]]) -> Tuple[List[str], List[str]]:
     videos_notification_urls_basic_users = []
     videos_notification_urls_premium_users = []
 

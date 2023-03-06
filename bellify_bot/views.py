@@ -1,13 +1,11 @@
 import json
 import logging
 
-from django.conf import settings
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.views import View
 
 from bellify.celery import app
-import bellify_bot
 from twitch.models import TwitchChannel
 
 logger = logging.getLogger(__name__)
