@@ -12,6 +12,7 @@ from asgiref import sync
 from django.conf import settings
 from django.utils.timezone import now
 from fake_headers import Headers
+import utils
 
 
 # Custom Headers class for YouTube requests
@@ -32,7 +33,13 @@ def get_youtube_livestreams(ids: List[str]) -> List[Tuple[str]]:
             async def fetch(id):
                 async with session.get(f'https://www.youtube.com/channel/{id}/featured', headers=HeadersYouTube().generate()) as response:
                     livestream_text = await response.text()
-                return get_content(json.loads(get_json_from_html(livestream_text, "var ytInitialData = ", 0, "};") + "}"), mode='livestream')
+                try:
+                    content = get_content(json.loads(get_json_from_html(
+                        livestream_text, "var ytInitialData = ", 0, "};") + "}"), mode='livestream')
+                except:
+                    print(get_json_from_html(
+                        livestream_text, "var ytInitialData = ", 0, "};") + "}")
+                return content
             return await asyncio.gather(*[
                 fetch(id) for id in ids
             ])
@@ -48,10 +55,18 @@ def get_youtube_videos(ids: List[str]) -> List[Tuple[str]]:
                     video_text = await response.text()
                 async with session.get(f'https://www.youtube.com/channel/{id}/streams?sort=dd', headers=HeadersYouTube().generate()) as response:
                     streams_text = await response.text()
-                content = get_content(json.loads(get_json_from_html(
-                    video_text, "var ytInitialData = ", 0, "};") + "}"))
-                content.update(get_content(json.loads(get_json_from_html(
-                    streams_text, "var ytInitialData = ", 0, "};") + "}")))
+                try:
+                    content = get_content(json.loads(get_json_from_html(
+                        video_text, "var ytInitialData = ", 0, "};") + "}"))
+                except:
+                    print(get_json_from_html(
+                        video_text, "var ytInitialData = ", 0, "};") + "}")
+                try:
+                    content.update(get_content(json.loads(get_json_from_html(
+                        streams_text, "var ytInitialData = ", 0, "};") + "}")))
+                except:
+                    print(get_json_from_html(
+                        streams_text, "var ytInitialData = ", 0, "};") + "}")
                 return content
             return await asyncio.gather(*[
                 fetch(id) for id in ids
