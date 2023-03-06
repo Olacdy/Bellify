@@ -69,6 +69,10 @@ class User(CreateUpdateTracker):
         return User.objects.filter(deep_link=str(self.user_id), created_at__gt=self.created_at)
 
     @property
+    def has_added_channels(self):
+        return bool(self.channeluseritem_set.all().count() > 0)
+
+    @property
     def tg_str(self) -> str:
         if self.username:
             return self.username
