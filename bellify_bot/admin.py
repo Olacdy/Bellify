@@ -6,12 +6,29 @@ from django_celery_beat.models import (ClockedSchedule, CrontabSchedule,
                                        IntervalSchedule, PeriodicTask,
                                        SolarSchedule)
 
-from bellify.tasks import broadcast_message
+from bellify.celery import app
 from bellify_bot.forms import BroadcastForm
 from bellify_bot.models import User
 from twitch.models import TwitchChannelUserItem
 from utils.general_utils import _send_message
 from youtube.models import YouTubeChannelUserItem
+
+
+class HasAddedChannels(admin.SimpleListFilter):
+    title = 'Has Added Channels'
+    parameter_name = 'has_added_channels'
+
+    def lookups(self, request, model_admin):
+        return (
+            ('yes', 'Yes'),
+            ('no', 'No'),
+        )
+
+    def queryset(self, request, queryset):
+        if self.value() == 'yes':
+            return queryset.filter(channeluseritem__isnull=False).distinct()
+        elif self.value() == 'no':
+            return queryset.filter(channeluseritem__isnull=True)
 
 
 class YouTubeChannelsInline(admin.TabularInline):
@@ -58,9 +75,10 @@ class UserAdmin(admin.ModelAdmin):
         YouTubeChannelsInline,
         TwitchChannelsInline,
     ]
-    list_display = ['name', 'username', 'first_name',
-                    'last_name', 'language', 'max_youtube_channels_number', 'max_twitch_channels_number', 'status', 'has_added_channels', ]
-    list_filter = ['is_blocked_bot', 'language', 'status', ]
+    list_display = ['name', 'username', 'language', 'max_youtube_channels_number',
+                    'max_twitch_channels_number', 'status', 'has_added_channels', ]
+    list_filter = ['is_blocked_bot', 'language',
+                   'status', HasAddedChannels, ]
     search_fields = ['username', 'user_id', ]
     actions = ['broadcast', ]
     fields = ['user_id', 'username', 'first_name', 'last_name', 'deep_link', 'status',
@@ -90,8 +108,8 @@ class UserAdmin(admin.ModelAdmin):
                 self.message_user(
                     request, f'Just broadcasted to {len(queryset)} users')
             else:
-                broadcast_message.delay(
-                    text=broadcast_message_text, user_ids=list(user_ids))
+                app.send_task('broacast_message', kwargs={
+                              'text': broadcast_message_text, 'user_ids': list(user_ids)}, queue='telegram_events')
                 self.message_user(
                     request, f'Broadcasting of {len(queryset)} messages has been started')
 
