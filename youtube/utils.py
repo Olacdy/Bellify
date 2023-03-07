@@ -2,17 +2,17 @@ import asyncio
 import json
 import re
 from datetime import datetime
-from dateutil.relativedelta import relativedelta
 from typing import Dict, List, Optional, Tuple, Union
 
 import aiohttp
 import bs4 as soup
 import requests
 from asgiref import sync
+from bs4 import BeautifulSoup
+from dateutil.relativedelta import relativedelta
 from django.conf import settings
 from django.utils.timezone import now
 from fake_headers import Headers
-import utils
 
 
 # Custom Headers class for YouTube requests
@@ -35,7 +35,7 @@ def get_youtube_livestreams(ids: List[str]) -> List[Tuple[str]]:
                     livestream_text = await response.text()
                 try:
                     content = get_content(json.loads(get_json_from_html(
-                        livestream_text, "var ytInitialData = ", 0, "};") + "}"), mode='livestream')
+                        livestream_text, "var ytInitialData = ", 0, "};") + "}"))
                     return content
                 except:
                     print("Livestreams page response content:")
@@ -54,29 +54,20 @@ def get_youtube_videos(ids: List[str]) -> List[Tuple[str]]:
     async def get_all(ids):
         async with aiohttp.ClientSession(cookies=settings.SESSION_CLIENT_COOKIES) as session:
             async def fetch(id):
-                async with session.get(f'https://www.youtube.com/channel/{id}/videos?sort=dd', headers=HeadersYouTube().generate()) as response:
-                    video_text = await response.text()
-                async with session.get(f'https://www.youtube.com/channel/{id}/streams?sort=dd', headers=HeadersYouTube().generate()) as response:
-                    streams_text = await response.text()
-                try:
-                    content = get_content(json.loads(get_json_from_html(
-                        video_text, "var ytInitialData = ", 0, "};") + "}"))
-                except:
-                    print("Videos page response content:")
-                    print(video_text)
-                    print("Initial data in JSON format from html:")
-                    print(get_json_from_html(
-                        video_text, "var ytInitialData = ", 0, "};") + "}")
-                try:
-                    content.update(get_content(json.loads(get_json_from_html(
-                        streams_text, "var ytInitialData = ", 0, "};") + "}")))
-                    return content
-                except:
-                    print("Steams page response content:")
-                    print(streams_text)
-                    print("Initial data in JSON format from html:")
-                    print(get_json_from_html(
-                        streams_text, "var ytInitialData = ", 0, "};") + "}")
+                videos = {}
+                async with session.get(f'https://www.youtube.com/feeds/videos.xml?channel_id={id}', headers=HeadersYouTube().generate()) as response:
+                    videos_feed = await response.text()
+                soup = BeautifulSoup(videos_feed, 'xml')
+                for video in soup.find_all('entry'):
+                    video_id = video.find("yt:videoId").text
+                    video_title = video.find("title").text
+                    published_at = datetime.strptime(video.find(
+                        "published").text, '%Y-%m-%dT%H:%M:%S%z')
+                    rating = int(video.find("media:starRating")['count'])
+                    views = int(video.find("media:statistics")['views'])
+                    if not (rating > views and views == 0):
+                        videos[video_id] = video_title, published_at
+                return videos
             return await asyncio.gather(*[
                 fetch(id) for id in ids
             ])
@@ -128,23 +119,28 @@ def scrape_id_and_title_by_url(url: str) -> Union[str, bool]:
 
 
 # Scrapes last videos for a single channel
-def scrape_last_videos(channel_id: str) -> Tuple[str, str, str]:
-    video_text = _get_html_response_youtube(
-        f'https://www.youtube.com/channel/{channel_id}/videos?sort=dd')
-    streams_text = _get_html_response_youtube(
-        f'https://www.youtube.com/channel/{channel_id}/streams?sort=dd')
-    content = get_content(json.loads(get_json_from_html(
-        video_text, "var ytInitialData = ", 0, "};") + "}"))
-    content.update(get_content(json.loads(get_json_from_html(
-        streams_text, "var ytInitialData = ", 0, "};") + "}")))
-    return content
+def scrape_last_videos(channel_id: str) -> Dict[str, Tuple[str, datetime]]:
+    videos = {}
+    videos_feed = requests.get(
+        f'https://www.youtube.com/feeds/videos.xml?channel_id={channel_id}').text
+    soup = BeautifulSoup(videos_feed, 'xml')
+    for video in soup.find_all('entry'):
+        video_id = video.find("yt:videoId").text
+        video_title = video.find("title").text
+        published_at = datetime.strptime(video.find(
+            "published").text, '%Y-%m-%dT%H:%M:%S%z')
+        rating = int(video.find("media:starRating")['count'])
+        views = int(video.find("media:statistics")['views'])
+        if not (rating > views and views == 0):
+            videos[video_id] = video_title, published_at
+    return videos
 
 
 # Scrapes livestreams for a single channel
 def scrape_livesteams(channel_id: str) -> Tuple[str, str]:
     livestream_text = _get_html_response_youtube(
         f'https://www.youtube.com/channel/{channel_id}/featured')
-    return get_content(json.loads(get_json_from_html(livestream_text, "var ytInitialData = ", 0, "};") + "}"), mode='livestream')
+    return get_content(json.loads(get_json_from_html(livestream_text, "var ytInitialData = ", 0, "};") + "}"))
 
 
 def check_if_video_is_exists(video_url: str) -> bool:
@@ -160,22 +156,7 @@ def get_json_from_html(html: str, key: str, num_chars: int = 2, stop: str = '"')
 
 
 # Returns list of content
-def get_content(partial: dict, mode: Optional[str] = 'videos') -> Union[Dict[str, Tuple[str, bool]], Dict[str, str]]:
-    def _get_video_info(video: dict) -> Tuple[str, str, datetime]:
-        def _get_datetime_of_published(published_time_text: str) -> datetime:
-            matches = re.findall(
-                r'(\d+) (second(?:s)?|minute(?:s)?|hour(?:s)?|day(?:s)?|week(?:s)?|month(?:s)?|year(?:s)?)', published_time_text)
-            timedelta_kwargs = {
-                key if key[-1] == 's' else key + 's': int(value) for value, key in matches}
-            return now() - relativedelta(**timedelta_kwargs)
-
-        video_id = video['videoId']
-        video_title = video['title']['runs'][0]['text']
-
-        if not video['thumbnailOverlays'][0]['thumbnailOverlayTimeStatusRenderer']['style'].lower() in ['live', 'upcoming']:
-            return video_id, video_title, _get_datetime_of_published(video['publishedTimeText']['simpleText'])
-        raise
-
+def get_content(partial: dict) -> Dict[str, str]:
     def _get_livestream_info(livestream: dict) -> Tuple[str, str]:
         livestream_id = livestream['videoId']
         livestream_title = livestream['title']['runs'][0]['text']
@@ -191,27 +172,16 @@ def get_content(partial: dict, mode: Optional[str] = 'videos') -> Union[Dict[str
         current_item = stack.pop(0)
         if isinstance(current_item, dict):
             for key, value in current_item.items():
-                if mode == 'livestream':
-                    if key == 'channelFeaturedContentRenderer':
-                        try:
-                            for featured_item in value['items']:
-                                content_item = _get_livestream_info(
-                                    featured_item['videoRenderer'])
-                                content[content_item[0]] = content_item[1]
-                        except:
-                            continue
-                    else:
-                        stack.append(value)
+                if key == 'channelFeaturedContentRenderer':
+                    try:
+                        for featured_item in value['items']:
+                            content_item = _get_livestream_info(
+                                featured_item['videoRenderer'])
+                            content[content_item[0]] = content_item[1]
+                    except:
+                        continue
                 else:
-                    if key == 'videoRenderer':
-                        try:
-                            content_item = _get_video_info(
-                                value)
-                            content[content_item[0]] = content_item[1:]
-                        except:
-                            continue
-                    else:
-                        stack.append(value)
+                    stack.append(value)
         elif isinstance(current_item, list):
             for value in current_item:
                 stack.append(value)

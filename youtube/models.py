@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-from re import L
 from typing import Dict, List, Optional, Tuple, Union
 
 from bellify_bot.models import Channel, ChannelUserItem, User
@@ -204,7 +203,7 @@ class YouTubeVideo(CreateUpdateTracker):
         return self.iterations_skipped >= settings.ITERATIONS_TO_SKIP
 
     @classmethod
-    def get_new_videos(cls, channel: 'YouTubeChannel', videos: Dict[str, Tuple[str, bool]]) -> List['YouTubeVideo']:
+    def get_new_videos(cls, channel: 'YouTubeChannel', videos: Dict[str, Tuple[str, datetime]]) -> List['YouTubeVideo']:
         def _add_video(channel: YouTubeChannel, video: Dict[str, Union[datetime, str, bool]], index: int, is_basic_notified: Optional[bool] = False, is_premium_notified: Optional[bool] = False, iterations_skipped: Optional[int] = 0) -> 'YouTubeVideo':
             return YouTubeVideo(
                 added_at=now() - timedelta(seconds=index),
