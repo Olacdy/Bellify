@@ -54,20 +54,10 @@ def get_youtube_videos(ids: List[str]) -> List[Tuple[str]]:
     async def get_all(ids):
         async with aiohttp.ClientSession(cookies=settings.SESSION_CLIENT_COOKIES) as session:
             async def fetch(id):
-                videos = {}
                 async with session.get(f'https://www.youtube.com/feeds/videos.xml?channel_id={id}', headers=HeadersYouTube().generate()) as response:
                     videos_feed = await response.text()
                 soup = BeautifulSoup(videos_feed, 'xml')
-                for video in soup.find_all('entry'):
-                    video_id = video.find("yt:videoId").text
-                    video_title = video.find("title").text
-                    published_at = datetime.strptime(video.find(
-                        "published").text, '%Y-%m-%dT%H:%M:%S%z')
-                    rating = int(video.find("media:starRating")['count'])
-                    views = int(video.find("media:statistics")['views'])
-                    if not (rating > views and views == 0):
-                        videos[video_id] = video_title, published_at
-                return videos
+                return parse_video_entries(soup.find_all('entry'))
             return await asyncio.gather(*[
                 fetch(id) for id in ids
             ])
@@ -120,19 +110,25 @@ def scrape_id_and_title_by_url(url: str) -> Union[str, bool]:
 
 # Scrapes last videos for a single channel
 def scrape_last_videos(channel_id: str) -> Dict[str, Tuple[str, datetime]]:
-    videos = {}
     videos_feed = requests.get(
         f'https://www.youtube.com/feeds/videos.xml?channel_id={channel_id}').text
     soup = BeautifulSoup(videos_feed, 'xml')
-    for video in soup.find_all('entry'):
+    return parse_video_entries(soup.find_all('entry'))
+
+
+def parse_video_entries(video_entries) -> Dict[str, Tuple[str, datetime]]:
+    videos = {}
+
+    for video in video_entries:
         video_id = video.find("yt:videoId").text
         video_title = video.find("title").text
         published_at = datetime.strptime(video.find(
             "published").text, '%Y-%m-%dT%H:%M:%S%z')
         rating = int(video.find("media:starRating")['count'])
         views = int(video.find("media:statistics")['views'])
-        if not (rating > views and views == 0):
+        if not (rating >= views and views == 0):
             videos[video_id] = video_title, published_at
+
     return videos
 
 
