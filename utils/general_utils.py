@@ -52,7 +52,7 @@ def get_html_bold(text: str) -> str:
 
 # Return message for manage command
 @log_errors
-def get_manage_message(u: User, mode: Optional[str] = None) -> str:
+def get_manage_message(u: User) -> str:
     blank_space = u'\u2060'
 
     dict_of_quota_info = {settings.CHANNELS_INFO[channel]['name']: User.get_max_for_channel(
@@ -61,12 +61,7 @@ def get_manage_message(u: User, mode: Optional[str] = None) -> str:
     remaining_quota_message = '\n'.join(
         filter(None, [f"{localization[u.language]['manage'][0][2]} {channel} {localization[u.language]['manage'][0][3]} {dict_of_quota_info[channel]}" if dict_of_quota_info[channel] > 0 else None for channel in dict_of_quota_info]))
 
-    if mode in ['echo', 'pagination']:
-        help_message = localization[u.language]['help'][4]
-    else:
-        help_message = localization[u.language]['help'][5]
-
-    return f"{localization[u.language]['manage'][0][0 if u.status == 'P' else 1]}{blank_space}{' '*(118 - len(localization[u.language]['manage'][0][0 if u.status == 'P' else 1]))}{blank_space}\n{remaining_quota_message}" if u.is_tutorial_finished else help_message
+    return f"{localization[u.language]['manage'][0][0 if u.status == 'P' else 1]}{blank_space}{' '*(118 - len(localization[u.language]['manage'][0][0 if u.status == 'P' else 1]))}{blank_space}\n{remaining_quota_message}"
 
 
 # Makes a response on a tutorial start
