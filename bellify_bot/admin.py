@@ -16,7 +16,7 @@ from youtube.models import YouTubeChannelUserItem
 
 
 class HasAddedChannels(admin.SimpleListFilter):
-    title = 'Has Added Channels'
+    title = 'Added Channels'
     parameter_name = 'has_added_channels'
 
     def lookups(self, request, model_admin):
@@ -32,9 +32,9 @@ class HasAddedChannels(admin.SimpleListFilter):
             return queryset.filter(channeluseritem__isnull=True)
 
 
-class HasBoughtSomething(admin.SimpleListFilter):
-    title = 'Has Bought Something'
-    parameter_name = 'has_bought_something'
+class HasBoughtAnything(admin.SimpleListFilter):
+    title = 'Bought Anything'
+    parameter_name = 'has_bought_anything'
 
     def lookups(self, request, model_admin):
         return (
@@ -93,10 +93,9 @@ class UserAdmin(admin.ModelAdmin):
         YouTubeChannelsInline,
         TwitchChannelsInline,
     ]
-    list_display = ['name', 'username', 'language', 'max_youtube_channels_number',
-                    'max_twitch_channels_number', 'status', 'has_added_channels', 'has_bought_something', ]
-    list_filter = ['is_blocked_bot', 'language',
-                   'status', HasAddedChannels, HasBoughtSomething, ]
+    list_display = ['name', 'language', 'max_youtube_channels_number',
+                    'max_twitch_channels_number', 'status', 'has_added_channels', 'has_bought_anything', ]
+    list_filter = ['language', 'status', HasAddedChannels, HasBoughtAnything, ]
     search_fields = ['username', 'user_id', ]
     actions = ['broadcast', ]
     fields = ['user_id', 'username', 'first_name', 'last_name', 'deep_link', 'status',
@@ -108,8 +107,8 @@ class UserAdmin(admin.ModelAdmin):
     def has_added_channels(self, obj):
         return obj.has_added_channels
 
-    def has_bought_something(self, obj):
-        return obj.has_bought_something
+    def has_bought_anything(self, obj):
+        return obj.has_bought_anything
 
     @admin.action(description='Broadcast message to selected Users')
     def broadcast(self, request, queryset):
@@ -143,7 +142,7 @@ class UserAdmin(admin.ModelAdmin):
             )
 
     has_added_channels.boolean = True
-    has_bought_something.boolean = True
+    has_bought_anything.boolean = True
 
 
 def get_app_list(self, request):

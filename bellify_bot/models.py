@@ -73,7 +73,7 @@ class User(CreateUpdateTracker):
         return bool(self.channeluseritem_set.all().count() > 0)
 
     @property
-    def has_bought_something(self):
+    def has_bought_anything(self):
         return bool(self.max_twitch_channels_number >= 5 or self.max_youtube_channels_number > 5)
 
     @property
