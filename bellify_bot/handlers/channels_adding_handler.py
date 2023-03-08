@@ -114,20 +114,8 @@ def _add_youtube_channel(channel_id: str, message: Message, user: User, name: Op
             channel_title=channel_title
         )
 
-        videos = scrape_last_videos(channel_id)
-        livestreams = scrape_livesteams(channel_id)
-
         videos_to_create = []
-        livestreams_to_create = []
-
-        for livestream_id in livestreams:
-            livestreams_to_create.append(
-                YouTubeLivestream(
-                    livestream_id=livestream_id,
-                    livestream_title=livestreams[livestream_id],
-                    channel=channel
-                )
-            )
+        videos = scrape_last_videos(channel_id)
 
         for index, video_id in enumerate(videos):
             videos_to_create.append(
@@ -141,8 +129,21 @@ def _add_youtube_channel(channel_id: str, message: Message, user: User, name: Op
             )
 
         YouTubeVideo.objects.bulk_create(videos_to_create)
-        YouTubeLivestream.objects.bulk_create(livestreams_to_create)
 
+        if user.status == "P":
+            livestreams_to_create = []
+            livestreams = scrape_livesteams(channel_id)
+
+            for livestream_id in livestreams:
+                livestreams_to_create.append(
+                    YouTubeLivestream(
+                        livestream_id=livestream_id,
+                        livestream_title=livestreams[livestream_id],
+                        channel=channel
+                    )
+                )
+
+            YouTubeLivestream.objects.bulk_create(livestreams_to_create)
     else:
         channel = YouTubeChannel.objects.get(channel_id=channel_id)
         channel_title = channel.channel_title
@@ -154,18 +155,22 @@ def _add_youtube_channel(channel_id: str, message: Message, user: User, name: Op
             item = YouTubeChannelUserItem.objects.create(
                 user=user, channel=channel, channel_title=channel_name)
 
-            ongoing_livestream = channel.ongoing_livestream
             last_video = channel.last_video
 
-            if ongoing_livestream and user.status == 'P':
-                message.reply_text(
-                    text=_get_youtube_channel_message(
-                        user, item.message_title_and_type, ongoing_livestream.livestream_url, True),
-                    parse_mode='HTML',
-                    reply_markup=get_notification_reply_markup(
-                        ongoing_livestream.livestream_title, ongoing_livestream.livestream_url)
-                )
-            elif last_video:
+            if user.status == 'P':
+                ongoing_livestream = channel.ongoing_livestream
+
+                if ongoing_livestream:
+                    message.reply_text(
+                        text=_get_youtube_channel_message(
+                            user, item.message_title_and_type, ongoing_livestream.livestream_url, True),
+                        parse_mode='HTML',
+                        reply_markup=get_notification_reply_markup(
+                            ongoing_livestream.livestream_title, ongoing_livestream.livestream_url)
+                    )
+                    return
+
+            if last_video:
                 message.reply_text(
                     text=_get_youtube_channel_message(
                         user, item.message_title_and_type, last_video.video_url, False),
@@ -173,6 +178,7 @@ def _add_youtube_channel(channel_id: str, message: Message, user: User, name: Op
                     reply_markup=get_notification_reply_markup(
                         last_video.video_title, last_video.video_url)
                 )
+                
             if not user.is_tutorial_finished:
                 message.reply_text(
                     text=localization[user.language]['help'][3],
