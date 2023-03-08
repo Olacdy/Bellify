@@ -33,7 +33,7 @@ def manage(update: Update, u: User, mode: Optional[str] = 'echo', page_num: Opti
 
         if 'echo' in mode:
             update.message.reply_text(
-                text=get_manage_message(u, mode='echo'),
+                text=get_manage_message(u),
                 reply_markup=reply_markup,
                 parse_mode='HTML'
             )
@@ -43,7 +43,6 @@ def manage(update: Update, u: User, mode: Optional[str] = 'echo', page_num: Opti
                 reply_markup=reply_markup,
                 parse_mode='HTML'
             )
-            u.set_tutorial_state(True) if not u.is_tutorial_finished else None
     else:
         if 'echo' in mode:
             update.message.reply_text(

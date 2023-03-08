@@ -86,6 +86,7 @@ def _add_twitch_channel(channel_id: str, message: Message, user: User, name: Opt
                     text=localization[user.language]['help'][3],
                     parse_mode='HTML',
                 )
+                user.set_tutorial_state(True)
         else:
             message.reply_text(
                 text=localization[user.language]['add'][2],
@@ -178,12 +179,13 @@ def _add_youtube_channel(channel_id: str, message: Message, user: User, name: Op
                     reply_markup=get_notification_reply_markup(
                         last_video.video_title, last_video.video_url)
                 )
-                
+
             if not user.is_tutorial_finished:
                 message.reply_text(
                     text=localization[user.language]['help'][3],
                     parse_mode='HTML',
                 )
+                user.set_tutorial_state(True)
         else:
             message.reply_text(
                 text=localization[user.language]['add'][2],
