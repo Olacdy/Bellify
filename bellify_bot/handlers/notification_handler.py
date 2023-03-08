@@ -104,8 +104,6 @@ def check_youtube() -> None:
     channels_premium: List[YouTubeChannel] = YouTubeChannel.get_channels_to_review_premium(
     )
 
-    print(channels_premium)
-
     videos = get_youtube_videos(
         [channel.channel_id for channel in channels])
     livestreams = get_youtube_livestreams(
