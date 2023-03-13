@@ -97,7 +97,7 @@ class UserAdmin(admin.ModelAdmin):
                     'max_twitch_channels_number', 'status', 'has_added_channels', 'has_bought_anything', ]
     list_filter = ['language', 'status', HasAddedChannels, HasBoughtAnything, ]
     search_fields = ['username', 'user_id', ]
-    actions = ['broadcast', ]
+    actions = ['finish_tutorial', 'broadcast', ]
     fields = ['user_id', 'username', 'first_name', 'last_name', 'deep_link', 'status',
               'language', 'max_youtube_channels_number', 'max_twitch_channels_number', 'is_tutorial_finished', 'is_admin', ]
 
@@ -109,6 +109,10 @@ class UserAdmin(admin.ModelAdmin):
 
     def has_bought_anything(self, obj):
         return obj.has_bought_anything
+
+    @admin.action(description='Set tutorial state finished for Users')
+    def finish_tutorial(self, request, queryset):
+        queryset.update(is_tutorial_finished=True)
 
     @admin.action(description='Broadcast message to selected Users')
     def broadcast(self, request, queryset):
