@@ -9,7 +9,7 @@ from django.dispatch import receiver
 from django.utils.timezone import now
 
 from utils.models import CreateUpdateTracker, nb
-from youtube.utils import get_url_from_id
+from youtube.utils import get_url_from_id, get_non_livestreams
 
 
 # YouTube channel model
@@ -119,6 +119,10 @@ class YouTubeLivestream(CreateUpdateTracker):
         return f'https://www.youtube.com/watch?v={self.livestream_id}'
 
     @classmethod
+    def is_exists(cls, livestream_id: str) -> bool:
+        return cls.objects.filter(livestream_id=livestream_id).exists()
+
+    @classmethod
     def get_livestreams_data(cls, channel: Optional[YouTubeChannel] = None) -> Dict[str, str]:
         return {livestream.livestream_id: livestream for livestream in (channel.livestreams.all() if channel else cls.objects.all())}
 
@@ -129,7 +133,7 @@ class YouTubeLivestream(CreateUpdateTracker):
         livestreams_to_create = []
 
         for livestream_id in livestreams:
-            if not cls.objects.filter(livestream_id=livestream_id).exists():
+            if not cls.is_exists(livestream_id):
                 livestreams_to_create.append(
                     YouTubeLivestream(
                         livestream_id=livestream_id,
@@ -204,6 +208,14 @@ class YouTubeVideo(CreateUpdateTracker):
 
     @classmethod
     def get_new_videos(cls, channel: 'YouTubeChannel', videos: Dict[str, Tuple[str, datetime]]) -> List['YouTubeVideo']:
+        def _add_livestream_from_video(channel: YouTubeChannel, video: 'YouTubeVideo') -> YouTubeLivestream:
+            return YouTubeLivestream(
+                livestream_id=video.video_id,
+                livestream_title=video.video_title,
+                is_notified=False,
+                channel=channel
+            )
+
         def _add_video(channel: YouTubeChannel, video: Dict[str, Union[datetime, str, bool]], index: int, is_basic_notified: Optional[bool] = False, is_premium_notified: Optional[bool] = False, iterations_skipped: Optional[int] = 0) -> 'YouTubeVideo':
             return YouTubeVideo(
                 added_at=now() - timedelta(seconds=index),
@@ -286,9 +298,16 @@ class YouTubeVideo(CreateUpdateTracker):
                                        index=index,
                                        is_basic_notified=not is_should_be_notified,
                                        is_premium_notified=not is_should_be_notified)
-                        )
+                        ) if not YouTubeLivestream.is_exists(video_id) else None
 
-        YouTubeVideo.objects.bulk_create(videos_to_create)
+        only_videos_to_create = get_non_livestreams(videos_to_create)
+
+        livestreams = [
+            livestream for livestream in videos_to_create if livestream not in only_videos_to_create]
+
+        YouTubeLivestream.objects.bulk_create(
+            [_add_livestream_from_video(channel, livestream) for livestream in livestreams])
+        YouTubeVideo.objects.bulk_create(only_videos_to_create)
         return channel.videos.all()
 
     @classmethod
