@@ -32,7 +32,7 @@ Start worker to notify users:
 
 `celery -A bellify worker -l INFO -Q periodic_tasks`
 
-Add `--solo` in the end if using Windows.
+Add `--pool=solo` in the end if using Windows.
 
 ## Production
 
