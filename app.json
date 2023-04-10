@@ -1,13 +1,12 @@
 {
   "name": "Bellify Bot",
-  "description": "Saves preferred channels and notifies users, when a new video is out.",
+  "description": "Stores preferred channels and notifies users, when a new video is out.",
   "keywords": [
     "python",
     "django",
     "celery",
     "telegram"
   ],
-  "repository": "https://github.com/frikol3000/Bellify",
   "image": "gliderlabs/herokuish",
   "addons": [
     "dokku-postgres",
