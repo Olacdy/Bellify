@@ -1,15 +1,16 @@
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Tuple, Union
 
-from bellify_bot.models import Channel, ChannelUserItem, User
 from django.conf import settings
 from django.db import models
 from django.db.models import Q
 from django.dispatch import receiver
 from django.utils.timezone import now
 
+from bellify_bot.models import Channel, ChannelUserItem, User
 from utils.models import CreateUpdateTracker, nb
-from youtube.utils import get_url_from_id, get_non_livestreams
+from youtube.utils import (get_non_livestreams, get_only_new_livestreams,
+                           get_url_from_id)
 
 
 # YouTube channel model
@@ -155,9 +156,9 @@ class YouTubeLivestream(CreateUpdateTracker):
     @classmethod
     def is_ended_livestream(cls, channel: YouTubeChannel, video: Union['YouTubeVideo', Tuple[str, str]]) -> bool:
         if isinstance(video, YouTubeChannel):
-            return channel.livestreams.filter(livestream_id=video.video_id).exists()
+            return channel.livestreams.filter(livestream_id=video.video_id, ended_at__isnull=False).exists()
         elif isinstance(video, tuple):
-            return channel.livestreams.filter(livestream_id=video[0]).exists()
+            return channel.livestreams.filter(livestream_id=video[0], ended_at__isnull=False).exists()
 
     def set_notified(self: 'YouTubeLivestream') -> None:
         self.is_notified = True
@@ -208,7 +209,9 @@ class YouTubeVideo(CreateUpdateTracker):
 
     @classmethod
     def get_new_videos(cls, channel: 'YouTubeChannel', videos: Dict[str, Tuple[str, datetime]]) -> List['YouTubeVideo']:
-        def _add_livestream_from_video(channel: YouTubeChannel, video: 'YouTubeVideo') -> YouTubeLivestream:
+        def _add_livestream_from_video(channel: YouTubeChannel,
+                                       video: 'YouTubeVideo'
+                                       ) -> YouTubeLivestream:
             return YouTubeLivestream(
                 livestream_id=video.video_id,
                 livestream_title=video.video_title,
@@ -216,7 +219,13 @@ class YouTubeVideo(CreateUpdateTracker):
                 channel=channel
             )
 
-        def _add_video(channel: YouTubeChannel, video: Dict[str, Union[datetime, str, bool]], index: int, is_basic_notified: Optional[bool] = False, is_premium_notified: Optional[bool] = False, iterations_skipped: Optional[int] = 0) -> 'YouTubeVideo':
+        def _add_video(channel: YouTubeChannel,
+                       video: Dict[str, Union[datetime, str, bool]],
+                       index: int,
+                       is_basic_notified: Optional[bool] = False,
+                       is_premium_notified: Optional[bool] = False,
+                       iterations_skipped: Optional[int] = 0
+                       ) -> 'YouTubeVideo':
             return YouTubeVideo(
                 added_at=now() - timedelta(seconds=index),
                 video_id=video['video_id'],
@@ -231,14 +240,19 @@ class YouTubeVideo(CreateUpdateTracker):
             )
 
         videos_to_create = []
+        potential_livestreams = []
         is_trully_new = True
 
         for index, video_id in enumerate(videos):
-            is_notified, is_reuploaded = YouTubeVideo.is_video_notified_and_reuploaded(
-                channel=channel, video=(video_id, videos[video_id][0]))
+            is_notified, is_reuploaded = YouTubeVideo\
+                .is_video_notified_and_reuploaded(
+                    channel=channel, video=(video_id, videos[video_id][0])
+                )
 
-            is_saved_livestream = YouTubeLivestream.is_ended_livestream(
-                channel=channel, video=(video_id, videos[video_id][0]))
+            is_saved_livestream = YouTubeLivestream\
+                .is_ended_livestream(
+                    channel=channel, video=(video_id, videos[video_id][0])
+                )
 
             if is_notified:
                 is_trully_new = False
@@ -279,35 +293,50 @@ class YouTubeVideo(CreateUpdateTracker):
                         )
                 else:
                     if is_reuploaded:
-                        YouTubeVideo.objects.filter(video_title=videos[video_id][0]).update(video_id=video_id, is_reuploaded=is_reuploaded,
-                                                                                            is_basic_notified=False,
-                                                                                            is_premium_notified=False)
+                        YouTubeVideo.objects.filter(video_title=videos[video_id][0])\
+                            .update(video_id=video_id,
+                                    is_reuploaded=is_reuploaded,
+                                    is_basic_notified=False,
+                                    is_premium_notified=False
+                                    )
                     else:
                         is_should_be_notified = videos[video_id][1] + \
-                            settings.YOUTUBE_TIME_THRESHOLD[is_trully_new] > now(
+                            settings.YOUTUBE_TIME_THRESHOLD[is_trully_new] < now(
                         )
-                        videos_to_create.append(
-                            _add_video(channel=channel,
-                                       video={
-                                           'video_id': video_id,
-                                           'video_title': videos[video_id][0],
-                                           'published_at': videos[video_id][1],
-                                           'is_saved_livestream': False,
-                                           'is_reuploaded': is_reuploaded
-                                       },
-                                       index=index,
-                                       is_basic_notified=not is_should_be_notified,
-                                       is_premium_notified=not is_should_be_notified)
-                        ) if not YouTubeLivestream.is_exists(video_id) else None
 
-        only_videos_to_create = get_non_livestreams(videos_to_create)
+                        livestream = YouTubeLivestream.objects.filter(
+                            livestream_id=video_id).first()
 
-        livestreams = [
-            livestream for livestream in videos_to_create if livestream not in only_videos_to_create]
+                        if not livestream or livestream.created_at < now() - timedelta(minutes=30):
+                            try:
+                                livestream.created_at = now()
+                                potential_livestreams.append(livestream)
+                            except:
+                                pass
+
+                            videos_to_create.append(
+                                _add_video(channel=channel,
+                                           video={
+                                               'video_id': video_id,
+                                               'video_title': videos[video_id][0],
+                                               'published_at': videos[video_id][1],
+                                               'is_saved_livestream': False,
+                                               'is_reuploaded': is_reuploaded
+                                           },
+                                           index=index,
+                                           is_basic_notified=is_should_be_notified,
+                                           is_premium_notified=is_should_be_notified)
+                            )
+
+        videos, livestreams = get_only_new_livestreams(
+            videos_to_create, potential_livestreams)
 
         YouTubeLivestream.objects.bulk_create(
-            [_add_livestream_from_video(channel, livestream) for livestream in livestreams])
-        YouTubeVideo.objects.bulk_create(only_videos_to_create)
+            [_add_livestream_from_video(channel, livestream)
+             for livestream in livestreams]
+        )
+        YouTubeVideo.objects.bulk_create(videos)
+
         return channel.videos.all()
 
     @classmethod
