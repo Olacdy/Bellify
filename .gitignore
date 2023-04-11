@@ -132,3 +132,5 @@ staticfiles/
 staticfiles/*
 media/
 media/*
+
+run.bat

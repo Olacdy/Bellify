@@ -29,7 +29,7 @@ def get_youtube_livestreams(ids: List[str]) -> List[Tuple[str]]:
     async def get_all(ids):
         async with aiohttp.ClientSession(cookies=settings.SESSION_CLIENT_COOKIES) as session:
             async def fetch(id):
-                async with session.get(f'https://www.youtube.com/channel/{id}/featured', 
+                async with session.get(f'https://www.youtube.com/channel/{id}/featured',
                                        headers=HeadersYouTube().generate()) as response:
                     livestream_text = await response.text()
                 try:
@@ -52,7 +52,7 @@ def get_non_livestreams(videos: List['YouTubeVideo']) -> List['YouTubeVideo']:
     async def get_all(videos):
         async with aiohttp.ClientSession(cookies=settings.SESSION_CLIENT_COOKIES) as session:
             async def fetch(video):
-                async with session.get(f'https://www.youtube.com/watch?v={video.video_id}', 
+                async with session.get(f'https://www.youtube.com/watch?v={video.video_id}',
                                        headers=HeadersYouTube().generate()) as response:
                     video_text = await response.text()
                 try:
@@ -71,7 +71,7 @@ def get_youtube_videos(ids: List[str]) -> List[Tuple[str]]:
     async def get_all(ids):
         async with aiohttp.ClientSession(cookies=settings.SESSION_CLIENT_COOKIES) as session:
             async def fetch(id):
-                async with session.get(f'https://www.youtube.com/feeds/videos.xml?channel_id={id}', 
+                async with session.get(f'https://www.youtube.com/feeds/videos.xml?channel_id={id}',
                                        headers=HeadersYouTube().generate()) as response:
                     videos_feed = await response.text()
                 soup = BeautifulSoup(videos_feed, 'xml')
@@ -119,11 +119,11 @@ def scrape_id_and_title_by_url(url: str) -> Union[str, bool]:
     try:
         author = html.find('span', {'itemprop': 'author'})
         if author:
-            return html.find('meta', {'itemprop': 'channelId'})\
-                ['content'], author.find('link', {'itemprop': 'name'})['content']
+            return html.find('meta', {'itemprop': 'channelId'})['content'], author.find(
+                'link', {'itemprop': 'name'})['content']
         else:
-            return html.find('meta', {'itemprop': 'channelId'})\
-                ['content'], html.find('meta', {'property': 'og:title'})['content']
+            return html.find('meta', {'itemprop': 'channelId'})['content'], html.find('meta', {'property': 'og:title'})[
+                'content']
     except:
         return False, ''
 
@@ -177,9 +177,7 @@ def get_content(partial: dict) -> Dict[str, str]:
         livestream_id = livestream['videoId']
         livestream_title = livestream['title']['runs'][0]['text']
 
-        if livestream['thumbnailOverlays'][0]\
-            ['thumbnailOverlayTimeStatusRenderer']\
-                ['style'].lower() == 'live':
+        if livestream['thumbnailOverlays'][0]['thumbnailOverlayTimeStatusRenderer']['style'].lower() == 'live':
             return livestream_id, livestream_title
         raise
 
@@ -210,9 +208,25 @@ def get_content(partial: dict) -> Dict[str, str]:
 # Checks youtube/v1 json data if video is a livestream
 def is_livestream(video_data) -> bool:
     try:
-        return video_data['contents']\
-            ['twoColumnWatchNextResults']['results']['results']\
-                ['contents'][0]['videoPrimaryInfoRenderer']\
-                    ['viewCount']['videoViewCountRenderer']['isLive']
+        return video_data['contents']['twoColumnWatchNextResults']['results']['results']['contents'][0]['videoPrimaryInfoRenderer']['viewCount']['videoViewCountRenderer']['isLive']
     except:
         return False
+
+
+def get_only_new_livestreams(videos_to_create: List['YouTubeVideo'],
+                             potential_livestreams: List['YouTubeLivestream']
+                             ) -> Tuple[List['YouTubeVideo'], List['YouTubeVideo']]:
+    only_videos_to_create = get_non_livestreams(videos_to_create)
+    livestreams = [
+        livestream for livestream in videos_to_create if livestream not in only_videos_to_create
+    ]
+
+    livestream_ids = [
+        livestream.livestream_id for livestream in livestreams
+    ]
+
+    for potential_livestream in potential_livestreams:
+        if not potential_livestream.livestream_id in livestream_ids:
+            potential_livestream.set_ended()
+
+    return only_videos_to_create, livestreams

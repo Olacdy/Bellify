@@ -234,8 +234,7 @@ def setup_dispatcher(dp):
 
 bot = Bot(settings.TOKEN)
 if platform.system() == 'Windows':
-    asyncio.set_event_loop_policy(
-        asyncio.WindowsSelectorEventLoopPolicy())
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 try:
     TELEGRAM_BOT_USERNAME = bot.get_me()['username']
 except Unauthorized:
