@@ -222,7 +222,7 @@ def get_only_new_livestreams(videos_to_create: List['YouTubeVideo'],
     ]
 
     livestream_ids = [
-        livestream.livestream_id for livestream in livestreams
+        livestream.video_id for livestream in livestreams
     ]
 
     for potential_livestream in potential_livestreams:
