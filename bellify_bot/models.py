@@ -69,14 +69,6 @@ class User(CreateUpdateTracker):
         return User.objects.filter(deep_link=str(self.user_id), created_at__gt=self.created_at)
 
     @property
-    def has_added_channels(self):
-        return bool(self.channeluseritem_set.all().count() > 0)
-
-    @property
-    def has_bought_anything(self):
-        return bool(self.max_twitch_channels_number >= 5 or self.max_youtube_channels_number > 5)
-
-    @property
     def tg_str(self) -> str:
         if self.username:
             return self.username

@@ -125,6 +125,16 @@ def inline_manage_handler(update: Update, context: CallbackContext) -> None:
     elif 'remove' in mode and u.is_tutorial_finished:
         remove(
             update, u, channel, page_num=page_num)
+    else:
+        try:
+            query.edit_message_text(
+                text=localization[u.language]['help'][6],
+                reply_markup=InlineKeyboardMarkup(
+                    get_manage_inline_keyboard(u)),
+                parse_mode='HTML'
+            )
+        except error.BadRequest:
+            pass
 
 
 @log_errors

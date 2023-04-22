@@ -24,8 +24,6 @@ env = environ.Env()
 env.read_env(f'{BASE_DIR}/.env')
 
 
-DATA_UPLOAD_MAX_NUMBER_FIELDS = None
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
@@ -33,9 +31,9 @@ DATA_UPLOAD_MAX_NUMBER_FIELDS = None
 SECRET_KEY = env.str('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env.bool('DEBUG')
+DEBUG = True
 
-ALLOWED_HOSTS = ['*']  # env.list('ALLOWED_HOSTS')
+ALLOWED_HOSTS = []
 
 # Application definition
 

@@ -2,51 +2,16 @@ from django.conf import settings
 from django.contrib import admin
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
-from django.db.models import Q
 from django_celery_beat.models import (ClockedSchedule, CrontabSchedule,
                                        IntervalSchedule, PeriodicTask,
                                        SolarSchedule)
 
-from bellify.celery import app
+from bellify.tasks import broadcast_message
 from bellify_bot.forms import BroadcastForm
 from bellify_bot.models import User
 from twitch.models import TwitchChannelUserItem
 from utils.general_utils import _send_message
 from youtube.models import YouTubeChannelUserItem
-
-
-class HasAddedChannels(admin.SimpleListFilter):
-    title = 'Added Channels'
-    parameter_name = 'has_added_channels'
-
-    def lookups(self, request, model_admin):
-        return (
-            ('yes', 'Yes'),
-            ('no', 'No'),
-        )
-
-    def queryset(self, request, queryset):
-        if self.value() == 'yes':
-            return queryset.filter(channeluseritem__isnull=False).distinct()
-        elif self.value() == 'no':
-            return queryset.filter(channeluseritem__isnull=True)
-
-
-class HasBoughtAnything(admin.SimpleListFilter):
-    title = 'Bought Anything'
-    parameter_name = 'has_bought_anything'
-
-    def lookups(self, request, model_admin):
-        return (
-            ('yes', 'Yes'),
-            ('no', 'No'),
-        )
-
-    def queryset(self, request, queryset):
-        if self.value() == 'yes':
-            return queryset.filter(Q(max_twitch_channels_number__gte=5) | Q(max_youtube_channels_number__gt=5)).distinct()
-        elif self.value() == 'no':
-            return queryset.filter(Q(max_twitch_channels_number__lt=5) & Q(max_youtube_channels_number__lte=5))
 
 
 class YouTubeChannelsInline(admin.TabularInline):
@@ -93,11 +58,11 @@ class UserAdmin(admin.ModelAdmin):
         YouTubeChannelsInline,
         TwitchChannelsInline,
     ]
-    list_display = ['name', 'language', 'max_youtube_channels_number',
-                    'max_twitch_channels_number', 'status', 'has_added_channels', 'has_bought_anything', ]
-    list_filter = ['language', 'status', HasAddedChannels, HasBoughtAnything, ]
+    list_display = ['name', 'username', 'first_name',
+                    'last_name', 'language', 'max_youtube_channels_number', 'max_twitch_channels_number', 'status', 'has_added_channels', ]
+    list_filter = ['is_blocked_bot', 'language', 'status', ]
     search_fields = ['username', 'user_id', ]
-    actions = ['finish_tutorial', 'broadcast', ]
+    actions = ['broadcast', ]
     fields = ['user_id', 'username', 'first_name', 'last_name', 'deep_link', 'status',
               'language', 'max_youtube_channels_number', 'max_twitch_channels_number', 'is_tutorial_finished', 'is_admin', ]
 
@@ -105,14 +70,7 @@ class UserAdmin(admin.ModelAdmin):
         return obj.tg_str
 
     def has_added_channels(self, obj):
-        return obj.has_added_channels
-
-    def has_bought_anything(self, obj):
-        return obj.has_bought_anything
-
-    @admin.action(description='Set tutorial state finished for Users')
-    def finish_tutorial(self, request, queryset):
-        queryset.update(is_tutorial_finished=True)
+        return bool(obj.channeluseritem_set.all().count() > 0)
 
     @admin.action(description='Broadcast message to selected Users')
     def broadcast(self, request, queryset):
@@ -132,8 +90,8 @@ class UserAdmin(admin.ModelAdmin):
                 self.message_user(
                     request, f'Just broadcasted to {len(queryset)} users')
             else:
-                app.send_task('broacast_message', kwargs={
-                              'text': broadcast_message_text, 'user_ids': list(user_ids)}, queue='telegram_events')
+                broadcast_message.delay(
+                    text=broadcast_message_text, user_ids=list(user_ids))
                 self.message_user(
                     request, f'Broadcasting of {len(queryset)} messages has been started')
 
@@ -146,7 +104,6 @@ class UserAdmin(admin.ModelAdmin):
             )
 
     has_added_channels.boolean = True
-    has_bought_anything.boolean = True
 
 
 def get_app_list(self, request):
