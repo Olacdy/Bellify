@@ -181,3 +181,15 @@ class Channel(CreateUpdateTracker):
     @property
     def channel_url(self: 'Channel'):
         return ''
+
+
+class Order(CreateUpdateTracker):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    youtube_increase = models.SmallIntegerField(default=0)
+    twitch_increase = models.SmallIntegerField(default=0)
+
+    premium_bought = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f'{self.user} {self.created_at}'

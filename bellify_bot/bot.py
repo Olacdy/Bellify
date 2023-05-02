@@ -21,7 +21,7 @@ from bellify_bot.handlers.inline_handler import (
 from utils.inline_utils import (log_errors, manage,
                                 upgrade)
 from bellify_bot.localization import localization
-from bellify_bot.models import User, LANGUAGE_CHOICES
+from bellify_bot.models import Order, User, LANGUAGE_CHOICES
 
 
 @log_errors
@@ -124,12 +124,16 @@ def precheckout_callback(update: Update, context: CallbackContext) -> None:
             u.status = 'P'
             u.max_youtube_channels_number += 5
             u.max_twitch_channels_number += 5
+            Order.objects.create(user=u, youtube_increase=5,
+                                 twitch_increase=5, premium_bought=True)
         elif payload_data[-1].isdigit():
             u.max_youtube_channels_number += int(payload_data[-1])
+            Order.objects.create(user=u, youtube_increase=5)
         u.save()
         query.answer(ok=True)
     elif 'twitch' in payload_data:
         u.max_twitch_channels_number += int(payload_data[-1])
+        Order.objects.create(user=u, twitch_increase=5)
         u.save()
         query.answer(ok=True)
     else:

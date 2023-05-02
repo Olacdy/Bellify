@@ -8,7 +8,7 @@ from django_celery_beat.models import (ClockedSchedule, CrontabSchedule,
 
 from bellify.tasks import broadcast_message
 from bellify_bot.forms import BroadcastForm
-from bellify_bot.models import User
+from bellify_bot.models import User, Order
 from twitch.models import TwitchChannelUserItem
 from utils.general_utils import _send_message
 from youtube.models import YouTubeChannelUserItem
@@ -122,6 +122,7 @@ def get_app_list(self, request):
 
 
 admin.AdminSite.get_app_list = get_app_list
+admin.site.register(Order)
 admin.site.unregister(SolarSchedule)
 admin.site.unregister(ClockedSchedule)
 admin.site.unregister(PeriodicTask)
