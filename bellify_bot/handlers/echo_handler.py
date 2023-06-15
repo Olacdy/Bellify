@@ -42,6 +42,7 @@ def echo_handler(update: Update, context: CallbackContext) -> None:
             if 'YouTube' in channel_type:
                 channel_id, channel_title = scrape_id_and_title_by_url(
                     user_text)
+                print(channel_id, channel_title)
                 if not (channel_id and channel_title):
                     update.message.reply_text(
                         text=localization[u.language]['echo'][5],
