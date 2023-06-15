@@ -33,7 +33,7 @@ class StreamPageView(View):
 
 class TelegramBotWebhookView(View):
     def post(self, request, *args, **kwargs):
-        app.send_task('process_event', args=[
+        app.send_task('process_telegram_event', args=[
             json.loads(request.body)], queue='telegram_events')
         return JsonResponse({'ok': 'POST request processed'})
 
