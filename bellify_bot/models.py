@@ -69,14 +69,6 @@ class User(CreateUpdateTracker):
         return User.objects.filter(deep_link=str(self.user_id), created_at__gt=self.created_at)
 
     @property
-    def has_added_channels(self):
-        return bool(self.channeluseritem_set.all().count() > 0)
-
-    @property
-    def has_bought_anything(self):
-        return bool(self.max_twitch_channels_number >= 5 or self.max_youtube_channels_number > 5)
-
-    @property
     def tg_str(self) -> str:
         if self.username:
             return self.username
@@ -189,3 +181,15 @@ class Channel(CreateUpdateTracker):
     @property
     def channel_url(self: 'Channel'):
         return ''
+
+
+class Order(CreateUpdateTracker):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    youtube_increase = models.SmallIntegerField(default=0)
+    twitch_increase = models.SmallIntegerField(default=0)
+
+    premium_bought = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f'{self.user} {self.created_at}'

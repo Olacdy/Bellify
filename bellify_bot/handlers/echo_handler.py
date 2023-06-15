@@ -32,7 +32,7 @@ def echo_handler(update: Update, context: CallbackContext) -> None:
                     u, user_text.strip())
             else:
                 update.message.reply_text(
-                    text=localization[u.language]['echo'][7],
+                    text=localization[u.language]['help'][7],
                     parse_mode='HTML',
                     disable_web_page_preview=True,
                     reply_markup=reply_markup)
@@ -42,6 +42,7 @@ def echo_handler(update: Update, context: CallbackContext) -> None:
             if 'YouTube' in channel_type:
                 channel_id, channel_title = scrape_id_and_title_by_url(
                     user_text)
+                print(channel_id, channel_title)
                 if not (channel_id and channel_title):
                     update.message.reply_text(
                         text=localization[u.language]['echo'][5],
@@ -68,11 +69,18 @@ def echo_handler(update: Update, context: CallbackContext) -> None:
 
                 reply_markup = InlineKeyboardMarkup(keyboard)
 
-                update.message.reply_text(
-                    text=localization[u.language]['echo'][1],
-                    parse_mode='HTML',
-                    disable_web_page_preview=True,
-                    reply_markup=reply_markup)
+                if u.is_tutorial_finished:
+                    update.message.reply_text(
+                        text=localization[u.language]['echo'][1],
+                        parse_mode='HTML',
+                        disable_web_page_preview=True,
+                        reply_markup=reply_markup)
+                else:
+                    update.message.reply_text(
+                        text=localization[u.language]['help'][7],
+                        parse_mode='HTML',
+                        disable_web_page_preview=True,
+                        reply_markup=reply_markup)
             elif 'B' in u.status and not 'YouTube' in channel_type:
                 update.message.reply_text(
                     text=localization[u.language]['echo'][3],
